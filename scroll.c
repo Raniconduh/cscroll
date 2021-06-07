@@ -232,23 +232,23 @@ void cdback() {
 
 
 bool isdir(const char * fname) {
-	return true ? fname[strlen(fname) - 1] == '/' : false;
+	return fname[strlen(fname) - 1] == '/';
 }
 
 bool isfifo(const char * fname) {
-	return true ? fname[strlen(fname) - 1] == '|' : false;
+	return fname[strlen(fname) - 1] == '|';
 }
 
 bool isblock(const char * fname) {
-	return true ? fname[strlen(fname) - 1] == '#' : false;
+	return fname[strlen(fname) - 1] == '#';
 }
 
 bool islink(const char * fname) {
-	return true ? fname[strlen(fname) - 1] == '@' : false;
+	return fname[strlen(fname) - 1] == '@';
 }
 
 bool isunknown(const char * fname) {
-	return true ? fname[strlen(fname) - 1] == '?' : false;
+	return fname[strlen(fname) - 1] == '?';
 }
 
 bool isreg(const char * fname) {
