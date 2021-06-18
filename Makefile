@@ -6,11 +6,11 @@ LIBS = -lncurses
 
 all: cscroll
 
-cscroll:
+cscroll: $(SOURCES)
 	cc -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS)
 
-debug:
-	cc -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
+debug: $(SOURCES)
+	cc -DDEBUG -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
 
 clean:
 	$(RM) $(DEST)
