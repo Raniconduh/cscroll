@@ -108,12 +108,26 @@ int main ( int argc, char ** argv ) {
 
 	listitems(); // preliminary list to save on disk io
 	// driver loop -- ig bools are defined in nh
+	
+	size_t firstf = 0;
+	size_t lastf = (size_t)(LINES - 6) < dirCount ? (size_t)(LINES - 6) : dirCount;
+
 	while (true) {
 		erase();
 
+		// scroll the output up
+		if (cursor + 1 >= lastf && lastf < dirCount) {
+			lastf++;
+			firstf++;
+		// scroll the output down
+		} else if (cursor - 1 <= firstf && firstf > 0) {
+			lastf--;
+			firstf--;
+		}
+
 		printw("\n%s\n\n", cwd); // print path at top
 
-		for (size_t i = 0; i < dirCount; i++) {
+		for (size_t i = firstf; i < lastf; i++) {
 			if (cursor == i) 
 				print_file(dirContents[i], true);
 			else
@@ -126,17 +140,21 @@ int main ( int argc, char ** argv ) {
 		
 		char c = getch();
 		if (c == 'q') goto done; // 'q' command for quit
-		if (c == 'j') cursor += 1 ? cursor < dirCount - 1 : 0; // down key
-		else if (c == 'k') cursor -= 1 ? cursor > 0 : 0; // up key
+		if (c == 'j') cursor < dirCount - 1 ? cursor += 1 : 0; // down key
+		else if (c == 'k') cursor > 0 ?  cursor -= 1 : 0; // up key
 		else if (c == 'h') {
 			cdback();
 			listitems();
 			cursor = 0;
+			firstf = 0;
+			lastf = (size_t)(LINES - 6) < dirCount ? (size_t)(LINES - 6) : dirCount;
 		}
 		else if (c == 'l') {
 			enter(dirContents[cursor]);
 			listitems();
 			cursor = 0;
+			firstf = 0;
+			lastf = (size_t)(LINES - 6) < dirCount ? (size_t)(LINES - 6) : dirCount;
 		}
 
 		refresh();
