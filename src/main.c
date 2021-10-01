@@ -46,6 +46,6 @@ int main(int argc, char ** argv) {
 done:
 	free_dir_entries();
 	free(dir_entries);
-	endwin();
+	terminate_curses();
 	return 0;
 }

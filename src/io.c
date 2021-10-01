@@ -8,6 +8,7 @@
 void curses_init(void) {
 	initscr();
 	curs_set(0);
+	noecho();
 	start_color();
 	
 	init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
@@ -24,6 +25,13 @@ void curses_init(void) {
     init_pair(HRED, COLOR_BLACK, COLOR_RED);
     init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
     init_pair(HWHITE, COLOR_BLACK, COLOR_WHITE); 
+}
+
+
+void terminate_curses(void) {
+	curs_set(1);
+	echo();
+	endwin();
 }
 
 
