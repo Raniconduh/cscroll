@@ -100,10 +100,19 @@ char curses_getch(void) {
 		*ptr++ = '\0';
 	}
 
-	if (!strcmp(seq, "[A"))
-		return ARROW_UP;
-	else if (!strcmp(seq, "[B"))
-		return ARROW_DOWN;
-	else
-		return c;
+	if (seq[0] == '[')
+		switch (seq[1]) {
+			case 'A':
+				return ARROW_UP;
+			case 'B':
+				return ARROW_DOWN;
+			case 'C':
+				return ARROW_LEFT;
+			case 'D':
+				return ARROW_RIGHT;
+			default:
+				break;
+		}
+
+	return c;
 }
