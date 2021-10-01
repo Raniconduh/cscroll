@@ -66,3 +66,20 @@ void free_dir_entries(void) {
 	
 	n_dir_entries = 0;
 }
+
+
+void cd_back(void) {
+	char * p = strrchr(cwd, '/');
+	*p = '\0';
+	cwd = realloc(cwd, strlen(cwd) + 2);
+	if (cwd[0] == '\0') {
+		cwd[0] = '/';
+		cwd[1] = '\0';
+	}
+}
+
+
+void enter_dir(char * name) {
+	cwd = realloc(cwd, strlen(cwd) + strlen(name) + 2);
+	sprintf(cwd, "%s/%s", cwd, name);
+}

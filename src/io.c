@@ -114,9 +114,9 @@ char curses_getch(void) {
 				return ARROW_UP;
 			case 'B':
 				return ARROW_DOWN;
-			case 'C':
-				return ARROW_LEFT;
 			case 'D':
+				return ARROW_LEFT;
+			case 'C':
 				return ARROW_RIGHT;
 			default:
 				break;
