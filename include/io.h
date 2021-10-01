@@ -22,8 +22,10 @@ enum colors {
 };
 
 enum keys {
-	ARROW_UP = 0,
-	ARROW_DOWN = 1,
+	ARROW_UP,
+	ARROW_DOWN,
+	ARROW_LEFT,
+	ARROW_RIGHT
 };
 
 void curses_init(void);
