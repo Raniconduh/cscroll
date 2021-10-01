@@ -53,26 +53,49 @@ int main(int argc, char ** argv) {
 		refresh();
 
 		char c = curses_getch();
-		if ((c == ARROW_UP || c == 'k') && cursor > 1)
-			cursor--;
-		else if ((c == ARROW_DOWN || c == 'j') && cursor < n_dir_entries)
-			cursor++;
-		else if (c == ARROW_LEFT || c == 'h') {
-			cd_back();
-			free_dir_entries();
-			list_dir(cwd);
-			cursor = 1;
-			first_f = 0;
-			last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
-		} else if ((c == ARROW_RIGHT || c == 'l') && dir_entries[cursor - 1]->file_type == FILE_DIR) {
-			enter_dir(dir_entries[cursor - 1]->name);
-			free_dir_entries();
-			list_dir(cwd);
-			cursor = 1;
-			first_f = 0;
-			last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
-		} else if (c == 'q')
-			goto done;
+		switch (c) {
+			case ARROW_UP:
+			case 'k':
+				if (cursor > 1) cursor--;
+				break;
+			case ARROW_DOWN:
+			case 'j':
+				if (cursor < n_dir_entries) cursor++;
+				break;
+			case ARROW_LEFT:
+			case 'h':
+				cd_back();
+				free_dir_entries();
+				list_dir(cwd);
+				cursor = 1;
+				first_f = 0;
+				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				break;
+			case ARROW_RIGHT:
+			case 'l':
+				if (dir_entries[cursor - 1]->file_type != FILE_DIR) break;
+				enter_dir(dir_entries[cursor - 1]->name);
+				free_dir_entries();
+				list_dir(cwd);
+				cursor = 1;
+				first_f = 0;
+				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				break;
+			case 'g':
+				cursor = 1;
+				first_f = 0;
+				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				break;
+			case 'G':
+				cursor = n_dir_entries;
+				last_f = n_dir_entries - 1;
+				first_f = n_dir_entries > (unsigned)LINES - 6? n_dir_entries - LINES + 5 : -1;
+				break;
+			case 'q':
+				goto done;
+			default:
+				break;
+		}
 	}
 
 done:
