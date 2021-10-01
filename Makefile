@@ -1,4 +1,5 @@
-SOURCES ?= scroll.c
+SOURCES ?= src/*.c
+INCLUDEDIR ?= include
 DEST ?= cscroll
 
 CFLAGS = -Wall -Wextra
@@ -7,7 +8,7 @@ LIBS = -lncurses
 all: cscroll
 
 cscroll: $(SOURCES)
-	cc -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS)
+	cc -I$(INCLUDEDIR) -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS)
 
 debug: $(SOURCES)
 	cc -DDEBUG -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
