@@ -81,5 +81,8 @@ void cd_back(void) {
 
 void enter_dir(char * name) {
 	cwd = realloc(cwd, strlen(cwd) + strlen(name) + 2);
-	sprintf(cwd, "%s/%s", cwd, name);
+	if (strcmp(cwd, "/"))
+		sprintf(cwd, "%s/%s", cwd, name);
+	else
+		strcat(cwd, name);
 }
