@@ -39,8 +39,16 @@ int main(int argc, char ** argv) {
 			last_f--;
 		}
 		
-		printw("\n%s\n\n", cwd);
+		// print path at top
+		printw("\n%s", cwd);
+		if (!n_dir_entries) {
+			attron(COLOR_PAIR(RED));
+			printw("\tPermission Denied");
+			attroff(COLOR_PAIR(RED));
+		}
+		printw("\n\n");
 
+		// print files
 		for (size_t i = first_f; i < last_f; i++) {
 			if (cursor - 1 == i)
 				curses_write_file(dir_entries[i], true);
@@ -48,7 +56,9 @@ int main(int argc, char ** argv) {
 				curses_write_file(dir_entries[i], false);
 		}
 
-		printw("\n%lu/%lu\n", cursor, n_dir_entries);
+		// print cursor / total entries
+		if (n_dir_entries)
+			printw("\n%lu/%lu\n", cursor, n_dir_entries);
 
 		refresh();
 
@@ -73,6 +83,7 @@ int main(int argc, char ** argv) {
 				break;
 			case ARROW_RIGHT:
 			case 'l':
+				if (!n_dir_entries) break;
 				if (dir_entries[cursor - 1]->file_type != FILE_DIR) break;
 				enter_dir(dir_entries[cursor - 1]->name);
 				free_dir_entries();
