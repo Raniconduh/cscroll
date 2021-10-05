@@ -2,6 +2,8 @@
 #define DIR_H
 #endif
 
+#include <stdbool.h>
+
 int list_dir(char *);
 void free_dir_entries(void);
 void cd_back(void);
@@ -31,4 +33,4 @@ extern struct dir_entry_t ** dir_entries;
 // current working directory
 extern char * cwd;
 
-
+extern bool show_dot_files;

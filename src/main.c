@@ -102,6 +102,14 @@ int main(int argc, char ** argv) {
 				last_f = n_dir_entries - 1;
 				first_f = n_dir_entries > (unsigned)LINES - 6? n_dir_entries - LINES + 5 : -1;
 				break;
+			case '.':
+				show_dot_files = !show_dot_files;
+				free_dir_entries();
+				list_dir(cwd);
+				cursor = 1;
+				first_f = 0;
+				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				break;
 			case 'q':
 				goto done;
 			default:

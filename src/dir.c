@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "dir.h"
 
@@ -10,6 +11,8 @@ char * cwd = NULL;
 
 size_t n_dir_entries = 0;
 struct dir_entry_t ** dir_entries = NULL;
+
+bool show_dot_files = false;
 
 int list_dir(char * dir_path) {
 	struct dirent * d_entry;
@@ -26,7 +29,14 @@ int list_dir(char * dir_path) {
 		char * d_name = d_entry->d_name;
 		size_t d_name_len = strlen(d_name);
 
-		if (!strcmp(d_name, ".") || !strcmp(d_name, "..")) continue;
+		if (!strcmp(d_name, ".") || !strcmp(d_name, "..")) {
+			free(dir_entry);
+			continue;
+		}
+		else if (!show_dot_files && d_name[0] == '.') {
+			free(dir_entry);
+			continue;
+		}
 
 		struct stat * buf = malloc(sizeof(struct stat));
 		char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
