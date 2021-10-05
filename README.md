@@ -15,6 +15,7 @@ If an argument is provided, cscroll will open the path supplied. Otherwise it wi
 * `l` or `right arrow key`: Enter the directory the cursor is currently on
 * `g`: Place cursor on first file
 * `G`: Place cursor on last file
+* `.`: Toggle whether or not to show dot files
 * `q`: Quit
 
 
@@ -24,5 +25,5 @@ cscroll has one dependency: ncurses. To compile cscroll, you must install `libnc
 
 On Debian and Ubuntu based system, this should be titled `libncurses-dev` and may be installed with `sudo apt install libncurses-dev`.
 
-Then run `make` to compile.
+Then run `make` to compile. The program will then be accessible by running `./cscroll`.
 
