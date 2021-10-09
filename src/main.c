@@ -110,6 +110,28 @@ int main(int argc, char ** argv) {
 				first_f = 0;
 				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
 				break;
+			case 'd':
+				if (dir_entries[cursor - 1]->file_type == FILE_DIR)
+					break;
+				char * name = dir_entries[cursor - 1]->name;
+				char * p = malloc(20 + strlen(name));
+				char * args[] = {"Yes", "No", NULL};
+				sprintf(p, "Delete the file '%s'?", name);
+				char * resp = prompt(p, args);
+				free(p);
+				if (!strcmp(resp, "Yes")) {
+					p = malloc(strlen(cwd) + strlen(name) + 3);
+					sprintf(p, "%s/%s", cwd, name);
+					remove(p);
+					free(p);
+					free_dir_entries();
+					list_dir(cwd);
+
+					cursor = 1;
+					first_f = 0;
+					last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				}
+				break;
 			case 'q':
 				goto done;
 			default:
