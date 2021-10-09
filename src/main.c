@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
 
 	size_t first_f, last_f;
 	first_f = cursor - 1;
-	last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+	last_f = LAST_F;
 
 	while (true) {
 		erase();
@@ -116,7 +116,7 @@ int main(int argc, char ** argv) {
 					break;
 				char * name = dir_entries[cursor - 1]->name;
 				char * p = malloc(20 + strlen(name));
-				char * args[] = {"Yes", "No", NULL};
+				char * args[] = {"No", "Yes", NULL};
 				sprintf(p, "Delete the file '%s'?", name);
 				char * resp = prompt(p, args);
 				free(p);

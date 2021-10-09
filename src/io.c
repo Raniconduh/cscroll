@@ -155,6 +155,7 @@ char * prompt(char * t, char ** args) {
 	if (!args) {
 		wrefresh(w);
 		napms(3500);
+		delwin(w);
 		return NULL;
 	}
 
@@ -196,6 +197,7 @@ char * prompt(char * t, char ** args) {
 				if ((unsigned)cursor < argcount) cursor++;
 				break;
 			case '\n':
+				delwin(w);
 				return args[cursor - 1];
 			case 'q':
 			case 27:
@@ -203,5 +205,6 @@ char * prompt(char * t, char ** args) {
 		}
 	}
 done:;
+	 delwin(w);
 	 return NULL;
 }
