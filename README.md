@@ -16,6 +16,7 @@ If an argument is provided, cscroll will open the path supplied. Otherwise it wi
 * `g`: Place cursor on first file
 * `G`: Place cursor on last file
 * `.`: Toggle whether or not to show dot files
+* `d`: Delete the file the cursor is on (a prompt will be shown first)
 * `q`: Quit
 
 
