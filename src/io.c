@@ -124,3 +124,84 @@ char curses_getch(void) {
 
 	return c;
 }
+
+
+char * prompt(char * t, char ** args) {
+	int sub_cols = 30;
+	int sub_rows = sub_cols / 2;
+	// newwin(rows, cols, y, x)
+	WINDOW * w = newwin(sub_rows, sub_cols, LINES / 2 - sub_rows / 2, COLS / 2 - sub_cols / 2);
+	werase(w);
+	
+	box(w, 0, 0);
+
+	// print text strinf
+	size_t tlen = strlen(t);
+	if (tlen < (unsigned)sub_cols - 2)
+		mvwprintw(w, 2, sub_cols / 2 - tlen / 2, "%s", t);
+	else {
+		int row = 1;
+		int col = 1;
+		for (size_t i = 0; i < tlen; i++) {
+			col++;
+			if (i % (sub_cols - 4) == 0) {
+				row++;
+				col = 2;
+			}
+			mvwaddch(w, row, col, t[i]);
+		}
+	}
+
+	if (!args) {
+		wrefresh(w);
+		napms(3500);
+		return NULL;
+	}
+
+	size_t argcount = 0;
+	size_t argstrlen = 0;
+	for (char ** p = args; *p; p++) {
+		argcount++;
+		argstrlen += strlen(*p);
+	}
+
+	int cursor = 1;
+
+	// pick option
+	while (true) {
+		int col = 2;
+		for (size_t i = 0; i < argcount; i++) {
+			if ((unsigned)cursor - 1 == i)
+				wattron(w, COLOR_PAIR(HWHITE));
+			mvwprintw(w, sub_rows - 2, col + (sub_cols / 2 - argstrlen), "%s", args[i]);
+			if ((unsigned)cursor - 1 == i)
+				wattroff(w, COLOR_PAIR(HWHITE));
+			col += strlen(args[i]) + 2;
+		}
+
+		wrefresh(w);
+
+		char c = curses_getch();
+		switch (c) {
+			case ARROW_UP:
+			case ARROW_LEFT:
+			case 'h':
+			case 'k':
+				if (cursor > 1) cursor--;
+				break;
+			case ARROW_DOWN:
+			case ARROW_RIGHT:
+			case 'l':
+			case 'j':
+				if ((unsigned)cursor < argcount) cursor++;
+				break;
+			case '\n':
+				return args[cursor - 1];
+			case 'q':
+			case 27:
+				goto done;
+		}
+	}
+done:;
+	 return NULL;
+}
