@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <ncurses.h>
 
+#include "main.h"
 #include "dir.h"
 #include "io.h"
 
@@ -79,7 +80,7 @@ int main(int argc, char ** argv) {
 				list_dir(cwd);
 				cursor = 1;
 				first_f = 0;
-				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				last_f = LAST_F;
 				break;
 			case ARROW_RIGHT:
 			case 'l':
@@ -90,12 +91,12 @@ int main(int argc, char ** argv) {
 				list_dir(cwd);
 				cursor = 1;
 				first_f = 0;
-				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				last_f = LAST_F;
 				break;
 			case 'g':
 				cursor = 1;
 				first_f = 0;
-				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				last_f = LAST_F;
 				break;
 			case 'G':
 				cursor = n_dir_entries;
@@ -108,7 +109,7 @@ int main(int argc, char ** argv) {
 				list_dir(cwd);
 				cursor = 1;
 				first_f = 0;
-				last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+				last_f = LAST_F;
 				break;
 			case 'd':
 				if (dir_entries[cursor - 1]->file_type == FILE_DIR)
@@ -129,7 +130,7 @@ int main(int argc, char ** argv) {
 
 					cursor = 1;
 					first_f = 0;
-					last_f = n_dir_entries > ((unsigned)LINES - 6) ? LINES - 6 : n_dir_entries;
+					last_f = LAST_F;
 				}
 				break;
 			case 'q':
