@@ -65,11 +65,13 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 				cp = HRED;
 				f_ident = '?';
 				break;
-			default: break;
+			default:
+				f_ident = NO_IDENT;
+				break;
 		}
 		if (dir_entry->exec) {
-			f_ident = '*';
-			if (cp == -1) cp = HGREEN;
+			cp = HGREEN;
+			if (f_ident == NO_IDENT) f_ident = '*';
 		} else if (cp == -1) {
 			cp = HWHITE;
 			f_ident = ' ';
@@ -100,12 +102,13 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 				cp = RED;
 				f_ident = '?';
 				break;
-
-			default: break;
+			default:
+				f_ident = NO_IDENT;
+				break;
 		}
 		if (dir_entry->exec) {
-			f_ident = '*';
-			if (cp == -1) cp = GREEN;
+			cp = GREEN;
+			if (f_ident == NO_IDENT) f_ident = '*';
 		} else if (cp == -1) {
 			cp = WHITE;
 			f_ident = ' ';

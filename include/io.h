@@ -4,6 +4,8 @@
 
 #include <stdbool.h>
 
+#define NO_IDENT 0
+
 enum colors {
 	BLUE = 1,
 	HBLUE = 2,
