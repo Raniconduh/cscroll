@@ -109,6 +109,7 @@ void cd_back(void) {
 		cwd[0] = '/';
 		cwd[1] = '\0';
 	}
+	setenv("PWD", cwd, true);
 }
 
 
@@ -118,4 +119,5 @@ void enter_dir(char * name) {
 		sprintf(cwd, "%s/%s", cwd, name);
 	else
 		strcat(cwd, name);
+	setenv("PWD", cwd, true);
 }

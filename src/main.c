@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <string.h>
 
+#include "commands.h"
 #include "main.h"
 #include "dir.h"
 #include "io.h"
@@ -16,6 +17,7 @@ int main(int argc, char ** argv) {
 			} else {
 				cwd = malloc(strlen(argv[i]) + 2);
 				strcpy(cwd, argv[i]);
+				setenv("PWD", cwd, true);
 			}
 		}
 	}
@@ -141,6 +143,9 @@ int main(int argc, char ** argv) {
 					first_f = 0;
 					last_f = LAST_F;
 				}
+				break;
+			case 'o':
+				ext_open(dir_entries[cursor - 1]->name);
 				break;
 			case 'q':
 				goto done;
