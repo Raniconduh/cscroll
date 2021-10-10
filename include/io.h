@@ -3,6 +3,7 @@
 #endif
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #define NO_IDENT 0
 
@@ -35,3 +36,6 @@ void terminate_curses(void);
 void curses_write_file(struct dir_entry_t *, bool);
 char curses_getch(void);
 char * prompt(char *, char **);
+
+extern bool print_path;
+extern FILE * stdout_back;

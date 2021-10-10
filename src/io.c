@@ -1,11 +1,20 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "dir.h"
 #include "io.h"
 
+bool print_path = false;
+FILE * stdout_back = NULL;
+
 void curses_init(void) {
+	if (print_path) {
+		stdout_back = stdout;
+		stdout = fopen("/dev/tty", "w");
+	}
+
 	initscr();
 	curs_set(0);
 	noecho();
@@ -32,6 +41,11 @@ void terminate_curses(void) {
 	curs_set(1);
 	echo();
 	endwin();
+	
+	if (print_path) {
+		fclose(stdout);
+		stdout = stdout_back;
+	}
 }
 
 

@@ -8,17 +8,25 @@
 #include "dir.h"
 #include "io.h"
 
-int main(int argc, char ** argv) {
-	curses_init();
-	
+int main(int argc, char ** argv) {	
 	if (argc > 1) {
-		cwd = malloc(strlen(argv[1]) + 2);
-		strcpy(cwd, argv[1]);
-	} else {
+		for (int i = 1; i < argc; i++) {
+			if (!strcmp(argv[i], "-p")) {
+					print_path = true;
+			} else {
+				cwd = malloc(strlen(argv[i]) + 2);
+				strcpy(cwd, argv[i]);
+			}
+		}
+	}
+
+	if (!cwd) {
 		char * p = getenv("PWD");
 		cwd = malloc(strlen(p) + 2);
 		strcpy(cwd, p);
 	}
+
+	curses_init();
 
 	list_dir(cwd);
 
@@ -145,5 +153,8 @@ done:
 	free_dir_entries();
 	free(dir_entries);
 	terminate_curses();
+
+	if (print_path) puts(cwd);
+
 	return 0;
 }
