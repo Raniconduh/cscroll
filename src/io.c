@@ -57,6 +57,14 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 				cp = HCYAN;
 				f_ident = '@';
 				break;
+			case FILE_SOCK:
+				cp = HMAGENTA;
+				f_ident = '=';
+				break;
+			case FILE_UNKNOWN:
+				cp = HRED;
+				f_ident = '?';
+				break;
 			default: break;
 		}
 		if (cp == -1) {
@@ -81,6 +89,15 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 				cp = CYAN;
 				f_ident = '@';
 				break;
+			case FILE_SOCK:
+				cp = MAGENTA;
+				f_ident = '=';
+				break;
+			case FILE_UNKNOWN:
+				cp = RED;
+				f_ident = '?';
+				break;
+
 			default: break;
 		}
 		if (cp == -1) {
