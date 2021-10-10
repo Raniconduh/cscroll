@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ncurses.h>
+#include <string.h>
 
 #include "main.h"
 #include "dir.h"
