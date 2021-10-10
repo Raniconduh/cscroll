@@ -16,6 +16,7 @@ enum file_type_t {
 	FILE_FIFO,
 	FILE_LINK,
 	FILE_BLK,
+	FILE_SOCK,
 	FILE_UNKNOWN
 };
 

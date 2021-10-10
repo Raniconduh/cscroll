@@ -49,12 +49,30 @@ int list_dir(char * dir_path) {
 		
 		strcpy(dir_entry->name, d_name);
 
-		mode_t s = buf->st_mode;
-		if (S_ISBLK(s) || S_ISCHR(s)) dir_entry->file_type = FILE_BLK;
-		else if (S_ISDIR(s)) dir_entry->file_type = FILE_DIR;
-		else if (S_ISFIFO(s)) dir_entry->file_type = FILE_FIFO;
-		else if (S_ISLNK(s)) dir_entry->file_type = FILE_LINK;
-		else dir_entry->file_type = FILE_REG;
+		switch(buf->st_mode & S_IFMT) {
+			case S_IFBLK:
+			case S_IFCHR:
+				dir_entry->file_type = FILE_BLK;
+				break;
+			case S_IFSOCK:
+				dir_entry->file_type = FILE_SOCK;
+				break;
+			case S_IFDIR:
+				dir_entry->file_type = FILE_DIR;
+				break;
+			case S_IFLNK:
+				dir_entry->file_type = FILE_LINK;
+				break;
+			case S_IFIFO:
+				dir_entry->file_type = FILE_FIFO;
+				break;
+			case S_IFREG:
+				dir_entry->file_type = FILE_REG;
+				break;
+			default:
+				dir_entry->file_type = FILE_UNKNOWN;
+				break;
+		}
 		free(buf);
 
 		dir_entries[n_dir_entries] = dir_entry;
