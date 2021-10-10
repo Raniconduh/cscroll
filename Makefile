@@ -2,8 +2,8 @@ SOURCES ?= src/*.c
 INCLUDEDIR ?= include
 DEST ?= cscroll
 
-CFLAGS = -Wall -Wextra
-LIBS = -lncurses
+CFLAGS ?= -Wall -Wextra -pedantic
+LIBS ?= -lncurses
 
 all: cscroll
 
