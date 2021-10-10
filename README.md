@@ -21,6 +21,7 @@ If an argument is provided, cscroll will open the path supplied. Otherwise it wi
 * `G`: Place cursor on last file
 * `.`: Toggle whether or not to show dot files
 * `d`: Delete the file the cursor is on (a prompt will be shown first)
+* `o`: Open the file the cursor is on with `xdg-open`
 * `q`: Quit
 
 
