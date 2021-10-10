@@ -73,6 +73,11 @@ int list_dir(char * dir_path) {
 				dir_entry->file_type = FILE_UNKNOWN;
 				break;
 		}
+		// S_IXUSR
+		if (dir_entry->file_type != FILE_DIR)
+			dir_entry->exec = (bool)(buf->st_mode & S_IXUSR);
+		else dir_entry->exec = false;
+		
 		free(buf);
 
 		dir_entries[n_dir_entries] = dir_entry;
