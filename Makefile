@@ -13,6 +13,12 @@ cscroll: $(SOURCES)
 debug: $(SOURCES)
 	cc -I$(INCLUDEDIR) -DDEBUG -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
 
+install: all
+	install $(DEST) $(DESTDIR)/$(PREFIX)/bin
+
+uninstall:
+	rm -f $(DESTDIR)/$(PREFIX)/bin/$(DEST)
+
 clean:
 	$(RM) $(DEST)
 
