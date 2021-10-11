@@ -95,14 +95,18 @@ int main(int argc, char ** argv) {
 				break;
 			case ARROW_RIGHT:
 			case 'l':
+			case '\n':
 				if (!n_dir_entries) break;
-				if (dir_entries[cursor - 1]->file_type != FILE_DIR) break;
-				enter_dir(dir_entries[cursor - 1]->name);
-				free_dir_entries();
-				list_dir(cwd);
-				cursor = 1;
-				first_f = 0;
-				last_f = LAST_F;
+				if (dir_entries[cursor - 1]->file_type == FILE_DIR) {
+					enter_dir(dir_entries[cursor - 1]->name);
+					free_dir_entries();
+					list_dir(cwd);
+					cursor = 1;
+					first_f = 0;
+					last_f = LAST_F;
+				} else {
+					ext_open(dir_entries[cursor - 1]->name);
+				}
 				break;
 			case 'g':
 				cursor = 1;
@@ -143,9 +147,6 @@ int main(int argc, char ** argv) {
 					if (cursor > n_dir_entries) cursor--;
 					last_f = LAST_F;
 				}
-				break;
-			case 'o':
-				ext_open(dir_entries[cursor - 1]->name);
 				break;
 			case 'q':
 				goto done;
