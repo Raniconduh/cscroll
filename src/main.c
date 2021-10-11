@@ -131,6 +131,7 @@ int main(int argc, char ** argv) {
 				sprintf(p, "Delete the file '%s'?", name);
 				char * resp = prompt(p, args);
 				free(p);
+				if (!resp) break;
 				if (!strcmp(resp, "Yes")) {
 					p = malloc(strlen(cwd) + strlen(name) + 3);
 					sprintf(p, "%s/%s", cwd, name);
@@ -139,8 +140,7 @@ int main(int argc, char ** argv) {
 					free_dir_entries();
 					list_dir(cwd);
 
-					cursor = 1;
-					first_f = 0;
+					if (cursor > n_dir_entries) cursor--;
 					last_f = LAST_F;
 				}
 				break;

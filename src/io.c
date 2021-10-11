@@ -171,10 +171,10 @@ char * prompt(char * t, char ** args) {
 		int col = 2;
 		for (size_t i = 0; i < argcount; i++) {
 			if ((unsigned)cursor - 1 == i)
-				wattron(w, COLOR_PAIR(HWHITE));
+				wattron(w, COLOR_PAIR(WHITE) | A_REVERSE);
 			mvwprintw(w, sub_rows - 2, col + (sub_cols / 2 - argstrlen), "%s", args[i]);
 			if ((unsigned)cursor - 1 == i)
-				wattroff(w, COLOR_PAIR(HWHITE));
+				wattroff(w, COLOR_PAIR(WHITE) | A_REVERSE);
 			col += strlen(args[i]) + 2;
 		}
 
@@ -200,6 +200,8 @@ char * prompt(char * t, char ** args) {
 			case 'q':
 			case 27:
 				goto done;
+			default:
+				break;
 		}
 	}
 done:;
