@@ -5,6 +5,8 @@ DEST ?= cscroll
 CFLAGS ?= -Wall -Wextra -pedantic
 LIBS ?= -lncurses
 
+RM ?= rm -f
+
 all: cscroll
 
 cscroll: $(SOURCES)
