@@ -15,8 +15,7 @@ int main(int argc, char ** argv) {
 			if (!strcmp(argv[i], "-p")) {
 					print_path = true;
 			} else {
-				cwd = malloc(strlen(argv[i]) + 2);
-				strcpy(cwd, argv[i]);
+				cwd = realpath(argv[1], NULL);
 				setenv("PWD", cwd, true);
 			}
 		}
