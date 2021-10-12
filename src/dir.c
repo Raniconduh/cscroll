@@ -84,8 +84,9 @@ int list_dir(char * dir_path) {
 		
 		free(buf);
 
-		dir_entries[n_dir_entries] = dir_entry;
+		dir_entry->marked = false;
 
+		dir_entries[n_dir_entries] = dir_entry;
 		n_dir_entries++;
 	}
 

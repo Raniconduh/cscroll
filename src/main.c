@@ -62,10 +62,11 @@ int main(int argc, char ** argv) {
 
 		// print files
 		for (size_t i = first_f; i < last_f; i++) {
+			bool h = false;
 			if (cursor - 1 == i)
-				curses_write_file(dir_entries[i], true);
-			else
-				curses_write_file(dir_entries[i], false);
+				h = true;
+
+			curses_write_file(dir_entries[i], h);
 		}
 
 		// print cursor / total entries
@@ -146,6 +147,15 @@ int main(int argc, char ** argv) {
 
 					if (cursor > n_dir_entries) cursor--;
 					last_f = LAST_F;
+				}
+				break;
+			case 'm':
+				if (!dir_entries[cursor - 1]->marked) {
+					dir_entries[cursor - 1]->marked = true;
+					n_marked_files++;
+				} else {
+					dir_entries[cursor - 1]->marked = false;
+					if (n_marked_files) n_marked_files--;
 				}
 				break;
 			case 'q':

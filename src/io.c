@@ -8,6 +8,7 @@
 
 bool print_path = false;
 FILE * stdout_back = NULL;
+size_t n_marked_files = false;
 
 void curses_init(void) {
 	if (print_path) {
@@ -87,6 +88,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	cp = COLOR_PAIR((unsigned)cp);
 	if (highlight) cp |= A_REVERSE;
 
+	if (dir_entry->marked) printw("%c ", '-');
 	attron(cp);
 	printw("%s", dir_entry->name);
 	attroff(cp);

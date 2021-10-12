@@ -32,3 +32,4 @@ char * prompt(char *, char **);
 
 extern bool print_path;
 extern FILE * stdout_back;
+extern size_t n_marked_files;

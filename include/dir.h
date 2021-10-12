@@ -24,6 +24,7 @@ struct dir_entry_t {
 	char * name;
 	enum file_type_t file_type;
 	bool exec;
+	bool marked;
 };
 
 
