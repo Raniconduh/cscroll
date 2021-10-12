@@ -47,6 +47,7 @@ void terminate_curses(void) {
 void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	int cp = -1;
 	char f_ident;
+	char * u_text = "";
 
 	switch (dir_entry->file_type) {
 		case FILE_DIR:
@@ -62,6 +63,8 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 			f_ident = '#';
 			break;
 		case FILE_LINK:
+			if (dir_entry->under_link == FILE_DIR)
+				u_text = "=> /";
 			cp = CYAN;
 			f_ident = '@';
 			break;
@@ -78,7 +81,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 			break;
 	}
 
-	if (dir_entry->exec) {
+	if (dir_entry->exec && dir_entry->file_type != FILE_LINK) {
 		cp = GREEN;
 		if (f_ident == NO_IDENT) f_ident = '*';
 	} else if (cp == -1) {
@@ -93,7 +96,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	attron(cp);
 	printw("%s", dir_entry->name);
 	attroff(cp);
-	printw("%c\n", f_ident);
+	printw("%c %s\n", f_ident, u_text);
 }
 
 

@@ -98,7 +98,9 @@ int main(int argc, char ** argv) {
 			case 'l':
 			case '\n':
 				if (!n_dir_entries) break;
-				if (dir_entries[cursor - 1]->file_type == FILE_DIR) {
+				// open directory or links that point to a directory
+				if (dir_entries[cursor - 1]->file_type == FILE_DIR ||
+					dir_entries[cursor - 1]->under_link == FILE_DIR) {
 					enter_dir(dir_entries[cursor - 1]->name);
 					free_dir_entries();
 					list_dir(cwd);
