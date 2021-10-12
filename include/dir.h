@@ -24,6 +24,7 @@ enum file_type_t {
 struct dir_entry_t {
 	char * name;
 	enum file_type_t file_type;
+	enum file_type_t under_link;
 	bool exec;
 	bool marked;
 };

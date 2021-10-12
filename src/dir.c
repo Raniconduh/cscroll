@@ -46,8 +46,7 @@ int list_dir(char * dir_path) {
 		struct stat * buf = malloc(sizeof(struct stat));
 		char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
 		sprintf(tmp_path, "%s/%s", dir_path, d_name);
-		stat(tmp_path, buf);
-		free(tmp_path);
+		lstat(tmp_path, buf);
 
 		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t) * (n_dir_entries + 1));
 		dir_entry->name = malloc(d_name_len + 1);
@@ -67,6 +66,12 @@ int list_dir(char * dir_path) {
 				break;
 			case S_IFLNK:
 				dir_entry->file_type = FILE_LINK;
+				struct stat * buf2 = malloc(sizeof(struct stat));
+				stat(tmp_path, buf2);
+				if ((buf2->st_mode & S_IFMT) == S_IFDIR)
+					dir_entry->under_link = FILE_DIR;
+				else dir_entry->under_link = FILE_UNKNOWN;
+				free(buf2);
 				break;
 			case S_IFIFO:
 				dir_entry->file_type = FILE_FIFO;
@@ -83,6 +88,7 @@ int list_dir(char * dir_path) {
 			dir_entry->exec = (bool)(buf->st_mode & S_IXUSR);
 		else dir_entry->exec = false;
 		
+		free(tmp_path);
 		free(buf);
 
 		dir_entry->marked = false;
