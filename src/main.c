@@ -9,6 +9,7 @@
 #include "dir.h"
 #include "io.h"
 
+#define CTRL_KCOMB(key) (key&0x1f)
 int main(int argc, char ** argv) {	
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
@@ -78,10 +79,12 @@ int main(int argc, char ** argv) {
 		char c = curses_getch();
 		switch (c) {
 			case ARROW_UP:
-			case 'k':
+		        case CTRL_KCOMB('p'):
+		        case 'k':
 				if (cursor > 1) cursor--;
 				break;
 			case ARROW_DOWN:
+  		        case CTRL_KCOMB('n'):
 			case 'j':
 				if (cursor < n_dir_entries) cursor++;
 				break;
@@ -95,6 +98,7 @@ int main(int argc, char ** argv) {
 				last_f = LAST_F;
 				break;
 			case ARROW_RIGHT:
+  			case CTRL_KCOMB('f'):
 			case 'l':
 			case '\n':
 				if (!n_dir_entries) break;
