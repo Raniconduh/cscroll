@@ -21,7 +21,11 @@ enum keys {
 	ARROW_UP,
 	ARROW_DOWN,
 	ARROW_LEFT,
-	ARROW_RIGHT
+	ARROW_RIGHT,
+	CTRL_P,
+	CTRL_B,
+	CTRL_N,
+	CTRL_F
 };
 
 void curses_init(void);

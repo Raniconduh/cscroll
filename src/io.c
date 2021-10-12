@@ -20,6 +20,7 @@ void curses_init(void) {
 	initscr();
 	curs_set(0);
 	noecho();
+	raw();
 	start_color();
 	
 	init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
@@ -35,6 +36,7 @@ void curses_init(void) {
 void terminate_curses(void) {
 	curs_set(1);
 	echo();
+	noraw();
 	endwin();
 	
 	if (print_path) {
@@ -116,6 +118,14 @@ char curses_getch(void) {
 		}
 		*ptr++ = getch();
 		*ptr++ = '\0';
+	} else {
+		switch (c) {
+			case 2: return CTRL_B; break;
+			case 6: return CTRL_F; break;
+			case 14: return CTRL_N; break;
+			case 16: return CTRL_P; break;
+			default: break;
+		}
 	}
 
 	if (seq[0] == '[')
