@@ -53,7 +53,7 @@ int main(int argc, char ** argv) {
 		
 		// print path at top
 		printw("\n%s", cwd);
-		if (!n_dir_entries) {
+		if (permission_denied) {
 			attron(COLOR_PAIR(RED));
 			printw("\tPermission Denied");
 			attroff(COLOR_PAIR(RED));

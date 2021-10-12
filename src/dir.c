@@ -13,6 +13,7 @@ size_t n_dir_entries = 0;
 struct dir_entry_t ** dir_entries = NULL;
 
 bool show_dot_files = false;
+bool permission_denied = false;
 
 int list_dir(char * dir_path) {
 	struct dirent * d_entry;
@@ -20,8 +21,11 @@ int list_dir(char * dir_path) {
 
 	n_dir_entries = 0;
 
-	if (!dir)
+	if (!dir) {
+		permission_denied = true;
 		return 1;
+	}
+	permission_denied = false;
 
 	while ((d_entry = readdir(dir))) {
 		struct dir_entry_t * dir_entry = malloc(sizeof(struct dir_entry_t) + 12);
