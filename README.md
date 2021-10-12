@@ -7,6 +7,21 @@ A small file manager written in C.
 
 If an argument is provided, cscroll will open the path supplied. Otherwise it will open on the current working directory.
 
+Files will be highlighted and shown with an identifier in correspondence to the file type.
+
+#### Colors & Identifiers:
+
+* Red, `?`: Unknown File
+* Yellow, `#`: Block or char device
+* Yellow, `|`: FIFO (named pipe)
+* Green, `*`: File is executable
+* Blue, `/`: Directory
+* Cyan, `@`: Symbolic link
+* Magenta, `=`: Unix socket
+* White, No identifier: Regular file
+
+Files that are are executable but have another identifier will keep the identifier but be colored green. Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
+
 ### Options
 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory.
