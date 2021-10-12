@@ -21,8 +21,16 @@ If an argument is provided, cscroll will open the path supplied. Otherwise it wi
 * `G`: Place cursor on last file
 * `.`: Toggle whether or not to show dot files
 * `d`: Delete the file the cursor is on (a prompt will be shown first)
+* `m`: Mark the file the cursor is on
+* `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
 * `q`: Quit
 
+#### Command Prompt
+
+The command prompt will show up upon pressing `:` and the prompt itself is prefixed with a colon. Here you may enter multi-character commands. Available commands are:
+
+* `ma`: **M**ark **A**ll files in the directory
+* `mu`: **M**ark **U**nmark: Unmarks all files on the directory
 
 ## Installation
 
