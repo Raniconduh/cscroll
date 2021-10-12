@@ -130,9 +130,23 @@ int main(int argc, char ** argv) {
 			case 'd':
 				if (dir_entries[cursor - 1]->file_type == FILE_DIR)
 					break;
+				char * args[] = {"No", "Yes", NULL};
+				if (n_marked_files) {
+					char * p = malloc(40);
+					sprintf(p, "Remove all marked files? (%lu)", n_marked_files);
+					char * resp = prompt(p, args);
+					free(p);
+					if (!resp || strcmp(resp, "Yes")) break;
+					remove_marked();
+					free_dir_entries();
+					list_dir(cwd);
+					cursor = 1;
+					first_f = 0;
+					last_f = LAST_F;
+					break;
+				}
 				char * name = dir_entries[cursor - 1]->name;
 				char * p = malloc(20 + strlen(name));
-				char * args[] = {"No", "Yes", NULL};
 				sprintf(p, "Delete the file '%s'?", name);
 				char * resp = prompt(p, args);
 				free(p);

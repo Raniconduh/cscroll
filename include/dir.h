@@ -8,6 +8,7 @@ int list_dir(char *);
 void free_dir_entries(void);
 void cd_back(void);
 void enter_dir(char *);
+void remove_marked(void);
 
 
 enum file_type_t {

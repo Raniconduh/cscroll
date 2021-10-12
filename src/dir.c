@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "dir.h"
+#include "io.h"
 
 char * cwd = NULL;
 
@@ -125,4 +126,15 @@ void enter_dir(char * name) {
 	else
 		strcat(cwd, name);
 	setenv("PWD", cwd, true);
+}
+
+
+void remove_marked(void) {
+	for (size_t i = 0; i < n_dir_entries; i++) {
+		if (dir_entries[i]->marked) {
+			char p[strlen(cwd) + strlen(dir_entries[i]->name) + 1];
+			sprintf(p, "%s/%s", cwd, dir_entries[i]->name);
+			if (remove(p) == 0) n_marked_files--;
+		}
+	}
 }
