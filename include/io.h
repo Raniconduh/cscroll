@@ -29,6 +29,9 @@ void terminate_curses(void);
 void curses_write_file(struct dir_entry_t *, bool);
 char curses_getch(void);
 char * prompt(char *, char **);
+char * curses_getline(char *);
+void unmark_all(void);
+void mark_all(void);
 
 extern bool print_path;
 extern FILE * stdout_back;

@@ -172,6 +172,14 @@ int main(int argc, char ** argv) {
 					if (n_marked_files) n_marked_files--;
 				}
 				break;
+			case ':':;
+				char * inp = curses_getline(":");
+				if (!strcmp(inp, "ma"))
+					mark_all();
+				else if (!strcmp(inp, "mu"))
+					unmark_all();
+				free(inp);
+				break;
 			case 'q':
 				goto done;
 			default:

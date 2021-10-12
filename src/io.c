@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "dir.h"
 #include "io.h"
@@ -103,7 +104,13 @@ char curses_getch(void) {
 	char * ptr = seq;
 
 	if (c == 27) {
-		*ptr++ = getch();
+		char c = getch();
+		if (c == '[') {
+			*ptr++ = c;
+		} else {
+			ungetch(c);
+			return seq[0];
+		}
 		*ptr++ = getch();
 		*ptr++ = '\0';
 	}
@@ -209,4 +216,38 @@ char * prompt(char * t, char ** args) {
 done:;
 	 delwin(w);
 	 return NULL;
+}
+
+
+char * curses_getline(char * p) {
+	curs_set(1);
+	echo();
+
+	printw("%s", p);
+	refresh();
+
+	char * inp = malloc(128);
+	size_t l = 0;
+	char c;
+	while ((c = getch()) != '\n')
+		inp[l++] = c;
+
+	curs_set(0);
+	noecho();
+
+	return inp;
+}
+
+
+void mark_all(void) {
+	for (size_t i = 0; i < n_dir_entries; i++)
+		dir_entries[i]->marked = true;
+	n_marked_files = n_dir_entries;
+}
+
+
+void unmark_all(void) {
+	for (size_t i = 0; i < n_dir_entries; i++)
+		dir_entries[i]->marked = false;
+	n_marked_files = 0;
 }
