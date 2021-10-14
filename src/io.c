@@ -244,6 +244,7 @@ char * curses_getline(char * p) {
 	char c;
 	while ((c = getch()) != '\n')
 		inp[l++] = c;
+	inp[l] = '\0';
 
 	curs_set(0);
 	noecho();
