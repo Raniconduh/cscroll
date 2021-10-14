@@ -3,18 +3,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "dir.h"
 #include "io.h"
 
 bool print_path = false;
-FILE * stdout_back = NULL;
+int stdout_back = 0;
 size_t n_marked_files = false;
 
 void curses_init(void) {
 	if (print_path) {
-		stdout_back = stdout;
-		stdout = fopen("/dev/tty", "w");
+		stdout_back = dup(STDOUT_FILENO);
+		dup2(open("/dev/tty", O_WRONLY), STDOUT_FILENO);
 	}
 
 	initscr();
@@ -40,8 +42,7 @@ void terminate_curses(void) {
 	endwin();
 	
 	if (print_path) {
-		fclose(stdout);
-		stdout = stdout_back;
+		dup2(stdout_back, STDOUT_FILENO);
 	}
 }
 

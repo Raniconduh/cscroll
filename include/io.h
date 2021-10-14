@@ -38,5 +38,5 @@ void unmark_all(void);
 void mark_all(void);
 
 extern bool print_path;
-extern FILE * stdout_back;
+extern int stdout_back;
 extern size_t n_marked_files;
