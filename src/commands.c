@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 #include "dir.h"
 #include "commands.h"
@@ -15,6 +16,7 @@ void ext_open(char * file) {
 		execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
 		exit(0);
 	}
+	wait(NULL);
 
 	free(f);
 }
