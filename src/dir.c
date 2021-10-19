@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "dir.h"
 #include "io.h"
@@ -24,7 +25,9 @@ int list_dir(char * dir_path) {
 	n_dir_entries = 0;
 
 	if (!dir) {
-		permission_denied = true;
+		if (errno == EACCES)
+			permission_denied = true;
+		closedir(dir);
 		return 1;
 	}
 	permission_denied = false;
