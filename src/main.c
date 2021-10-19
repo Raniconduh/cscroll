@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <ncurses.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "commands.h"
 #include "main.h"
@@ -16,7 +17,7 @@ int main(int argc, char ** argv) {
 					print_path = true;
 			} else {
 				cwd = realpath(argv[1], NULL);
-				setenv("PWD", cwd, true);
+				chdir(cwd);
 			}
 		}
 	}

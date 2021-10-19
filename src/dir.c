@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "dir.h"
 #include "io.h"
@@ -121,7 +122,7 @@ void cd_back(void) {
 		cwd[0] = '/';
 		cwd[1] = '\0';
 	}
-	setenv("PWD", cwd, true);
+	chdir(cwd);
 }
 
 
@@ -131,7 +132,7 @@ void enter_dir(char * name) {
 		sprintf(cwd, "%s/%s", cwd, name);
 	else
 		strcat(cwd, name);
-	setenv("PWD", cwd, true);
+	chdir(cwd);
 }
 
 
