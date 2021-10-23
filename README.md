@@ -20,7 +20,7 @@ Files will be highlighted and shown with an identifier in correspondence to the 
 * Magenta, `=`: Unix socket
 * White, No identifier: Regular file
 
-Files that are are executable but have another identifier will keep the identifier but be colored green. Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
+Files that are executable but have another identifier will keep the identifier but be colored green. Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
 
 ### Options
 
@@ -38,6 +38,7 @@ Files that are are executable but have another identifier will keep the identifi
 * `d`: Delete the file the cursor is on (a prompt will be shown first)
 * `m`: Mark the file the cursor is on
 * `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
+* `/`: Search for a file in the current directory using a POSIX regex
 * `q`: Quit
 
 #### Command Prompt

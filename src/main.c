@@ -186,6 +186,17 @@ int main(int argc, char ** argv) {
 					unmark_all();
 				free(inp);
 				break;
+			case '/':;
+				char * search_str = curses_getline("/");
+				long c = search_file(cursor, search_str);
+				free(search_str);
+
+				if (c == -1) break;
+
+				cursor = c + 1;
+				last_f = n_dir_entries - cursor > (unsigned)LINES - 6 ? cursor + LINES - 6 : n_dir_entries;
+				first_f = cursor > (unsigned)LINES - 6 ? last_f - LINES + 6 : 0;
+				break;
 			case 'q':
 				goto done;
 			default:
