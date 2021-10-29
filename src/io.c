@@ -236,6 +236,7 @@ done:;
 char * curses_getline(char * p) {
 	curs_set(1);
 	echo();
+	noraw();
 
 	printw("%s", p);
 	refresh();
@@ -243,12 +244,18 @@ char * curses_getline(char * p) {
 	char * inp = malloc(128);
 	size_t l = 0;
 	char c;
-	while ((c = getch()) != '\n')
+	while ((c = getch()) != '\n') {
+		if (c == 127) {
+			if (l > 0) l--;
+			addch(' ');
+		}
 		inp[l++] = c;
+	}
 	inp[l] = '\0';
 
 	curs_set(0);
 	noecho();
+	raw();
 
 	return inp;
 }
