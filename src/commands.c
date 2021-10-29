@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -18,8 +19,10 @@ void ext_open(char * file) {
 		exit(0);
 	}
 	wait(NULL);
-
 	free(f);
+
+	erase();
+	refresh();
 }
 
 

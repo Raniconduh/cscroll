@@ -2,8 +2,8 @@ SOURCES ?= src/*.c
 INCLUDEDIR ?= include
 DEST ?= cscroll
 
-CFLAGS ?= -Wall -Wextra -pedantic
-LIBS ?= -lncurses
+CFLAGS ?= -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
+LIBS ?= $(shell pkg-config --libs ncurses) -ltinfo
 
 RM ?= rm -f
 
