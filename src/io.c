@@ -207,17 +207,22 @@ char * prompt(char * t, char ** args) {
 		switch (c) {
 			case ARROW_UP:
 			case ARROW_LEFT:
+			case CTRL_P:
+			case CTRL_B:
 			case 'h':
 			case 'k':
 				if (cursor > 1) cursor--;
 				break;
 			case ARROW_DOWN:
 			case ARROW_RIGHT:
+			case CTRL_N:
+			case CTRL_F:
 			case 'l':
 			case 'j':
 				if ((unsigned)cursor < argcount) cursor++;
 				break;
 			case '\n':
+			case ' ':
 				delwin(w);
 				return args[cursor - 1];
 			case 'q':

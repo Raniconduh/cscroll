@@ -35,11 +35,15 @@ Files that are executable but have another identifier will keep the identifier b
 * `g`: Place cursor on first file
 * `G`: Place cursor on last file
 * `.`: Toggle whether or not to show dot files
-* `d`: Delete the file the cursor is on (a prompt will be shown first)
+* `d`: Delete the file the cursor is on (a [prompt](#options-prompt) will be shown first)
 * `m`: Mark the file the cursor is on
 * `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
 * `/`: Search for a file in the current directory using a POSIX regex
 * `q`: Quit
+
+#### Options Prompt
+
+An options prompt will pop up in the center of the screen with text at the top of the popup and one or more options at the bottom. To move the cursor to the left, any of the left or up keys will work. To move it to the right, any of the down or right keys (except for enter) will work. To select the current option, press either the space bar or the enter key.The `q` key will quit the prompt without selecting an option.
 
 #### Command Prompt
 
