@@ -54,7 +54,7 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 ## Installation
 
-cscroll has one dependency: ncurses. To compile cscroll you must install `libncurses`.
+The cscroll binary has one dependency to run: ncurses. To compile cscroll you must install `libncurses`. However, compilation through the makefile requires `pkg-config` as well.
 
 On Debian and Ubuntu based system this should be titled `libncurses-dev` and may be installed with `sudo apt install libncurses-dev`.
 
