@@ -1,6 +1,5 @@
 #ifndef IO_H
 #define IO_H
-#endif
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -40,3 +39,5 @@ void mark_all(void);
 extern bool print_path;
 extern int stdout_back;
 extern size_t n_marked_files;
+
+#endif /* IO_H */

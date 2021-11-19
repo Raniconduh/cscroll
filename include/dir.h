@@ -1,6 +1,5 @@
 #ifndef DIR_H
 #define DIR_H
-#endif
 
 #include <stdbool.h>
 
@@ -40,3 +39,5 @@ extern char * cwd;
 
 extern bool show_dot_files;
 extern bool permission_denied;
+
+#endif /* DIR_H */
