@@ -16,7 +16,7 @@ int main(int argc, char ** argv) {
 			if (!strcmp(argv[i], "-p")) {
 					print_path = true;
 			} else {
-				cwd = realpath(argv[1], NULL);
+				cwd = realpath(argv[i], NULL);
 				chdir(cwd);
 			}
 		}
@@ -177,6 +177,35 @@ int main(int argc, char ** argv) {
 					dir_entries[cursor - 1]->marked = false;
 					if (n_marked_files) n_marked_files--;
 				}
+				break;
+			case 'r':
+				if (n_marked_files)
+					break;
+				char * nn = curses_getline(NULL); // new name
+				if (strlen(nn) < 1) {
+					free(nn);
+					break;
+				}
+				// old path
+				char * op = malloc(strlen(cwd) + strlen(dir_entries[cursor - 1]->name) + 2);
+				// new path
+				char * np = malloc(strlen(cwd) + strlen(nn) + 2);
+				sprintf(op, "%s/%s", cwd, dir_entries[cursor - 1]->name);
+				sprintf(np, "%s/%s", cwd, nn);
+				rename(op, np);
+
+				free(op);
+				free(np);
+				free(nn);
+
+				free_dir_entries();
+				list_dir(cwd);
+
+				if (cursor > n_dir_entries) cursor--;
+				else if (cursor < 1) cursor++;
+
+				if (last_f > n_dir_entries) last_f--;
+
 				break;
 			case ':':;
 				char * inp = curses_getline(":");

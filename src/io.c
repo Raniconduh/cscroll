@@ -243,7 +243,8 @@ char * curses_getline(char * p) {
 	echo();
 	noraw();
 
-	printw("%s", p);
+	if (p)
+		printw("%s", p);
 	refresh();
 
 	char * inp = malloc(128);

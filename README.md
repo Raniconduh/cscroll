@@ -37,6 +37,7 @@ Files that are executable but have another identifier will keep the identifier b
 * `.`: Toggle whether or not to show dot files
 * `d`: Delete the file the cursor is on (a [prompt](#options-prompt) will be shown first)
 * `m`: Mark the file the cursor is on
+* `r`: Rename the file the cursor is on ([see file renaming](#renaming))
 * `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
 * `/`: Search for a file in the current directory using a POSIX regex
 * `q`: Quit
@@ -51,6 +52,10 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 * `ma`: **M**ark **A**ll files in the directory
 * `mu`: **M**ark **U**nmark: Unmarks all files on the directory
+
+#### Renaming
+
+The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory. E.g. if the directory cscroll is in is `/home/user/downloads` and the file `image.png` is renamed to `/home/user/image.png`, it will fail. The file can only be renamed to something like `my_image.png`. (Attempting to move a file across directories is not possible with the rename function.) Mass renaming is not possible.
 
 ## Installation
 
