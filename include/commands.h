@@ -3,7 +3,7 @@
 
 void ext_open(char *);
 long search_file(long, char *);
-void create_cuts(char **);
+void create_cuts(char *, char **);
 void free_cuts(void);
 void paste_cuts(char *);
 

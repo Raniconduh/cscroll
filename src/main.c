@@ -211,42 +211,30 @@ int main(int argc, char ** argv) {
 			case 'c':
 				// stop cutting if pressed twice
 				if (cutting) {
-					cutting = false;
 					free_cuts();
-					free(cut_start_dir);
-					cut_start_dir = NULL;
 					break;
 				}
-				cutting = true;
 				// copy cwd to start directory for cuts
-				cut_start_dir = malloc(strlen(cwd) + 1);
-				strcpy(cut_start_dir, cwd);
 				if (!n_marked_files) {
 					char ** args = malloc(sizeof(char*) * 2);
 					args[0] = malloc(strlen(dir_entries[cursor - 1]->name) + 1);
 					strcpy(args[0], dir_entries[cursor - 1]->name);
 					args[1] = NULL;
-					create_cuts(args);
+					create_cuts(cwd, args);
 					free(args[0]);
 					free(args);
 				} else
-					create_cuts(NULL);
+					create_cuts(cwd, NULL);
 				break;
 			case 'p':
 				if (!cutting) break;
 				// only paste to different directories
 				if (!strcmp(cwd, cut_start_dir)) {
-					cutting = false;
 					free_cuts();
-					free(cut_start_dir);
-					cut_start_dir = NULL;
 					break;
 				}
 				paste_cuts(cwd);
-				cutting = false;
 				free_cuts();
-				free(cut_start_dir);
-				cut_start_dir = NULL;
 
 				free_dir_entries();
 				list_dir(cwd);
@@ -261,6 +249,10 @@ int main(int argc, char ** argv) {
 					mark_all();
 				else if (!strcmp(inp, "mu"))
 					unmark_all();
+				else if (!strcmp(inp, "ca") && !cutting) {
+					mark_all();
+					create_cuts(cwd, NULL);
+				}
 				free(inp);
 				break;
 			case '/':;

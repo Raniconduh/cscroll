@@ -53,7 +53,11 @@ long search_file(long c, char * s) {
 }
 
 
-void create_cuts(char ** ls) {
+void create_cuts(char * wd, char ** ls) {
+	cut_start_dir = malloc(strlen(wd));
+	strcpy(cut_start_dir, wd);
+
+	cutting = true;
 	if (!cuts) cuts = malloc(0);
 	// if not null, use passed list
 	if (ls) {
@@ -88,13 +92,18 @@ void create_cuts(char ** ls) {
 
 
 void free_cuts(void) {
+	cutting = false;
 	for (char ** p = cuts; *p; p++)
 		free(*p);
 	free(cuts);
 	cuts = NULL;
+
+	free(cut_start_dir);
+	cut_start_dir = NULL;
 }
 
 void paste_cuts(char * path) {
+	cutting = false;
 	for (char ** p = cuts; *p; p++) {
 		char old_path[strlen(cut_start_dir) + strlen(*p) + 1];
 		char new_path[strlen(path) + strlen(*p) + 1];

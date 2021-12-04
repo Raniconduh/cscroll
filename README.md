@@ -54,6 +54,7 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 * `ma`: **M**ark **A**ll files in the directory
 * `mu`: **M**ark **U**nmark: Unmarks all files on the directory
+* `ca`: **C**ut **A**ll: Cuts all files in the current directory
 
 #### Renaming
 
