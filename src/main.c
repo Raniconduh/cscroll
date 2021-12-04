@@ -171,6 +171,10 @@ int main(int argc, char ** argv) {
 				}
 				break;
 			case 'm':
+				// cannot mark files outside of start dir
+				// while cutting
+				if (cutting && strcmp(cwd, cut_start_dir)) break;
+
 				if (!dir_entries[cursor - 1]->marked) {
 					dir_entries[cursor - 1]->marked = true;
 					n_marked_files++;
@@ -233,6 +237,17 @@ int main(int argc, char ** argv) {
 					free_cuts();
 					break;
 				}
+
+				if (n_marked_files) {
+					char * args[] = {"No", "Yes", NULL};
+					char * p = malloc(30);
+					sprintf(p, "Paste all files (%lu)", n_marked_files);
+					if (strcmp(prompt(p, args), "Yes")) {
+						free(p);
+						break;
+					}
+				}
+
 				paste_cuts(cwd);
 				free_cuts();
 
@@ -245,11 +260,12 @@ int main(int argc, char ** argv) {
 				break;
 			case ':':;
 				char * inp = curses_getline(":");
-				if (!strcmp(inp, "ma"))
+				if (!strcmp(inp, "ma") && !cutting)
 					mark_all();
-				else if (!strcmp(inp, "mu"))
+				else if (!strcmp(inp, "mu")) {
+					if (cutting) free_cuts();
 					unmark_all();
-				else if (!strcmp(inp, "ca") && !cutting) {
+				} else if (!strcmp(inp, "ca") && !cutting) {
 					mark_all();
 					create_cuts(cwd, NULL);
 				}
@@ -302,6 +318,15 @@ int main(int argc, char ** argv) {
 
 				run_cmd(cmd);
 				free(cmd);
+
+				free_dir_entries();
+				list_dir(cwd);
+
+				if (cursor > n_dir_entries || last_f >= n_dir_entries) {
+					cursor = 1;
+					first_f = 0;
+					last_f = LAST_F;
+				}
 				break;
 			case 'q':
 				goto done;
