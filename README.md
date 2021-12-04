@@ -38,6 +38,8 @@ Files that are executable but have another identifier will keep the identifier b
 * `d`: Delete the file the cursor is on (a [prompt](#options-prompt) will be shown first)
 * `m`: Mark the file the cursor is on
 * `r`: Rename the file the cursor is on ([see file renaming](#renaming))
+* `c`: Cut the file the cursor is currently on or all the marked files. Pressing twice in the same directory will cancel the cut
+* `p`: Paste all cut files into the current directory. Pasting in the same directory where the cut originated will cancel the cut
 * `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
 * `/`: Search for a file in the current directory using a POSIX regex
 * `q`: Quit

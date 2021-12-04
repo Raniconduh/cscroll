@@ -106,7 +106,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 char curses_getch(void) {
 	char c = getch();
 
-	char seq[5];
+	char seq[5] = {0};
 	char * ptr = seq;
 
 	if (c == 27) {

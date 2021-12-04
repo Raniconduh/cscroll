@@ -58,6 +58,7 @@ int main(int argc, char ** argv) {
 			printw("\tPermission Denied");
 			attroff(COLOR_PAIR(RED));
 		}
+		if (cutting) printw("  cut");
 		printw("\n\n");
 
 		// print files
@@ -206,6 +207,53 @@ int main(int argc, char ** argv) {
 
 				if (last_f > n_dir_entries) last_f--;
 
+				break;
+			case 'c':
+				// stop cutting if pressed twice
+				if (cutting) {
+					cutting = false;
+					free_cuts();
+					free(cut_start_dir);
+					cut_start_dir = NULL;
+					break;
+				}
+				cutting = true;
+				// copy cwd to start directory for cuts
+				cut_start_dir = malloc(strlen(cwd) + 1);
+				strcpy(cut_start_dir, cwd);
+				if (!n_marked_files) {
+					char ** args = malloc(sizeof(char*) * 2);
+					args[0] = malloc(strlen(dir_entries[cursor - 1]->name) + 1);
+					strcpy(args[0], dir_entries[cursor - 1]->name);
+					args[1] = NULL;
+					create_cuts(args);
+					free(args[0]);
+					free(args);
+				} else
+					create_cuts(NULL);
+				break;
+			case 'p':
+				if (!cutting) break;
+				// only paste to different directories
+				if (!strcmp(cwd, cut_start_dir)) {
+					cutting = false;
+					free_cuts();
+					free(cut_start_dir);
+					cut_start_dir = NULL;
+					break;
+				}
+				paste_cuts(cwd);
+				cutting = false;
+				free_cuts();
+				free(cut_start_dir);
+				cut_start_dir = NULL;
+
+				free_dir_entries();
+				list_dir(cwd);
+
+				first_f = 0;
+				last_f = LAST_F;
+				cursor = 1;
 				break;
 			case ':':;
 				char * inp = curses_getline(":");
