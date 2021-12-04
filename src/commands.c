@@ -14,6 +14,9 @@ char * cut_start_dir = NULL;
 char ** cuts = NULL;
 
 void ext_open(char * file) {
+	clear();
+	refresh();
+
 	char * f = malloc(strlen(cwd) + strlen(file) + 2);
 	sprintf(f, "%s/%s", cwd, file);
 
@@ -25,7 +28,7 @@ void ext_open(char * file) {
 	wait(NULL);
 	free(f);
 
-	erase();
+	clear();
 	refresh();
 }
 
@@ -111,4 +114,23 @@ void paste_cuts(char * path) {
 		sprintf(new_path, "%s/%s", path, *p);
 		rename(old_path, new_path);
 	}
+}
+
+
+void run_cmd(char * cmd) {
+	clear();
+	refresh();
+
+	if (!fork()) {
+		execvp("sh", (char*[]){"sh", "-c", cmd, NULL});
+		exit(0);
+	}
+	wait(NULL);
+
+	addstr("\nPress enter to contine\n");
+	refresh();
+	while (getch() != '\n');
+
+	clear();
+	refresh();
 }

@@ -42,6 +42,7 @@ Files that are executable but have another identifier will keep the identifier b
 * `p`: Paste all cut files into the current directory. Pasting in the same directory where the cut originated will cancel the cut
 * `:`: Open a commands prompt ([see 'Command Prompt' section](#command-prompt))
 * `/`: Search for a file in the current directory using a POSIX regex
+* `!`: Run a shell command ([see shell commands](#shell-commands))
 * `q`: Quit
 
 #### Options Prompt
@@ -59,6 +60,10 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 #### Renaming
 
 The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory. E.g. if the directory cscroll is in is `/home/user/downloads` and the file `image.png` is renamed to `/home/user/image.png`, it will fail. The file can only be renamed to something like `my_image.png`. (Attempting to move a file across directories is not possible with the rename function.) Mass renaming is not possible.
+
+#### Shell Commands
+
+Pressing `!` will open a prompt prefixed with `!` which will run the shell command entered into it. Entering %f will format the command entered with the name of the file the cursor is currently on. To escape this format (i.e. to not have it be replaced with the file name), enter `%%f`. The output will be literally `%f`. E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
 
 ## Installation
 

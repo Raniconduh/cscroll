@@ -266,6 +266,43 @@ int main(int argc, char ** argv) {
 				last_f = n_dir_entries - cursor > (unsigned)LINES - 6 ? cursor + LINES - 6 : n_dir_entries;
 				first_f = cursor > (unsigned)LINES - 6 ? last_f - LINES + 6 : 0;
 				break;
+			case '!':;
+				char * cmd = curses_getline("!");
+				if (!cmd[0]) break;
+				// file name & length to sub
+				char * f = dir_entries[cursor - 1]->name;
+				size_t flen = strlen(f);
+
+				char * cmdp = cmd; // tmp ptr to cmd
+				char * f_sep;      // where %f is found
+				size_t moves = 0;  // no. of times %f is found
+				// replace '%f' with file name cursor is on
+				while ((f_sep = strstr(cmdp, "%f"))) {
+					// escape '%f' if '%%f' is found
+					if (f_sep[-1] == '%') {
+						size_t seplen = strlen(f_sep);
+						memcpy(f_sep - 1, f_sep, seplen);
+						f_sep[seplen - 1] = 0;
+						cmdp = f_sep + 2;
+						continue;
+					}
+					++moves;
+					// store position of f_sep to be restored
+					// after reallocating cmd
+					ptrdiff_t t = f_sep - cmd;
+					cmd = realloc(cmd, strlen(cmd) + flen * moves + 1);
+					f_sep = cmd + t;
+					cmdp = f_sep + 2;
+					// make room for file name
+					memmove(f_sep + flen, f_sep + 2, strlen(f_sep) - 2);
+					// replace '%f' with file name
+					for (size_t i = 0; i < flen; i++)
+						*f_sep++ = f[i];
+				}
+
+				run_cmd(cmd);
+				free(cmd);
+				break;
 			case 'q':
 				goto done;
 			default:
