@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "type.h"
 #include "dir.h"
 #include "io.h"
 
@@ -94,6 +95,21 @@ int list_dir(char * dir_path) {
 		
 		free(tmp_path);
 		free(buf);
+
+		char * t_ext = get_ext(dir_entry->name);
+		if (t_ext && *t_ext) {
+			char * ext = malloc(strlen(t_ext));
+			strcpy(ext, t_ext);
+			lowers(ext);
+			// extension is a media filw
+			if (bsearch(&ext, media_exts, n_media_exts, sizeof(char*), scmp))
+				dir_entry->m_type = MIME_MEDIA;
+			// extension is a compressed or archive file
+			else if (bsearch(&ext, archive_exts, n_archive_exts, sizeof(char*), scmp))
+				dir_entry->m_type = MIME_ARCHIVE;
+			free(ext);
+		} else
+			dir_entry->m_type = MIME_UNKNOWN;
 
 		dir_entry->marked = false;
 

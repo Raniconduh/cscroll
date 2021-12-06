@@ -20,10 +20,17 @@ enum file_type_t {
 	FILE_UNKNOWN
 };
 
+enum mime_type_t {
+	MIME_UNKNOWN,
+	MIME_MEDIA,
+	MIME_ARCHIVE
+};
+
 struct dir_entry_t {
 	char * name;
 	enum file_type_t file_type;
 	enum file_type_t under_link;
+	enum mime_type_t m_type;
 	bool exec;
 	bool marked;
 };

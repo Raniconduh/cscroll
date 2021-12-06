@@ -18,6 +18,8 @@ Files will be highlighted and shown with an identifier in correspondence to the 
 * Blue, `/`: Directory
 * Cyan, `@`: Symbolic link
 * Magenta, `=`: Unix socket
+* Magenta, No identifier: Media file
+* Red, No identifier: Archive or compressed file
 * White, No identifier: Regular file
 
 Files that are executable but have another identifier will keep the identifier but be colored green. Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.

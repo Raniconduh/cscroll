@@ -91,6 +91,18 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 		cp = WHITE;
 		f_ident = ' ';
 	}
+
+	switch (dir_entry->m_type) {
+		case MIME_MEDIA:
+			cp = MAGENTA;
+			break;
+		case MIME_ARCHIVE:
+			cp = RED;
+			break;
+		case MIME_UNKNOWN:
+		default:
+			break;
+	}
 	
 	cp = COLOR_PAIR((unsigned)cp);
 	if (highlight) cp |= A_REVERSE;
