@@ -5,7 +5,7 @@ A small file manager written in C.
 
 ## Usage
 
-If an argument is provided, cscroll will open the path supplied. Otherwise it will open on the current working directory.
+If an argument is provided, cscroll will open the path supplied. Otherwise it will open on the current working directory. ([see 'Options'](#options))
 
 Files will be highlighted and shown with an identifier in correspondence to the file type.
 
@@ -27,6 +27,7 @@ Files that are executable but have another identifier will keep the identifier b
 ### Options
 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory.
+* `-nc`: Turn off coloring.
 
 ### Commands
 

@@ -14,7 +14,9 @@ int main(int argc, char ** argv) {
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
 			if (!strcmp(argv[i], "-p")) {
-					print_path = true;
+				print_path = true;
+			} else if (!strcmp(argv[i], "-nc")) {
+				color = false;
 			} else {
 				cwd = realpath(argv[i], NULL);
 				chdir(cwd);
