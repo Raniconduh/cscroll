@@ -10,6 +10,7 @@
 #include "dir.h"
 #include "io.h"
 
+
 int main(int argc, char ** argv) {	
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
@@ -17,6 +18,8 @@ int main(int argc, char ** argv) {
 				print_path = true;
 			} else if (!strcmp(argv[i], "-nc")) {
 				color = false;
+			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+				help();
 			} else {
 				cwd = realpath(argv[i], NULL);
 				chdir(cwd);
@@ -345,4 +348,23 @@ done:
 	if (print_path) puts(cwd);
 
 	return 0;
+}
+
+
+void help(void) {
+	puts(
+			"cscroll\n"
+			"A small and efficient file manager\n"
+			"\n"
+			"Usage:\n"
+			"  cscroll [OPTION]... [DIR]\n"
+			"\n"
+			"Options:\n"
+			"  -h, --help          Show this screen and exit\n"
+			"  -nc                 Turn off colors\n"
+			"  -p                  Print the path cscroll is in when it exits\n"
+			"\n"
+			"See https://github.com/Raniconduh/cscroll for documentation\n"
+		);
+	exit(0);
 }

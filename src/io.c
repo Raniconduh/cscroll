@@ -9,10 +9,12 @@
 #include "dir.h"
 #include "io.h"
 
+
 bool print_path = false;
 int stdout_back = 0;
 size_t n_marked_files = false;
 bool color = true;
+
 
 void curses_init(void) {
 	if (print_path) {

@@ -8,6 +8,7 @@ void free_cuts(void);
 void paste_cuts(char *);
 void run_cmd(char *);
 
+
 extern bool cutting;
 extern char * cut_start_dir;
 extern char ** cuts;

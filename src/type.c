@@ -2,6 +2,7 @@
 
 #include "type.h"
 
+
 char * media_exts[] = {
 	"3g2", "3gp", "aac", "ac3", "ai", 
 	"aif", "amv", "asf", "avi", "bmp", 
@@ -40,9 +41,11 @@ char * get_ext(char * s) {
 	return ns + 1;
 }
 
+
 int scmp(const void * a, const void * b) {
 	return strcmp(*(const char**)a, *(const char**)b);
 }
+
 
 void lowers(char * s) {
 	for (char * p = s; *p; p++)

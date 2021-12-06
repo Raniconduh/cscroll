@@ -26,8 +26,9 @@ Files that are executable but have another identifier will keep the identifier b
 
 ### Options
 
-* `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory.
-* `-nc`: Turn off coloring.
+* `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
+* `-nc`: Turn off coloring
+* `-h`, `--help`: Show the help screen
 
 ### Commands
 
@@ -50,7 +51,7 @@ Files that are executable but have another identifier will keep the identifier b
 
 #### Options Prompt
 
-An options prompt will pop up in the center of the screen with text at the top of the popup and one or more options at the bottom. To move the cursor to the left, any of the left or up keys will work. To move it to the right, any of the down or right keys (except for enter) will work. To select the current option, press either the space bar or the enter key.The `q` key will quit the prompt without selecting an option.
+An options prompt will pop up in the center of the screen with text at the top of the pop-up and one or more options at the bottom. To move the cursor to the left, any of the left or up keys will work. To move it to the right, any of the down or right keys (except for enter) will work. To select the current option, press either the space bar or the enter key. The `q` key will quit the prompt without selecting an option.
 
 #### Command Prompt
 
@@ -62,17 +63,21 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 #### Renaming
 
-The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory. E.g. if the directory cscroll is in is `/home/user/downloads` and the file `image.png` is renamed to `/home/user/image.png`, it will fail. The file can only be renamed to something like `my_image.png`. (Attempting to move a file across directories is not possible with the rename function.) Mass renaming is not possible.
+The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory.
+
+E.g. if the directory cscroll is in is `/home/user/downloads` and the file `image.png` is renamed to `/home/user/image.png`, it will fail. The file can only be renamed to something like `my_image.png`. (Attempting to move a file across directories is not possible with the rename function.) Mass renaming is not possible.
 
 #### Shell Commands
 
-Pressing `!` will open a prompt prefixed with `!` which will run the shell command entered into it. Entering %f will format the command entered with the name of the file the cursor is currently on. To escape this format (i.e. to not have it be replaced with the file name), enter `%%f`. The output will be literally `%f`. E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
+Pressing `!` will open a prompt prefixed with `!` which will run the shell command entered into it. Entering `%f` will format the command entered with the name of the file the cursor is currently on. To escape this format (i.e. to not have it be replaced with the file name), enter `%%f`. The output will be literally `%f`.
+
+E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
 
 ## Installation
 
-The cscroll binary has one dependency to run: ncurses. To compile cscroll you must install `libncurses`. However, compilation through the makefile requires `pkg-config` as well.
+To run, cscroll requires libncurses and libterminfo. Compilation, however, also requires pkg-config.
 
-On Debian and Ubuntu based system this should be titled `libncurses-dev` and may be installed with `sudo apt install libncurses-dev`.
+On Debian and Ubuntu based system, libncurses this may be titled `libncurses-dev` or simply `libncurses` and can be installed with `sudo apt install libncurses-dev`.
 
-Then run `make` to compile. The program will then be accessible by running `./cscroll`.
+To compile, simply run `make`. The program will then be accessible by running `./cscroll`. Installation is also possible with `make install`.
 

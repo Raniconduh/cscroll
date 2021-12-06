@@ -9,9 +9,11 @@
 #include "dir.h"
 #include "commands.h"
 
+
 bool cutting = false;
 char * cut_start_dir = NULL;
 char ** cuts = NULL;
+
 
 void ext_open(char * file) {
 	clear();
@@ -105,6 +107,7 @@ void free_cuts(void) {
 	cut_start_dir = NULL;
 }
 
+
 void paste_cuts(char * path) {
 	cutting = false;
 	for (char ** p = cuts; *p; p++) {
@@ -127,7 +130,7 @@ void run_cmd(char * cmd) {
 	}
 	wait(NULL);
 
-	addstr("\nPress enter to contine\n");
+	addstr("\nPress enter to continue\n");
 	refresh();
 	while (getch() != '\n');
 

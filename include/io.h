@@ -6,6 +6,7 @@
 
 #define NO_IDENT 0
 
+
 enum colors {
 	BLUE = 1,
 	CYAN = 2,
@@ -27,6 +28,7 @@ enum keys {
 	CTRL_F
 };
 
+
 void curses_init(void);
 void terminate_curses(void);
 void curses_write_file(struct dir_entry_t *, bool);
@@ -35,6 +37,7 @@ char * prompt(char *, char **);
 char * curses_getline(char *);
 void unmark_all(void);
 void mark_all(void);
+
 
 extern bool print_path;
 extern int stdout_back;
