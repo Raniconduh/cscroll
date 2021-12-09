@@ -316,7 +316,7 @@ int main(int argc, char ** argv) {
 					f_sep = cmd + t;
 					cmdp = f_sep + 2;
 					// make room for file name
-					memmove(f_sep + flen, f_sep + 2, strlen(f_sep) - 2);
+					memmove(f_sep + flen, f_sep + 2, strlen(f_sep) - 1);
 					// replace '%f' with file name
 					for (size_t i = 0; i < flen; i++)
 						*f_sep++ = f[i];

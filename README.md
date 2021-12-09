@@ -1,11 +1,10 @@
 # cscroll
 
-A small file manager written in C.
-
+A small and efficient file manager written in C.
 
 ## Usage
 
-If an argument is provided, cscroll will open the path supplied. Otherwise it will open on the current working directory. ([see 'Options'](#options))
+If an argument is provided, cscroll will open the path supplied. Otherwise it will open in the current working directory. ([see 'Options'](#options))
 
 Files will be highlighted and shown with an identifier in correspondence to the file type.
 
@@ -22,12 +21,14 @@ Files will be highlighted and shown with an identifier in correspondence to the 
 * Red, No identifier: Archive or compressed file
 * White, No identifier: Regular file
 
-Files that are executable but have another identifier will keep the identifier but be colored green. Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
+Files that are executable but have another identifier will keep the identifier but be colored green. Files that are either media files or archives will be colored respectively but will keep an identifier if they have one.
+
+Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
 
 ### Options
 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
-* `-nc`: Turn off coloring
+* `-nc`: Turn off coloring. cscroll will run in black and white mode
 * `-h`, `--help`: Show the help screen
 
 ### Commands
@@ -59,7 +60,7 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 * `ma`: **M**ark **A**ll files in the directory
 * `mu`: **M**ark **U**nmark: Unmarks all files on the directory
-* `ca`: **C**ut **A**ll: Cuts all files in the current directory
+* `ca`: **C**ut **A**ll files in the current directory
 
 #### Renaming
 
@@ -77,7 +78,7 @@ E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the
 
 To run, cscroll requires libncurses and libterminfo. Compilation, however, also requires pkg-config.
 
-On Debian and Ubuntu based system, libncurses this may be titled `libncurses-dev` or simply `libncurses` and can be installed with `sudo apt install libncurses-dev`.
+On Debian and Ubuntu based system, libncurses may be titled `libncurses-dev` or simply `libncurses` and can be installed with `sudo apt install libncurses{,-dev}`.
 
 To compile, simply run `make`. The program will then be accessible by running `./cscroll`. Installation is also possible with `make install`.
 
