@@ -21,6 +21,20 @@ bool show_dot_files = false;
 bool permission_denied = false;
 
 
+static int cmp(const void * a, const void * b) {
+	const struct dir_entry_t * c = *(const struct dir_entry_t **)a;
+	const struct dir_entry_t * d = *(const struct dir_entry_t **)b;
+
+	// sort directories first
+	if (c->file_type == FILE_DIR && d->file_type != FILE_DIR)
+		return -1;
+	else if (d->file_type == FILE_DIR && c->file_type != FILE_DIR)
+		return 1;
+	else
+		return strcmp(c->name, d->name);
+}
+
+
 int list_dir(char * dir_path) {
 	struct dirent * d_entry;
 	DIR * dir = opendir(dir_path);
@@ -120,6 +134,8 @@ int list_dir(char * dir_path) {
 	}
 
 	closedir(dir);
+
+	qsort(dir_entries, n_dir_entries, sizeof(struct dir_entry_t*), cmp);
 
 	return 0;
 }
