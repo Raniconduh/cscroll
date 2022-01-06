@@ -6,7 +6,7 @@ A small and efficient file manager written in C.
 
 If an argument is provided, cscroll will open the path supplied. Otherwise it will open in the current working directory. ([see 'Options'](#options))
 
-Files will be highlighted and shown with an identifier in correspondence to the file type.
+Files will be highlighted and shown with an identifier in correspondence to the file type. If compiled with icons and the icons option is set, a nerd icons corresponding the file file type will be shows to its left.
 
 #### Colors & Identifiers:
 
@@ -29,6 +29,7 @@ Symbolic links that point to directories will be suffixed with `@ => /` and may 
 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
 * `-nc`: Turn off coloring. cscroll will run in black and white mode
+* `-ni`: (If compiled with icons) turn off icons on start
 * `-h`, `--help`: Show the help screen
 
 ### Commands
@@ -62,6 +63,9 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 * `mu`: **M**ark **U**nmark: Unmarks all files on the directory
 * `ca`: **C**ut **A**ll files in the current directory
 
+* `set`: Set a variable ([see Variables](#variables))
+* `unset`: Unset a variable ([see Variables](#variables))
+
 #### Renaming
 
 The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory.
@@ -74,11 +78,21 @@ Pressing `!` will open a prompt prefixed with `!` which will run the shell comma
 
 E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
 
-## Installation
+#### Variables
+
+* `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
+
+## Compilation
 
 To run, cscroll requires libncurses and libterminfo. Compilation, however, also requires pkg-config.
 
 On Debian and Ubuntu based system, libncurses may be titled `libncurses-dev` or simply `libncurses` and can be installed with `sudo apt install libncurses{,-dev}`.
 
-To compile, simply run `make`. The program will then be accessible by running `./cscroll`. Installation is also possible with `make install`.
+To compile, simply run `make`. Nerd icons are enabled by default. To turn them off, compile with `ICONS=0`.
+
+The program will then be accessible by running `./cscroll`.
+
+## Installation
+
+Run `make install` to install the binary to the directory pointed at by the set PREFIX and DESTDIR.
 
