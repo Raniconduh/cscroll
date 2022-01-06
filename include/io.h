@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "dir.h"
+
 #define NO_IDENT 0
 
 
@@ -37,11 +39,11 @@ char * prompt(char *, char **);
 char * curses_getline(char *);
 void unmark_all(void);
 void mark_all(void);
+void set_color(void);
 
 
 extern bool print_path;
 extern int stdout_back;
 extern size_t n_marked_files;
-extern bool color;
 
 #endif /* IO_H */

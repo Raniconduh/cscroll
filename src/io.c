@@ -18,7 +18,6 @@
 bool print_path = false;
 int stdout_back = 0;
 size_t n_marked_files = false;
-bool color = true;
 
 
 void curses_init(void) {
@@ -32,17 +31,8 @@ void curses_init(void) {
 	noecho();
 	raw();
 	
-	if (color) {
-		start_color();
-
-		init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
-		init_pair(CYAN, COLOR_CYAN, COLOR_BLACK);
-		init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
-		init_pair(MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
-		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
-		init_pair(RED, COLOR_RED, COLOR_BLACK);
-		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
-	}
+	start_color();
+	set_color();
 }
 
 
@@ -54,6 +44,27 @@ void terminate_curses(void) {
 	
 	if (print_path) {
 		dup2(stdout_back, STDOUT_FILENO);
+	}
+}
+
+
+void set_color(void) {
+	if (color) {
+		init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
+		init_pair(CYAN, COLOR_CYAN, COLOR_BLACK);
+		init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
+		init_pair(MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
+		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
+		init_pair(RED, COLOR_RED, COLOR_BLACK);
+		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
+	} else {
+		init_pair(BLUE, COLOR_WHITE, COLOR_BLACK);
+		init_pair(CYAN, COLOR_WHITE, COLOR_BLACK);
+		init_pair(GREEN, COLOR_WHITE, COLOR_BLACK);
+		init_pair(MAGENTA, COLOR_WHITE, COLOR_BLACK);
+		init_pair(YELLOW, COLOR_WHITE, COLOR_BLACK);
+		init_pair(RED, COLOR_WHITE, COLOR_BLACK);
+		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
 	}
 }
 

@@ -22,8 +22,8 @@ int main(int argc, char ** argv) {
 				color = false;
 #if ICONS
 			} else if (!strcmp(argv[i], "-ni")) {
-#endif
 				show_icons = false;
+#endif
 			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				help();
 			} else {

@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "type.h"
+#include "opts.h"
 #include "dir.h"
 #include "io.h"
 
@@ -17,7 +18,6 @@ char * cwd = NULL;
 size_t n_dir_entries = 0;
 struct dir_entry_t ** dir_entries = NULL;
 
-bool show_dot_files = false;
 bool permission_denied = false;
 
 

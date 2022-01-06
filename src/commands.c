@@ -6,6 +6,7 @@
 #include <regex.h>
 #include <sys/wait.h>
 
+#include "io.h"
 #include "dir.h"
 #include "opts.h"
 #include "commands.h"
@@ -141,10 +142,12 @@ void run_cmd(char * cmd) {
 
 
 void set(char * v) {
-	if (0)
-		;
+	if (!strcmp(v, "color")) {
+		color = true;
+		set_color();
+	}
 #if ICONS
-	if (!strcmp(v, "icons")) show_icons = true;
+	else if (!strcmp(v, "icons")) show_icons = true;
 #endif
 	else {
 		printw("Unknown variable (%s)", v);
@@ -155,10 +158,12 @@ void set(char * v) {
 
 
 void unset(char * v) {
-	if (0)
-		;
+	if (!strcmp(v, "color")) {
+		color = false;
+		set_color();
+	}
 #if ICONS
-	if (!strcmp(v, "icons")) show_icons = false;
+	else if (!strcmp(v, "icons")) show_icons = false;
 #endif
 	else {
 		printw("Unknown variable (%s)", v);

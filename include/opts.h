@@ -5,5 +5,7 @@
 
 
 extern bool show_icons;
+extern bool show_dot_files;
+extern bool color;
 
 #endif

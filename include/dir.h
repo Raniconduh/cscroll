@@ -45,7 +45,6 @@ extern struct dir_entry_t ** dir_entries;
 // current working directory
 extern char * cwd;
 
-extern bool show_dot_files;
 extern bool permission_denied;
 
 #endif /* DIR_H */
