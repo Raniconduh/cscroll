@@ -8,6 +8,7 @@
 
 #include "commands.h"
 #include "main.h"
+#include "opts.h"
 #include "dir.h"
 #include "io.h"
 
@@ -19,6 +20,10 @@ int main(int argc, char ** argv) {
 				print_path = true;
 			} else if (!strcmp(argv[i], "-nc")) {
 				color = false;
+#if ICONS
+			} else if (!strcmp(argv[i], "-ni")) {
+#endif
+				show_icons = false;
 			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				help();
 			} else {
@@ -266,7 +271,14 @@ int main(int argc, char ** argv) {
 				break;
 			case ':':;
 				char * inp = curses_getline(":");
-				if (!strcmp(inp, "ma") && !cutting)
+				char * sp = strchr(inp, ' ');
+				if (sp) {
+					*sp = 0;
+					char * cmd = inp;
+					char * args = ++sp;
+					if (!strcmp(cmd, "set")) set(args);
+					else if (!strcmp(cmd, "unset")) unset(args);
+				} else if (!strcmp(inp, "ma") && !cutting)
 					mark_all();
 				else if (!strcmp(inp, "mu")) {
 					if (cutting) free_cuts();
@@ -363,6 +375,9 @@ void help(void) {
 			"Options:\n"
 			"  -h, --help          Show this screen and exit\n"
 			"  -nc                 Turn off colors\n"
+#if ICONS
+			"  -ni                 Turn off icons\n"
+#endif
 			"  -p                  Print the path cscroll is in when it exits\n"
 			"\n"
 			"See https://github.com/Raniconduh/cscroll for documentation\n"

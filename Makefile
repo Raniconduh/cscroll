@@ -1,19 +1,22 @@
 SOURCES ?= src/*.c
+HEADERS ?= include/*.h
 INCLUDEDIR ?= include
 DEST ?= cscroll
 
+ICONS ?= 1
+
 CC ?= cc
-CFLAGS ?= -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
-LIBS ?= $(shell pkg-config --libs ncurses) -ltinfo
+CFLAGS += -DICONS=$(ICONS) -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
+LIBS += $(shell pkg-config --libs ncurses) -ltinfo
 
 PREFIX ?= /usr/local
 
 all: cscroll
 
-cscroll: $(SOURCES)
+cscroll: $(SOURCES) $(HEADERS)
 	$(CC) -I$(INCLUDEDIR) -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS)
 
-debug: $(SOURCES)
+debug: $(SOURCES) $(HEADERS)
 	$(CC) -I$(INCLUDEDIR) -DDEBUG -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
 
 install: all

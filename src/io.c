@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#if ICONS
+#include "icons.h"
+#include "type.h"
+#endif
+#include "opts.h"
 #include "dir.h"
 #include "io.h"
 
@@ -57,6 +62,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	int cp = -1;
 	char f_ident;
 	char * u_text = "";
+#if ICONS
+	char * icon = NULL;
+#endif
 
 	switch (dir_entry->file_type) {
 		case FILE_DIR:
@@ -90,30 +98,64 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 			break;
 	}
 
-	if (dir_entry->exec && dir_entry->file_type != FILE_LINK) {
-		cp = GREEN;
-		if (f_ident == NO_IDENT) f_ident = '*';
-	} else if (cp == -1) {
-		cp = WHITE;
-		f_ident = ' ';
-	}
-
 	switch (dir_entry->m_type) {
 		case MIME_MEDIA:
 			cp = MAGENTA;
+#if ICONS
+			icon = ICON_VIDEO;
+#endif
 			break;
 		case MIME_ARCHIVE:
 			cp = RED;
+#if ICONS
+			icon = ICON_ARCHIVE;
+#endif
 			break;
 		case MIME_UNKNOWN:
 		default:
 			break;
 	}
-	
+
+#if ICONS
+	// find icon if it is not media or an archive
+	if (!icon && show_icons) {
+		char * t_ext = get_ext(dir_entry->name);
+		if (t_ext && *t_ext) {
+			char * ext = malloc(strlen(t_ext));
+			strcpy(ext, t_ext);
+			lowers(ext);
+			struct icon_pair * t_icon =
+				bsearch(&ext, icons, n_icons, sizeof(icons[0]), icmp);
+			if (t_icon) icon = t_icon->icon;
+			free(ext);
+		}
+	}
+
+	if (!icon && dir_entry->file_type == FILE_DIR) icon = ICON_DIR;
+#endif
+
+	if (dir_entry->exec && dir_entry->file_type != FILE_LINK) {
+		cp = GREEN;
+		if (f_ident == NO_IDENT) f_ident = '*';
+#if ICONS
+		if (!icon) icon = ICON_GEAR;
+#endif
+	} else if (cp == -1) {
+		cp = WHITE;
+		f_ident = ' ';
+	}
+
+#if ICONS
+	if (!icon) icon = ICON_GENERIC;
+#endif
+
 	cp = COLOR_PAIR((unsigned)cp);
 	if (highlight) cp |= A_REVERSE;
 
 	if (dir_entry->marked) printw("%c ", '-');
+#if ICONS
+	if (show_icons) printw("%s ", icon);
+#endif
 	attron(cp);
 	printw("%s", dir_entry->name);
 	attroff(cp);

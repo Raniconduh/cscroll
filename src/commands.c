@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 
 #include "dir.h"
+#include "opts.h"
 #include "commands.h"
 
 
@@ -136,4 +137,32 @@ void run_cmd(char * cmd) {
 
 	clear();
 	refresh();
+}
+
+
+void set(char * v) {
+	if (0)
+		;
+#if ICONS
+	if (!strcmp(v, "icons")) show_icons = true;
+#endif
+	else {
+		printw("Unknown variable (%s)", v);
+		refresh();
+		napms(500);
+	}
+}
+
+
+void unset(char * v) {
+	if (0)
+		;
+#if ICONS
+	if (!strcmp(v, "icons")) show_icons = false;
+#endif
+	else {
+		printw("Unknown variable (%s)", v);
+		refresh();
+		napms(500);
+	}
 }
