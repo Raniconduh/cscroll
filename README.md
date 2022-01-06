@@ -80,6 +80,9 @@ E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the
 
 #### Variables
 
+Variables allow changing settings while in cscroll itself as opposed to having to stop and restart it with different flags.
+
+* `color`: Turn on or off colors.
 * `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
 
 ## Compilation
