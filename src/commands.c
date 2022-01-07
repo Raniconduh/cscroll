@@ -149,6 +149,7 @@ void set(char * v) {
 #if ICONS
 	else if (!strcmp(v, "icons")) show_icons = true;
 #endif
+	else if (!strcmp(v, "long")) p_long = true;
 	else {
 		printw("Unknown variable (%s)", v);
 		refresh();
@@ -165,6 +166,7 @@ void unset(char * v) {
 #if ICONS
 	else if (!strcmp(v, "icons")) show_icons = false;
 #endif
+	else if (!strcmp(v, "long")) p_long = false;
 	else {
 		printw("Unknown variable (%s)", v);
 		refresh();

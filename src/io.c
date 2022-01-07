@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
+#include <pwd.h>
+#include <grp.h>
 
 #if ICONS
 #include "icons.h"
@@ -76,6 +79,27 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 #if ICONS
 	char * icon = NULL;
 #endif
+	char * smode = NULL;
+	char * owner = NULL;
+	char * group = NULL;
+	char * size  = NULL;
+	char time[128];
+	
+	if (p_long) {
+		smode = mode_to_s(dir_entry);
+		owner = getpwuid(dir_entry->owner)->pw_name;
+		group = getgrgid(dir_entry->group)->gr_name;
+		switch (dir_entry->u_size) {
+			case 0: size = "B"; break;
+			case 1: size = "KB"; break;
+			case 2: size = "MB"; break;
+			case 3: size = "GB"; break;
+			case 4: size = "TB"; break;
+			case 5: size = "PB"; break;
+		}
+		strftime(time, sizeof(time), "%b %d %H:%M %Y",
+				localtime(&dir_entry->mtime));
+	}
 
 	switch (dir_entry->file_type) {
 		case FILE_DIR:
@@ -145,7 +169,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if (!icon && dir_entry->file_type == FILE_DIR) icon = ICON_DIR;
 #endif
 
-	if (dir_entry->exec && dir_entry->file_type != FILE_LINK) {
+	if ((dir_entry->mode & POWNER(M_EXEC)) &&
+			dir_entry->file_type != FILE_LINK &&
+			dir_entry->file_type != FILE_DIR) {
 		cp = GREEN;
 		if (f_ident == NO_IDENT) f_ident = '*';
 #if ICONS
@@ -164,6 +190,12 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if (highlight) cp |= A_REVERSE;
 
 	if (dir_entry->marked) printw("%c ", '-');
+	if (p_long) {
+		printw("%s %s %s %-4d%2s %s ",
+				smode, owner, group,
+				dir_entry->size, size, time);
+		free(smode);
+	}
 #if ICONS
 	if (show_icons) printw("%s ", icon);
 #endif

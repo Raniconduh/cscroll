@@ -104,14 +104,52 @@ int list_dir(char * dir_path) {
 				dir_entry->file_type = FILE_UNKNOWN;
 				break;
 		}
-		// S_IXUSR
-		if (dir_entry->file_type != FILE_DIR)
-			dir_entry->exec = (bool)(buf->st_mode & S_IXUSR);
-		else dir_entry->exec = false;
-		
+
+		dir_entry->mode = 0;
+
+		// other mode
+		if (buf->st_mode & S_IROTH)
+			dir_entry->mode |= M_READ;
+		if (buf->st_mode & S_IWOTH)
+			dir_entry->mode |= M_WRITE;
+		if (buf->st_mode & S_IXOTH)
+			dir_entry->mode |= M_EXEC;
+
+		// group mode
+		if (buf->st_mode & S_IRGRP)
+			dir_entry->mode |= PGROUP(M_READ);
+		if (buf->st_mode & S_IWGRP)
+			dir_entry->mode |= PGROUP(M_WRITE);
+		if (buf->st_mode & S_IXGRP)
+			dir_entry->mode |= PGROUP(M_EXEC);
+
+		// owner mode
+		if (buf->st_mode & S_IRUSR)
+			dir_entry->mode |= POWNER(M_READ);
+		if (buf->st_mode & S_IWUSR)
+			dir_entry->mode |= POWNER(M_WRITE);
+		if (buf->st_mode & S_IXUSR)
+			dir_entry->mode |= POWNER(M_EXEC);
+
+		if (buf->st_mode & S_ISUID)
+			dir_entry->mode |= M_SUID;
+
+		dir_entry->mtime = buf->st_mtim.tv_sec;
+		dir_entry->owner = buf->st_uid;
+		dir_entry->group = buf->st_gid;
+
+		dir_entry->size = buf->st_size;
+
+		for (int i = 0; i <= PB; i++) {
+			if (dir_entry->size < 1000) break;
+			dir_entry->size /= 1000;
+			dir_entry->u_size++;
+		}
+
 		free(tmp_path);
 		free(buf);
 
+		// figure out file 'mime' type
 		char * t_ext = get_ext(dir_entry->name);
 		if (t_ext && *t_ext) {
 			char * ext = malloc(strlen(t_ext));
@@ -182,3 +220,45 @@ void remove_marked(void) {
 		}
 	}
 }
+
+
+char * mode_to_s(struct dir_entry_t * f) {
+	char * s = malloc(11);
+	char * p = s;
+	uint16_t mode = f->mode;
+
+	char x = 'x';
+	if (f->mode & M_SUID) x = 's';
+	
+	if (f->file_type == FILE_DIR) *p++ = 'd';
+	else *p++ = '.';
+
+	if (MOWNER(mode) & M_READ) *p++ = 'r';
+	else *p++ = '-';
+	if (MOWNER(mode) & M_WRITE) *p++ = 'w';
+	else *p++ = '-';
+	if (MOWNER(mode) & M_EXEC) *p++ = x;
+	else if (mode & M_SUID) *p++ = 'S';
+	else *p++ = '-';
+
+	if (MGROUP(mode) & M_READ) *p++ = 'r';
+	else *p++ = '-';
+	if (MGROUP(mode) & M_WRITE) *p++ = 'w';
+	else *p++ = '-';
+	if (MGROUP(mode) & M_EXEC) *p++ = x;
+	else if (mode & M_SUID) *p++ = 'S';
+	else *p++ = '-';
+
+	if (mode & M_READ) *p++ = 'r';
+	else *p++ = '-';
+	if (mode & M_WRITE) *p++ = 'w';
+	else *p++ = '-';
+	if (mode & M_EXEC) { if (mode & M_SUID) *p++ = 't'; else *p++ = 'x'; }
+	else if (mode & M_SUID) *p++ = 'T';
+	else *p++ = '-';
+
+	*p++ = 0;
+
+	return s;
+}
+

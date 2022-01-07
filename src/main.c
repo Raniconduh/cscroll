@@ -24,6 +24,8 @@ int main(int argc, char ** argv) {
 			} else if (!strcmp(argv[i], "-ni")) {
 				show_icons = false;
 #endif
+			} else if (!strcmp(argv[i], "-l")) {
+				p_long = true;
 			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				help();
 			} else {
@@ -378,6 +380,7 @@ void help(void) {
 #if ICONS
 			"  -ni                 Turn off icons\n"
 #endif
+			"  -l                  Print files in long mode\n"
 			"  -p                  Print the path cscroll is in when it exits\n"
 			"\n"
 			"See https://github.com/Raniconduh/cscroll for documentation\n"
