@@ -202,7 +202,8 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	attron(cp);
 	printw("%s", dir_entry->name);
 	attroff(cp);
-	printw("%c %s\n", f_ident, u_text);
+	printw("%c %s", f_ident, u_text);
+	addch('\n');
 }
 
 

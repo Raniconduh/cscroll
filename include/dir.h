@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <time.h>
+#include <stdint.h>
 
 #define MOWNER(M) (M >> 6)
 #define MGROUP(M) (M >> 3)
