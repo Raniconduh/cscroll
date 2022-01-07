@@ -150,20 +150,7 @@ int list_dir(char * dir_path) {
 		free(buf);
 
 		// figure out file 'mime' type
-		char * t_ext = get_ext(dir_entry->name);
-		if (t_ext && *t_ext) {
-			char * ext = malloc(strlen(t_ext));
-			strcpy(ext, t_ext);
-			lowers(ext);
-			// extension is a media filw
-			if (bsearch(&ext, media_exts, n_media_exts, sizeof(char*), scmp))
-				dir_entry->m_type = MIME_MEDIA;
-			// extension is a compressed or archive file
-			else if (bsearch(&ext, archive_exts, n_archive_exts, sizeof(char*), scmp))
-				dir_entry->m_type = MIME_ARCHIVE;
-			free(ext);
-		} else
-			dir_entry->m_type = MIME_UNKNOWN;
+		dir_entry->m_type = get_mime(dir_entry->name);
 
 		dir_entry->marked = false;
 

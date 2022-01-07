@@ -10,7 +10,6 @@
 #include <grp.h>
 
 #if ICONS
-#include "icons.h"
 #include "type.h"
 #endif
 #include "opts.h"
@@ -105,6 +104,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 		case FILE_DIR:
 			cp = BLUE;
 			f_ident = '/';
+#if ICONS
+			icon = ICON_DIR;
+#endif
 			break;
 		case FILE_FIFO:
 			cp = YELLOW;
@@ -136,15 +138,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	switch (dir_entry->m_type) {
 		case MIME_MEDIA:
 			cp = MAGENTA;
-#if ICONS
-			icon = ICON_VIDEO;
-#endif
 			break;
 		case MIME_ARCHIVE:
 			cp = RED;
-#if ICONS
-			icon = ICON_ARCHIVE;
-#endif
 			break;
 		case MIME_UNKNOWN:
 		default:
@@ -152,21 +148,10 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	}
 
 #if ICONS
-	// find icon if it is not media or an archive
+	// find icon if it is not a dir
 	if (!icon && show_icons) {
-		char * t_ext = get_ext(dir_entry->name);
-		if (t_ext && *t_ext) {
-			char * ext = malloc(strlen(t_ext));
-			strcpy(ext, t_ext);
-			lowers(ext);
-			struct icon_pair * t_icon =
-				bsearch(&ext, icons, n_icons, sizeof(icons[0]), icmp);
-			if (t_icon) icon = t_icon->icon;
-			free(ext);
-		}
+		icon = get_icon(dir_entry->name);
 	}
-
-	if (!icon && dir_entry->file_type == FILE_DIR) icon = ICON_DIR;
 #endif
 
 	if ((dir_entry->mode & POWNER(M_EXEC)) &&

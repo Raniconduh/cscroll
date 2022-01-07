@@ -1,15 +1,21 @@
 #ifndef TYPE_H
 #define TYPE_H
 
+#define ICON_DIR "\uf74a"
+#define ICON_GEAR "\uf013"
+#define ICON_GENERIC "\uf15b"
+
+#include "dir.h"
+
+struct icon_pair {
+	char * ext;
+	char * icon;
+};
+
+
 char * get_ext(char *);
-int scmp(const void *, const void *);
 void lowers(char *);
-
-
-#define n_media_exts 68
-#define n_archive_exts 55
-
-extern char * media_exts[n_media_exts];
-extern char * archive_exts[n_archive_exts];
+enum mime_type_t get_mime(char *);
+char * get_icon(char *);
 
 #endif /* TYPE_H */
