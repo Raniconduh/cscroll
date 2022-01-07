@@ -104,9 +104,6 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 		case FILE_DIR:
 			cp = BLUE;
 			f_ident = '/';
-#if ICONS
-			icon = ICON_DIR;
-#endif
 			break;
 		case FILE_FIFO:
 			cp = YELLOW;
@@ -152,6 +149,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if (!icon && show_icons) {
 		icon = get_icon(dir_entry->name);
 	}
+	if (!icon && dir_entry->file_type == FILE_DIR) icon = ICON_DIR;
 #endif
 
 	if ((dir_entry->mode & POWNER(M_EXEC)) &&
