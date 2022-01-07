@@ -189,11 +189,15 @@ void cd_back(void) {
 
 
 void enter_dir(char * name) {
-	cwd = realloc(cwd, strlen(cwd) + strlen(name) + 2);
+	char * tmp = malloc(strlen(cwd) + strlen(name) + 2);
+
 	if (strcmp(cwd, "/"))
-		sprintf(cwd, "%s/%s", cwd, name);
+		sprintf(tmp, "%s/%s", cwd, name);
 	else
-		strcat(cwd, name);
+		sprintf(tmp, "%s%s", cwd, name);
+
+	free(cwd);
+	cwd = tmp;
 	chdir(cwd);
 }
 

@@ -23,7 +23,7 @@ enum mime_type_t get_mime(char * file) {
 	char * t_ext = get_ext(file);
 	if (!t_ext) return MIME_UNKNOWN;
 
-	char * ext = malloc(strlen(t_ext));
+	char * ext = malloc(strlen(t_ext) + 1);
 	strcpy(ext, t_ext);
 	lowers(ext);
 
