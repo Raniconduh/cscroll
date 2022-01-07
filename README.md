@@ -30,6 +30,7 @@ Symbolic links that point to directories will be suffixed with `@ => /` and may 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
 * `-nc`: Turn off coloring. cscroll will run in black and white mode
 * `-ni`: (If compiled with icons) turn off icons on start
+* `-l`: Display files in long mode (file mode, owner, group, size, modification time)
 * `-h`, `--help`: Show the help screen
 
 ### Commands
@@ -84,6 +85,7 @@ Variables allow changing settings while in cscroll itself as opposed to having t
 
 * `color`: Turn on or off colors.
 * `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
+* `long`: Turn on or off long mode
 
 ## Compilation
 
