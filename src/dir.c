@@ -74,6 +74,7 @@ int list_dir(char * dir_path) {
 		
 		strcpy(dir_entry->name, d_name);
 
+		dir_entry->file_type = FILE_UNKNOWN;
 		switch(buf->st_mode & S_IFMT) {
 			case S_IFBLK:
 			case S_IFCHR:
@@ -139,6 +140,7 @@ int list_dir(char * dir_path) {
 		dir_entry->group = buf->st_gid;
 
 		dir_entry->size = buf->st_size;
+		dir_entry->u_size = 0;
 
 		for (int i = 0; i <= PB; i++) {
 			if (dir_entry->size < 1000) break;
