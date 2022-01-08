@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "dir.h"
 #include "type.h"
 #include "icons.h"
 
@@ -41,17 +42,24 @@ enum mime_type_t get_mime(char * file) {
 	else return MIME_UNKNOWN;
 }
 
-char * get_icon(char * file) {
-	char * t_ext = get_ext(file);
-	if (!t_ext) return NULL;
+#if ICONS
+char * get_icon(struct dir_entry_t * f) {
+	char * t_ext = get_ext(f->name);
+	struct icon_pair * t = NULL;
+	if (t_ext) {
+		char * ext = malloc(strlen(t_ext));
+		strcpy(ext, t_ext);
+		lowers(ext);
 
-	char * ext = malloc(strlen(t_ext));
-	strcpy(ext, t_ext);
-	lowers(ext);
+		t = bsearch(&ext, icons, n_icons, sizeof(icons[0]), icmp);
+		free(ext);
+	}
 
-	struct icon_pair * t =
-		bsearch(&ext, icons, n_icons, sizeof(icons[0]), icmp);
-	free(ext);
-	if (!t) return NULL;
+	if (!t) {
+		if (f->file_type == FILE_DIR) return ICON_DIR;
+		if (f->mode & POWNER(M_EXEC)) return ICON_GEAR;
+		return ICON_GENERIC;
+	}
 	return t->icon;
 }
+#endif

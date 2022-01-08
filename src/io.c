@@ -146,10 +146,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 #if ICONS
 	// find icon if it is not a dir
-	if (!icon && show_icons) {
-		icon = get_icon(dir_entry->name);
+	if (show_icons) {
+		icon = get_icon(dir_entry);
 	}
-	if (!icon && dir_entry->file_type == FILE_DIR) icon = ICON_DIR;
 #endif
 
 	if ((dir_entry->mode & POWNER(M_EXEC)) &&
@@ -157,17 +156,10 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 			dir_entry->file_type != FILE_DIR) {
 		cp = GREEN;
 		if (f_ident == NO_IDENT) f_ident = '*';
-#if ICONS
-		if (!icon) icon = ICON_GEAR;
-#endif
 	} else if (cp == -1) {
 		cp = WHITE;
 		f_ident = ' ';
 	}
-
-#if ICONS
-	if (!icon) icon = ICON_GENERIC;
-#endif
 
 	cp = COLOR_PAIR((unsigned)cp);
 	if (highlight) cp |= A_REVERSE;
