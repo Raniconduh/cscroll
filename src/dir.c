@@ -34,6 +34,11 @@ static int cmp(const void * a, const void * b) {
 		return strcmp(c->name, d->name);
 }
 
+static int acmp(const void * a, const void * b) {
+	return strcmp((*(const struct dir_entry_t**)a)->name,
+			(*(const struct dir_entry_t**)b)->name);
+}
+
 
 int list_dir(char * dir_path) {
 	struct dirent * d_entry;
@@ -163,6 +168,17 @@ int list_dir(char * dir_path) {
 	closedir(dir);
 
 	qsort(dir_entries, n_dir_entries, sizeof(struct dir_entry_t*), cmp);
+	size_t d_end = 0;
+	for (size_t i = 0; i < n_dir_entries; i++) {
+		if (dir_entries[i]->file_type != FILE_DIR) {
+			d_end = i;
+			break;
+		}
+	}
+	qsort(dir_entries, d_end, sizeof(struct dir_entry_t*), acmp);
+	qsort(dir_entries + d_end, n_dir_entries - d_end,
+			sizeof(struct dir_entry_t*), acmp);
+
 
 	return 0;
 }
