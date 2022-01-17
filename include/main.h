@@ -5,5 +5,6 @@
 
 
 void help(void);
+void handle_winch(int);
 
 #endif /* MAIN_H */

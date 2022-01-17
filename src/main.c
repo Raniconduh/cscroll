@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <signal.h>
 
 #include "commands.h"
 #include "main.h"
@@ -12,6 +13,8 @@
 #include "dir.h"
 #include "io.h"
 
+
+static size_t first_f, last_f, cursor;
 
 int main(int argc, char ** argv) {	
 	if (argc > 1) {
@@ -41,13 +44,14 @@ int main(int argc, char ** argv) {
 		strcpy(cwd, p);
 	}
 
+	signal(SIGWINCH, handle_winch);
+
 	curses_init();
 
 	list_dir(cwd);
 
-	size_t cursor = 1;
+	cursor = 1;
 
-	size_t first_f, last_f;
 	first_f = cursor - 1;
 	last_f = LAST_F;
 
@@ -386,4 +390,15 @@ void help(void) {
 			"See https://github.com/Raniconduh/cscroll for documentation\n"
 		);
 	exit(0);
+}
+
+
+void handle_winch(int signo) {
+	if (signo == SIGWINCH) {
+		endwin();
+		refresh();
+
+		last_f = first_f + LINES - 6;
+		if (cursor > last_f) cursor = last_f;
+	}
 }
