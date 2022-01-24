@@ -29,6 +29,7 @@ void curses_init(void) {
 	}
 
 	initscr();
+	keypad(stdscr, true);
 	curs_set(0);
 	noecho();
 	raw();
@@ -39,6 +40,7 @@ void curses_init(void) {
 
 
 void terminate_curses(void) {
+	keypad(stdscr, false);
 	curs_set(1);
 	echo();
 	noraw();
@@ -182,50 +184,6 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 }
 
 
-char curses_getch(void) {
-	char c = getch();
-
-	char seq[5] = {0};
-	char * ptr = seq;
-
-	if (c == 27) {
-		char c = getch();
-		if (c == '[') {
-			*ptr++ = c;
-		} else {
-			ungetch(c);
-			return seq[0];
-		}
-		*ptr++ = getch();
-		*ptr++ = '\0';
-	} else {
-		switch (c) {
-			case 2: return CTRL_B; break;
-			case 6: return CTRL_F; break;
-			case 14: return CTRL_N; break;
-			case 16: return CTRL_P; break;
-			default: break;
-		}
-	}
-
-	if (seq[0] == '[')
-		switch (seq[1]) {
-			case 'A':
-				return ARROW_UP;
-			case 'B':
-				return ARROW_DOWN;
-			case 'D':
-				return ARROW_LEFT;
-			case 'C':
-				return ARROW_RIGHT;
-			default:
-				break;
-		}
-
-	return c;
-}
-
-
 char * prompt(char * t, char ** args) {
 	int sub_cols = 30;
 	int sub_rows = sub_cols / 2;
@@ -282,18 +240,18 @@ char * prompt(char * t, char ** args) {
 
 		wrefresh(w);
 
-		char c = curses_getch();
+		int c = getch();
 		switch (c) {
-			case ARROW_UP:
-			case ARROW_LEFT:
+			case KEY_UP:
+			case KEY_LEFT:
 			case CTRL_P:
 			case CTRL_B:
 			case 'h':
 			case 'k':
 				if (cursor > 1) cursor--;
 				break;
-			case ARROW_DOWN:
-			case ARROW_RIGHT:
+			case KEY_DOWN:
+			case KEY_RIGHT:
 			case CTRL_N:
 			case CTRL_F:
 			case 'l':

@@ -13,7 +13,6 @@
 #include "dir.h"
 #include "io.h"
 
-
 static size_t first_f, last_f, cursor;
 
 int main(int argc, char ** argv) {
@@ -48,9 +47,9 @@ int main(int argc, char ** argv) {
 		strcpy(cwd, p);
 	}
 
-	signal(SIGWINCH, handle_winch);
-
 	curses_init();
+
+	signal(SIGWINCH, handle_winch);
 
 	list_dir(cwd);
 
@@ -97,19 +96,19 @@ int main(int argc, char ** argv) {
 
 		refresh();
 
-		char c = curses_getch();
+		int c = getch();
 		switch (c) {
-			case ARROW_UP:
+			case KEY_UP:
 			case CTRL_P:
 			case 'k':
 				if (cursor > 1) cursor--;
 				break;
-			case ARROW_DOWN:
+			case KEY_DOWN:
 			case CTRL_N:
 			case 'j':
 				if (cursor < n_dir_entries) cursor++;
 				break;
-			case ARROW_LEFT:
+			case KEY_LEFT:
 			case CTRL_B:
 			case 'h':
 				cd_back();
@@ -119,7 +118,7 @@ int main(int argc, char ** argv) {
 				first_f = 0;
 				last_f = LAST_F;
 				break;
-			case ARROW_RIGHT:
+			case KEY_RIGHT:
 			case CTRL_F:
 			case 'l':
 			case '\n':

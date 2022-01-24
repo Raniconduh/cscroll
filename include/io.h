@@ -20,10 +20,6 @@ enum colors {
 };
 
 enum keys {
-	ARROW_UP,
-	ARROW_DOWN,
-	ARROW_LEFT,
-	ARROW_RIGHT,
 	CTRL_P,
 	CTRL_B,
 	CTRL_N,
@@ -34,7 +30,6 @@ enum keys {
 void curses_init(void);
 void terminate_curses(void);
 void curses_write_file(struct dir_entry_t *, bool);
-char curses_getch(void);
 char * prompt(char *, char **);
 char * curses_getline(char *);
 void unmark_all(void);
