@@ -159,14 +159,14 @@ void set(char * v) {
 
 
 void unset(char * v) {
-	if (!strcmp(v, "color")) {
+	if (!strcmp(v, COLOR_VAR)) {
 		color = false;
 		set_color();
 	}
 #if ICONS
-	else if (!strcmp(v, "icons")) show_icons = false;
+	else if (!strcmp(v, ICONS_VAR)) show_icons = false;
 #endif
-	else if (!strcmp(v, "long")) p_long = false;
+	else if (!strcmp(v, LONG_VAR)) p_long = false;
 	else {
 		printw("Unknown variable (%s)", v);
 		refresh();

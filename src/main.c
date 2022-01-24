@@ -16,7 +16,11 @@
 
 static size_t first_f, last_f, cursor;
 
-int main(int argc, char ** argv) {	
+int main(int argc, char ** argv) {
+	if (!check_config()) create_config();
+	else read_config();
+	terminate_opts();
+
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
 			if (!strcmp(argv[i], "-p")) {
