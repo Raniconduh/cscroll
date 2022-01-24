@@ -8,6 +8,8 @@ If an argument is provided, cscroll will open the path supplied. Otherwise it wi
 
 Files will be highlighted and shown with an identifier in correspondence to the file type. If compiled with icons and the icons option is set, a nerd icons corresponding the file file type will be shows to its left.
 
+Default configurations can be specified in the [config file](#config-file). These will be overwritten by any flags passed or through the `set` command but will persist in the file.
+
 #### Colors & Identifiers:
 
 * Red, `?`: Unknown File
@@ -78,6 +80,26 @@ E.g. if the directory cscroll is in is `/home/user/downloads` and the file `imag
 Pressing `!` will open a prompt prefixed with `!` which will run the shell command entered into it. Entering `%f` will format the command entered with the name of the file the cursor is currently on. To escape this format (i.e. to not have it be replaced with the file name), enter `%%f`. The output will be literally `%f`.
 
 E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
+
+#### Config File
+
+The config file allows for the specification of default variables cscroll will always set. The default location of the file will be `$HOME/.config/cscroll/config`, but the default configuration directory can be changed with the `XDG_CONFIG_HOME` environment variable.
+
+The general syntax for configurations is `variable = value`. The variables that may be specified are the same as the ones the `set` command may take and are specified [here](#variables).
+
+The values that variables may be set to are limited to `true` and `false`
+
+Example config file:
+
+```
+long = true
+color = false
+icons = false
+```
+
+This will, by default, turn on long mode but turn off colors and icons. However, variables can still be set and unset when in cscroll itself. To turn off long listing mode once again, for example, one could run this command in cscroll: `:unset long`.
+
+Variables specified in the configuration file will also be overwritten by command line arguments to cscroll. If the configuration specifies to show icons, the `-ni` flag will turn them off regardless. Configuration file values are of the least significance in regards to all other ways to set variables, although they will last indefinitely and will work for each run.
 
 #### Variables
 
