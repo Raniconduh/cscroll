@@ -20,10 +20,12 @@ enum colors {
 };
 
 enum keys {
-	CTRL_P = 16,
 	CTRL_B = 2,
-	CTRL_N = 14,
+	CTRL_C = 3,
 	CTRL_F = 6,
+	CTRL_N = 14,
+	CTRL_P = 16,
+	CTRL_Z = 26,
 };
 
 

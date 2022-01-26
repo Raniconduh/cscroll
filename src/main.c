@@ -49,7 +49,8 @@ int main(int argc, char ** argv) {
 
 	curses_init();
 
-	signal(SIGWINCH, handle_winch);
+	signal(SIGWINCH, sig_handler);
+	signal(SIGCONT, sig_handler);
 
 	list_dir(cwd);
 
@@ -355,6 +356,12 @@ int main(int argc, char ** argv) {
 					last_f = LAST_F;
 				}
 				break;
+			case CTRL_Z:
+				terminate_curses();
+				// send self SIGSTOP -- restore shell feature
+				kill(getpid(), SIGSTOP);
+				break;
+			case CTRL_C:
 			case 'q':
 				goto done;
 			default:
@@ -396,12 +403,17 @@ void help(void) {
 }
 
 
-void handle_winch(int signo) {
-	if (signo == SIGWINCH) {
-		endwin();
-		refresh();
+void sig_handler(int signo) {
+	switch (signo) {
+		case SIGWINCH:
+			endwin();
+			refresh();
 
-		last_f = first_f + LINES - 6;
-		if (cursor > last_f) cursor = last_f;
+			last_f = first_f + LINES - 6;
+			if (cursor > last_f) cursor = last_f;
+			break;
+		case SIGCONT:
+			curses_init();
+			break;
 	}
 }

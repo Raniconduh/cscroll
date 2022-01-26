@@ -5,6 +5,6 @@
 
 
 void help(void);
-void handle_winch(int);
+void sig_handler(int);
 
 #endif /*_MAIN_H */
