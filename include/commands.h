@@ -1,5 +1,5 @@
-#ifndef COMMANDS_H
-#define COMMANDS_H
+#ifndef _COMMANDS_H
+#define _COMMANDS_H
 
 void ext_open(char *);
 long search_file(long, char *);
@@ -14,4 +14,4 @@ extern bool cutting;
 extern char * cut_start_dir;
 extern char ** cuts;
 
-#endif /* COMMANDS_H */
+#endif /* _COMMANDS_H */

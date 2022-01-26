@@ -1,5 +1,5 @@
-#ifndef ICONS_H
-#define ICONS_H
+#ifndef _ICONS_H
+#define _ICONS_H
 
 #include "type.h"
 
@@ -231,4 +231,4 @@ int icmp(const void * a, const void * b) {
 	return strcmp(*(const char **)a, ((const struct icon_pair*)b)->ext);
 }
 
-#endif /* ICONS_H */
+#endif /* _ICONS_H */

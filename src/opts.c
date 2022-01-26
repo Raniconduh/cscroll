@@ -32,7 +32,7 @@ bool check_config(void) {
 		cfg_path = malloc(strlen(home) + 9 + csc_len);
 		sprintf(cfg_path, "%s/.config", home);
 	} else {
-		cfg_path = malloc(strlen(xdg_config) + 1 + csc_len);
+		cfg_path = malloc(strlen(xdg_config) + 2 + csc_len);
 		strcpy(cfg_path, xdg_config);
 	}
 
@@ -107,8 +107,8 @@ void read_config(void) {
 
 		// add null terminator to var
 		char * val = strchr(var, '=');
-		while (isspace(val[n - 1])) n--;
-		val[n] = 0;
+		while (val + n > line && isspace(val[--n]));
+		val[n + 1] = 0;
 		val++;
 
 		// remove trailing white space after '='

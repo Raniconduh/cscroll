@@ -1,5 +1,5 @@
-#ifndef OPTS_H
-#define OPTS_H
+#ifndef _OPTS_H
+#define _OPTS_H
 
 #include <stdbool.h>
 
@@ -18,4 +18,4 @@ void create_config(void);
 void read_config(void);
 void terminate_opts(void);
 
-#endif
+#endif /* _OPTS_H */

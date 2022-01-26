@@ -1,5 +1,5 @@
-#ifndef DIR_H
-#define DIR_H
+#ifndef _DIR_H
+#define _DIR_H
 
 #include <stdbool.h>
 #include <time.h>
@@ -74,4 +74,4 @@ extern char * cwd;
 
 extern bool permission_denied;
 
-#endif /* DIR_H */
+#endif /* _DIR_H */
