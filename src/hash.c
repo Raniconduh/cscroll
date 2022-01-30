@@ -67,7 +67,7 @@ void map_insert(map * m, char * k, void (*v)(void *)) {
 	if (m->length > 0 && m->arr[khash % m->length]) {
 		bucket_data * d = map_new_data();
 
-		d->key = malloc(klen);
+		d->key = malloc(klen + 1);
 		strcpy(d->key, k);
 
 		d->value = v;
@@ -81,7 +81,7 @@ void map_insert(map * m, char * k, void (*v)(void *)) {
 	// need to create new bucket
 	bucket_data * d = map_new_data();
 
-	d->key = malloc(klen);
+	d->key = malloc(klen + 1);
 	strcpy(d->key, k);
 	d->value = v;
 
@@ -100,9 +100,10 @@ void map_nuke(map * m) {
 	// loop over array
 	for (size_t i = 0; i < m->length; i++) {
 		if (!m->arr[i]) continue;
-		// first free linked list
+		// first free keys and linked list
 		for (bucket_data * p = m->arr[i]->data; p;) {
 			bucket_data * tmp = p->next;
+			free(p->key);
 			free(p);
 			p = tmp;
 		}
