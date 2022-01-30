@@ -8,6 +8,7 @@
 
 #include "io.h"
 #include "dir.h"
+#include "var.h"
 #include "opts.h"
 #include "commands.h"
 
@@ -142,15 +143,8 @@ void run_cmd(char * cmd) {
 
 
 void set(char * v) {
-	if (!strcmp(v, "color")) {
-		color = true;
-		set_color();
-	}
-#if ICONS
-	else if (!strcmp(v, "icons")) show_icons = true;
-#endif
-	else if (!strcmp(v, "long")) p_long = true;
-	else {
+	bool tmp = true;
+	if (!var_set(v, &tmp)) {
 		printw("Unknown variable (%s)", v);
 		refresh();
 		napms(500);
@@ -159,15 +153,8 @@ void set(char * v) {
 
 
 void unset(char * v) {
-	if (!strcmp(v, COLOR_VAR)) {
-		color = false;
-		set_color();
-	}
-#if ICONS
-	else if (!strcmp(v, ICONS_VAR)) show_icons = false;
-#endif
-	else if (!strcmp(v, LONG_VAR)) p_long = false;
-	else {
+	bool tmp = false;
+	if (!var_set(v, &tmp)) {
 		printw("Unknown variable (%s)", v);
 		refresh();
 		napms(500);

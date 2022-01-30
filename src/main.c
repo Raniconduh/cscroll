@@ -11,11 +11,14 @@
 #include "main.h"
 #include "opts.h"
 #include "dir.h"
+#include "var.h"
 #include "io.h"
 
 static size_t first_f, last_f, cursor;
 
 int main(int argc, char ** argv) {
+	var_init();
+
 	if (!check_config()) create_config();
 	else read_config();
 	terminate_opts();
@@ -372,6 +375,7 @@ int main(int argc, char ** argv) {
 done:
 	free_dir_entries();
 	free(dir_entries);
+	terminate_var();
 	terminate_curses();
 
 	if (print_path) puts(cwd);

@@ -6,6 +6,7 @@
 #include <ctype.h>
 
 #include "opts.h"
+#include "var.h"
 
 #define CFG_FNAME "config"
 
@@ -117,9 +118,7 @@ void read_config(void) {
 		bool bool_val = false;
 		if (!strcmp(val, "true")) bool_val = true;
 
-		if (!strcmp(var, ICONS_VAR)) show_icons = bool_val;
-		else if (!strcmp(var, COLOR_VAR)) color = bool_val;
-		else if (!strcmp(var, LONG_VAR)) p_long = bool_val;
+		var_set(var, &bool_val);
 	}
 
 	fclose(fp);
