@@ -10,13 +10,30 @@
 
 
 enum colors {
-	BLUE = 1,
-	CYAN = 2,
-	GREEN = 3,
-	MAGENTA = 4,
-	YELLOW = 5,
-	RED = 6,
-	WHITE = 7,
+	COLOR_DIR     = 1,
+	COLOR_LINK    = 2,
+	COLOR_EXEC    = 3,
+	COLOR_SOCK    = 4,
+	COLOR_FIFO    = 5,
+	COLOR_UNKNOWN = 6,
+	COLOR_FILE    = 7,
+	COLOR_BLOCK   = 8,
+	COLOR_MEDIA   = 9,
+	COLOR_ARCHIVE = 10,
+
+	CUSTOM_FILE   = 11,
+	CUSTOM_DIR    = 12,
+	CUSTOM_FIFO   = 13,
+	CUSTOM_LINK   = 14,
+	CUSTOM_BLOCK  = 15,
+	CUSTOM_SOCK   = 16,
+	CUSTOM_EXEC   = 17,
+	CUSTOM_UNKNOWN = 18,
+	CUSTOM_MEDIA  = 19,
+	CUSTOM_ARCHIVE = 20,
+
+	RED = 21,
+	WHITE = 22,
 };
 
 enum keys {

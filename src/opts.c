@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,6 +16,17 @@ bool show_icons = true;
 bool show_dot_files = false;
 bool color = true;
 bool p_long = false;
+
+uint32_t dir_color     = RGB(8,   584, 815); // blue
+uint32_t reg_color     = RGB(800, 800, 800); // white
+uint32_t fifo_color    = RGB(984, 812, 16);  // yellow
+uint32_t link_color    = RGB(502, 776, 710); // cyan
+uint32_t blk_color     = RGB(984, 812, 16);  // yellow
+uint32_t sock_color    = RGB(573, 8,   353); // magenta
+uint32_t exec_color    = RGB(4,   506, 239); // green
+uint32_t unknown_color = RGB(855, 176, 141); // red
+uint32_t media_color   = RGB(573, 8,   353); // magenta
+uint32_t archive_color = RGB(855, 176, 141); // red
 
 static char * default_config_dir = NULL;
 static char * csc_config_path = NULL;

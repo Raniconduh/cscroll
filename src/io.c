@@ -54,19 +54,49 @@ void terminate_curses(void) {
 
 void set_color(void) {
 	if (color) {
-		init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
-		init_pair(CYAN, COLOR_CYAN, COLOR_BLACK);
-		init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
-		init_pair(MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
-		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
+		init_color(CUSTOM_DIR, GET_RGB(dir_color));
+		init_pair(COLOR_DIR, CUSTOM_DIR, COLOR_BLACK);
+
+		init_color(CUSTOM_LINK, GET_RGB(link_color));
+		init_pair(COLOR_LINK, CUSTOM_LINK, COLOR_BLACK);
+
+		init_color(CUSTOM_EXEC, GET_RGB(exec_color));
+		init_pair(COLOR_EXEC, CUSTOM_EXEC, COLOR_BLACK);
+
+		init_color(CUSTOM_SOCK, GET_RGB(sock_color));
+		init_pair(COLOR_SOCK, CUSTOM_SOCK, COLOR_BLACK);
+
+		init_color(CUSTOM_FIFO, GET_RGB(fifo_color));
+		init_pair(COLOR_FIFO, CUSTOM_FIFO, COLOR_BLACK);
+
+		init_color(CUSTOM_BLOCK, GET_RGB(blk_color));
+		init_pair(COLOR_BLOCK, CUSTOM_BLOCK, COLOR_BLACK);
+
+		init_color(CUSTOM_UNKNOWN, GET_RGB(unknown_color));
+		init_pair(COLOR_UNKNOWN, CUSTOM_UNKNOWN, COLOR_BLACK);
+
+		init_color(CUSTOM_MEDIA, GET_RGB(media_color));
+		init_pair(COLOR_MEDIA, CUSTOM_MEDIA, COLOR_BLACK);
+
+		init_color(CUSTOM_ARCHIVE, GET_RGB(archive_color));
+		init_pair(COLOR_ARCHIVE, CUSTOM_ARCHIVE, COLOR_BLACK);
+
+		init_color(CUSTOM_FILE, GET_RGB(reg_color));
+		init_pair(COLOR_FILE, CUSTOM_FILE, COLOR_BLACK);
+
 		init_pair(RED, COLOR_RED, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
 	} else {
-		init_pair(BLUE, COLOR_WHITE, COLOR_BLACK);
-		init_pair(CYAN, COLOR_WHITE, COLOR_BLACK);
-		init_pair(GREEN, COLOR_WHITE, COLOR_BLACK);
-		init_pair(MAGENTA, COLOR_WHITE, COLOR_BLACK);
-		init_pair(YELLOW, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_DIR, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_LINK, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_EXEC, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_SOCK, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_FIFO, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_UNKNOWN, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_BLOCK, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_MEDIA, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_ARCHIVE, COLOR_WHITE, COLOR_BLACK);
+		init_pair(COLOR_FILE, COLOR_WHITE, COLOR_BLACK);
 		init_pair(RED, COLOR_WHITE, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
 	}
@@ -104,29 +134,29 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 	switch (dir_entry->file_type) {
 		case FILE_DIR:
-			cp = BLUE;
+			cp = COLOR_DIR;
 			f_ident = '/';
 			break;
 		case FILE_FIFO:
-			cp = YELLOW;
+			cp = COLOR_FIFO;
 			f_ident = '|';
 			break;
 		case FILE_BLK:
-			cp = YELLOW;
+			cp = COLOR_BLOCK;
 			f_ident = '#';
 			break;
 		case FILE_LINK:
 			if (dir_entry->under_link == FILE_DIR)
 				u_text = "=> /";
-			cp = CYAN;
+			cp = COLOR_LINK;
 			f_ident = '@';
 			break;
 		case FILE_SOCK:
-			cp = MAGENTA;
+			cp = COLOR_SOCK;
 			f_ident = '=';
 			break;
 		case FILE_UNKNOWN:
-			cp = RED;
+			cp = COLOR_UNKNOWN;
 			f_ident = '?';
 			break;
 		default:
@@ -136,10 +166,10 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 	switch (dir_entry->m_type) {
 		case MIME_MEDIA:
-			cp = MAGENTA;
+			cp = COLOR_MEDIA;
 			break;
 		case MIME_ARCHIVE:
-			cp = RED;
+			cp = COLOR_ARCHIVE;
 			break;
 		case MIME_UNKNOWN:
 		default:
@@ -156,10 +186,10 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if ((dir_entry->mode & POWNER(M_EXEC)) &&
 			dir_entry->file_type != FILE_LINK &&
 			dir_entry->file_type != FILE_DIR) {
-		cp = GREEN;
+		cp = COLOR_EXEC;
 		if (f_ident == NO_IDENT) f_ident = '*';
 	} else if (cp == -1) {
-		cp = WHITE;
+		cp = COLOR_FILE;
 		f_ident = ' ';
 	}
 
