@@ -127,10 +127,22 @@ void read_config(void) {
 		// remove trailing white space after '='
 		while (*val && *val != '=' && isspace(*val)) val++;
 
-		bool bool_val = false;
-		if (!strcmp(val, "true")) bool_val = true;
+		void * ptr_val = NULL;
 
-		var_set(var, &bool_val);
+		bool bool_val = false;
+		if (!strcmp(val, "true")) {
+			bool_val = true;
+			ptr_val = &bool_val;
+		} else if (!strcmp(val, "false")) {
+			bool_val = false;
+			ptr_val = &bool_val;
+		} else if (val[0] == '"' && val[strlen(val) - 1] == '"') {
+			val++;
+			val[strlen(val) - 1] = 0;
+			ptr_val = val;
+		}
+
+		var_set(var, ptr_val);
 	}
 
 	fclose(fp);
