@@ -27,6 +27,8 @@ Files that are executable but have another identifier will keep the identifier b
 
 Symbolic links that point to directories will be suffixed with `@ => /` and may be entered as a normal directory. Otherwise, deletion of a symbolic link will not delete whatever the link points to; only the link itself and opening one will open what the link points to.
 
+File colors can also be customized. ([see variables](#variables))
+
 ### Options
 
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
@@ -95,6 +97,7 @@ Example config file:
 long = true
 color = false
 icons = false
+dir_color = "#123abc"
 ```
 
 This will, by default, turn on long mode but turn off colors and icons. However, variables can still be set and unset when in cscroll itself. To turn off long listing mode once again, for example, one could run this command in cscroll: `:unset long`.
@@ -108,6 +111,19 @@ Variables allow changing settings while in cscroll itself as opposed to having t
 * `color`: Turn on or off colors.
 * `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
 * `long`: Turn on or off long mode
+
+The following variables are specific to the config file and may be set as a string. These control the colors for each of the type of file specified by their names. Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
+
+* `dir_color`: Directories
+* `reg_color`: Regular files (i.e. any file which is not any other color)
+* `fifo_color`: FIFO/Named pipes
+* `link_color`: Symbolic links
+* `block_color`: Block files (typically devices found in `/dev`)
+* `sock_color`: Unix sockets
+* `unknown_color`: A file that cannot be accessed to determine type
+* `exec_color`: Any executable file
+* `media_color`: Any media file (pictures, audio files, videos)
+* `archive_color`: Any file archives (tarballs, zips, etc.)
 
 ## Compilation
 
