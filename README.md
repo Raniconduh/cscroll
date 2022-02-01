@@ -109,6 +109,7 @@ Variables specified in the configuration file will also be overwritten by comman
 Variables allow changing settings while in cscroll itself as opposed to having to stop and restart it with different flags.
 
 * `color`: Turn on or off colors.
+* `dots`: Enable or disable the listing of dot files
 * `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
 * `long`: Turn on or off long mode
 
