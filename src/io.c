@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <locale.h>
 #include <fcntl.h>
 #include <time.h>
 #include <pwd.h>
@@ -27,6 +28,8 @@ void curses_init(void) {
 		stdout_back = dup(STDOUT_FILENO);
 		dup2(open("/dev/tty", O_WRONLY), STDOUT_FILENO);
 	}
+
+	setlocale(LC_CTYPE, "");
 
 	initscr();
 	keypad(stdscr, true);
