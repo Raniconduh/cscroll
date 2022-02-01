@@ -14,7 +14,9 @@
 #include "var.h"
 #include "io.h"
 
-static size_t first_f, last_f, cursor;
+
+size_t first_f = 0, last_f = 0, cursor = 0;
+
 
 int main(int argc, char ** argv) {
 	var_init();

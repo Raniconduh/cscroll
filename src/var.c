@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <ncurses.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -7,6 +8,8 @@
 
 #include "hash.h"
 #include "opts.h"
+#include "main.h"
+#include "dir.h"
 #include "io.h"
 
 
@@ -58,6 +61,17 @@ static void set_color_f(void * p) {
 
 static void set_long(void * p) {
 	p_long = *(bool*)p;
+}
+
+
+static void set_dots(void * p) {
+	show_dot_files = *(bool*)p;
+
+	free_dir_entries();
+	list_dir(cwd);
+	cursor = 1;
+	first_f = 0;
+	last_f = LAST_F;
 }
 
 
@@ -122,11 +136,12 @@ static void set_archive(void * p) {
 
 
 void var_init(void) {
-	var_map = map_new(11);
+	var_map = map_new(12);
 
 	map_insert(var_map, ICONS_VAR, set_icons);
 	map_insert(var_map, COLOR_VAR, set_color_f);
 	map_insert(var_map, LONG_VAR,  set_long);
+	map_insert(var_map, DOTS_VAR, set_dots);
 
 	map_insert(var_map, DIR_COLOR_VAR, set_dir);
 	map_insert(var_map, REG_COLOR_VAR, set_reg);

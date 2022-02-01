@@ -7,4 +7,7 @@
 void help(void);
 void sig_handler(int);
 
+
+extern size_t first_f, last_f, cursor;
+
 #endif /*_MAIN_H */

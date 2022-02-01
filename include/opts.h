@@ -10,6 +10,7 @@
 
 #define ICONS_VAR "icons"
 extern bool show_icons;
+#define DOTS_VAR "dots"
 extern bool show_dot_files;
 #define COLOR_VAR "color"
 extern bool color;
