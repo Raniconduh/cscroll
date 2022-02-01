@@ -74,13 +74,13 @@ bool check_config(void) {
 
 void create_config(void) {
 	struct stat st_buf;
-	// set with mode rwx------
+	// set with mode rwxr-xr-x
 	if (stat(default_config_dir, &st_buf) < 0)
-		mkdir(default_config_dir, 0700);
+		mkdir(default_config_dir, 0755);
 
-	// set with mode rw-rw-r-
+	// set with mode rwxr-xr-x
 	if (stat(csc_config_path, &st_buf) < 0)
-		mkdir(csc_config_path, 0664);
+		mkdir(csc_config_path, 0755);
 
 	// create config file if it doesnt exist
 	if (stat(csc_config_file, &st_buf) < 0) {
