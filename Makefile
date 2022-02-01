@@ -7,7 +7,15 @@ ICONS ?= 1
 
 CC ?= cc
 CFLAGS += -DICONS=$(ICONS) -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
-LIBS += $(shell pkg-config --libs ncurses) -ltinfo -lm
+
+$(shell pkg-config --exists ncursesw)
+ifeq ($(.SHELLSTATUS),0)
+        NCURSES := ncursesw
+else
+        NCURSES := ncurses
+endif
+
+LIBS += $(shell pkg-config --libs $(NCURSES)) -ltinfo -lm
 
 PREFIX ?= /usr/local
 
