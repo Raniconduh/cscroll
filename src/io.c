@@ -22,6 +22,19 @@ bool print_path = false;
 int stdout_back = 0;
 size_t n_marked_files = false;
 
+static int default_colors[] = {
+	[COLOR_DIR]     = COLOR_BLUE,
+	[COLOR_LINK]    = COLOR_CYAN,
+	[COLOR_EXEC]    = COLOR_GREEN,
+	[COLOR_SOCK]    = COLOR_MAGENTA,
+	[COLOR_FIFO]    = COLOR_YELLOW,
+	[COLOR_UNKNOWN] = COLOR_RED,
+	[COLOR_FILE]    = COLOR_WHITE,
+	[COLOR_BLOCK]   = COLOR_YELLOW,
+	[COLOR_MEDIA]   = COLOR_MAGENTA,
+	[COLOR_ARCHIVE] = COLOR_RED,
+};
+
 
 void curses_init(void) {
 	if (print_path) {
@@ -56,50 +69,27 @@ void terminate_curses(void) {
 
 
 void set_color(void) {
+	generate_colors();
+
 	if (color) {
-		init_color(CUSTOM_DIR, GET_RGB(dir_color));
-		init_pair(COLOR_DIR, CUSTOM_DIR, COLOR_BLACK);
-
-		init_color(CUSTOM_LINK, GET_RGB(link_color));
-		init_pair(COLOR_LINK, CUSTOM_LINK, COLOR_BLACK);
-
-		init_color(CUSTOM_EXEC, GET_RGB(exec_color));
-		init_pair(COLOR_EXEC, CUSTOM_EXEC, COLOR_BLACK);
-
-		init_color(CUSTOM_SOCK, GET_RGB(sock_color));
-		init_pair(COLOR_SOCK, CUSTOM_SOCK, COLOR_BLACK);
-
-		init_color(CUSTOM_FIFO, GET_RGB(fifo_color));
-		init_pair(COLOR_FIFO, CUSTOM_FIFO, COLOR_BLACK);
-
-		init_color(CUSTOM_BLOCK, GET_RGB(blk_color));
-		init_pair(COLOR_BLOCK, CUSTOM_BLOCK, COLOR_BLACK);
-
-		init_color(CUSTOM_UNKNOWN, GET_RGB(unknown_color));
-		init_pair(COLOR_UNKNOWN, CUSTOM_UNKNOWN, COLOR_BLACK);
-
-		init_color(CUSTOM_MEDIA, GET_RGB(media_color));
-		init_pair(COLOR_MEDIA, CUSTOM_MEDIA, COLOR_BLACK);
-
-		init_color(CUSTOM_ARCHIVE, GET_RGB(archive_color));
-		init_pair(COLOR_ARCHIVE, CUSTOM_ARCHIVE, COLOR_BLACK);
-
-		init_color(CUSTOM_FILE, GET_RGB(reg_color));
-		init_pair(COLOR_FILE, CUSTOM_FILE, COLOR_BLACK);
+		for (int i = CUSTOM_DIR; i <= CUSTOM_ARCHIVE; i++) {
+			int def = i - CUSTOM_DIR + 1; // default color / index
+			if (custom_colors[def] == -1) {
+				init_pair(def, default_colors[def], COLOR_BLACK);
+			} else {
+				init_color(i, GET_RGB(custom_colors[def - 1]));
+				init_pair(def, i, COLOR_BLACK);
+			}
+		}
 
 		init_pair(RED, COLOR_RED, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
 	} else {
-		init_pair(COLOR_DIR, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_LINK, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_EXEC, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_SOCK, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_FIFO, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_UNKNOWN, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_BLOCK, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_MEDIA, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_ARCHIVE, COLOR_WHITE, COLOR_BLACK);
-		init_pair(COLOR_FILE, COLOR_WHITE, COLOR_BLACK);
+		// COLOR_ARCHIVE is highest enum value
+		for (int i = 1; i <= COLOR_ARCHIVE; i++) {
+			init_pair(i, COLOR_WHITE, COLOR_BLACK);
+		}
+
 		init_pair(RED, COLOR_WHITE, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
 	}

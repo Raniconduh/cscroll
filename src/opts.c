@@ -17,16 +17,18 @@ bool show_dot_files = false;
 bool color = true;
 bool p_long = false;
 
-uint32_t dir_color     = RGB(8,   584, 815); // blue
-uint32_t reg_color     = RGB(800, 800, 800); // white
-uint32_t fifo_color    = RGB(984, 812, 16);  // yellow
-uint32_t link_color    = RGB(502, 776, 710); // cyan
-uint32_t blk_color     = RGB(984, 812, 16);  // yellow
-uint32_t sock_color    = RGB(573, 8,   353); // magenta
-uint32_t exec_color    = RGB(4,   506, 239); // green
-uint32_t unknown_color = RGB(855, 176, 141); // red
-uint32_t media_color   = RGB(573, 8,   353); // magenta
-uint32_t archive_color = RGB(855, 176, 141); // red
+int32_t custom_colors[10];
+
+int32_t dir_color     = -1;
+int32_t link_color    = -1;
+int32_t exec_color    = -1;
+int32_t sock_color    = -1;
+int32_t fifo_color    = -1;
+int32_t unknown_color = -1;
+int32_t reg_color     = -1;
+int32_t blk_color     = -1;
+int32_t media_color   = -1;
+int32_t archive_color = -1;
 
 static char * default_config_dir = NULL;
 static char * csc_config_path = NULL;
@@ -42,7 +44,7 @@ bool check_config(void) {
 	char * cfg_path = NULL;
 	if (!xdg_config) {
 		char * home = getenv("HOME");
-		cfg_path = malloc(strlen(home) + 9 + csc_len);
+		cfg_path = malloc(strlen(home) + 9 + csc_len + 1);
 		sprintf(cfg_path, "%s/.config", home);
 	} else {
 		cfg_path = malloc(strlen(xdg_config) + 2 + csc_len);
@@ -153,4 +155,18 @@ void terminate_opts(void) {
 	free(default_config_dir);
 	free(csc_config_path);
 	free(csc_config_file);
+}
+
+
+void generate_colors(void) {
+	custom_colors[0] = dir_color;
+	custom_colors[1] = link_color;
+	custom_colors[2] = exec_color;
+	custom_colors[3] = sock_color;
+	custom_colors[4] = fifo_color;
+	custom_colors[5] = unknown_color;
+	custom_colors[6] = reg_color;
+	custom_colors[7] = blk_color;
+	custom_colors[8] = media_color;
+	custom_colors[9] = archive_color;
 }
