@@ -24,6 +24,7 @@ int main(int argc, char ** argv) {
 	if (!check_config()) create_config();
 	else read_config();
 	terminate_opts();
+	generate_colors();
 
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
