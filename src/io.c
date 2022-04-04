@@ -69,6 +69,8 @@ void terminate_curses(void) {
 
 
 void set_color(void) {
+	generate_colors();
+
 	if (color) {
 		for (int i = CUSTOM_DIR; i <= CUSTOM_ARCHIVE; i++) {
 			int def = i - CUSTOM_DIR + 1; // default color / index

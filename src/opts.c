@@ -160,6 +160,7 @@ void terminate_opts(void) {
 
 
 void generate_colors(void) {
+<<<<<<< HEAD
 	custom_colors[COLOR_DIR]     = dir_color;
 	custom_colors[COLOR_LINK]    = link_color;
 	custom_colors[COLOR_EXEC]    = exec_color;
@@ -170,4 +171,16 @@ void generate_colors(void) {
 	custom_colors[COLOR_BLOCK]   = blk_color;
 	custom_colors[COLOR_MEDIA]   = media_color;
 	custom_colors[COLOR_ARCHIVE] = archive_color;
+=======
+	custom_colors[0] = dir_color;
+	custom_colors[1] = link_color;
+	custom_colors[2] = exec_color;
+	custom_colors[3] = sock_color;
+	custom_colors[4] = fifo_color;
+	custom_colors[5] = unknown_color;
+	custom_colors[6] = reg_color;
+	custom_colors[7] = blk_color;
+	custom_colors[8] = media_color;
+	custom_colors[9] = archive_color;
+>>>>>>> 5483532a992c59332581fa989f12b47b2e0ce4a0
 }
