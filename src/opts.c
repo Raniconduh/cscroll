@@ -8,6 +8,7 @@
 
 #include "opts.h"
 #include "var.h"
+#include "io.h"
 
 #define CFG_FNAME "config"
 
@@ -17,7 +18,7 @@ bool show_dot_files = false;
 bool color = true;
 bool p_long = false;
 
-int32_t custom_colors[10];
+int32_t custom_colors[11];
 
 int32_t dir_color     = -1;
 int32_t link_color    = -1;
@@ -159,14 +160,14 @@ void terminate_opts(void) {
 
 
 void generate_colors(void) {
-	custom_colors[0] = dir_color;
-	custom_colors[1] = link_color;
-	custom_colors[2] = exec_color;
-	custom_colors[3] = sock_color;
-	custom_colors[4] = fifo_color;
-	custom_colors[5] = unknown_color;
-	custom_colors[6] = reg_color;
-	custom_colors[7] = blk_color;
-	custom_colors[8] = media_color;
-	custom_colors[9] = archive_color;
+	custom_colors[COLOR_DIR]     = dir_color;
+	custom_colors[COLOR_LINK]    = link_color;
+	custom_colors[COLOR_EXEC]    = exec_color;
+	custom_colors[COLOR_SOCK]    = sock_color;
+	custom_colors[COLOR_FIFO]    = fifo_color;
+	custom_colors[COLOR_UNKNOWN] = unknown_color;
+	custom_colors[COLOR_FILE]    = reg_color;
+	custom_colors[COLOR_BLOCK]   = blk_color;
+	custom_colors[COLOR_MEDIA]   = media_color;
+	custom_colors[COLOR_ARCHIVE] = archive_color;
 }

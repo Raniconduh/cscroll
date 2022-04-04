@@ -37,7 +37,7 @@ extern int32_t media_color;
 #define ARCHIVE_COLOR_VAR "archive_color"
 extern int32_t archive_color;
 
-extern int32_t custom_colors[10];
+extern int32_t custom_colors[11];
 
 bool check_config(void);
 void create_config(void);
