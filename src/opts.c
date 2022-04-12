@@ -93,6 +93,41 @@ void create_config(void) {
 }
 
 
+void parse_var(char * var) {
+	char * line = var;
+	// go past leading white space
+	while (*var && isspace(*var)) var++;
+
+	int n = 0;
+
+	// add null terminator to var
+	char * val = strchr(var, '=');
+	while (val + n > line && isspace(val[--n]));
+	val[n + 1] = 0;
+	val++;
+
+	// remove trailing white space after '='
+	while (*val && *val != '=' && isspace(*val)) val++;
+
+	void * ptr_val = NULL;
+
+	bool bool_val = false;
+	if (!strcmp(val, "true")) {
+		bool_val = true;
+		ptr_val = &bool_val;
+	} else if (!strcmp(val, "false")) {
+		bool_val = false;
+		ptr_val = &bool_val;
+	} else if (val[0] == '"' && val[strlen(val) - 1] == '"') {
+		val++;
+		val[strlen(val) - 1] = 0;
+		ptr_val = val;
+	}
+
+	var_set(var, ptr_val);
+}
+
+
 void read_config(void) {
 	FILE * fp = fopen(csc_config_file, "r");
 
@@ -115,37 +150,7 @@ void read_config(void) {
 		if (!*line) break;
 
 
-		char * var = line;
-		// go past leading white space
-		while (*var && isspace(*var)) var++;
-
-		int n = 0;
-
-		// add null terminator to var
-		char * val = strchr(var, '=');
-		while (val + n > line && isspace(val[--n]));
-		val[n + 1] = 0;
-		val++;
-
-		// remove trailing white space after '='
-		while (*val && *val != '=' && isspace(*val)) val++;
-
-		void * ptr_val = NULL;
-
-		bool bool_val = false;
-		if (!strcmp(val, "true")) {
-			bool_val = true;
-			ptr_val = &bool_val;
-		} else if (!strcmp(val, "false")) {
-			bool_val = false;
-			ptr_val = &bool_val;
-		} else if (val[0] == '"' && val[strlen(val) - 1] == '"') {
-			val++;
-			val[strlen(val) - 1] = 0;
-			ptr_val = val;
-		}
-
-		var_set(var, ptr_val);
+		parse_var(line);
 	}
 
 	fclose(fp);

@@ -44,5 +44,6 @@ void create_config(void);
 void read_config(void);
 void terminate_opts(void);
 void generate_colors(void);
+void parse_var(char *);
 
 #endif /* _OPTS_H */

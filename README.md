@@ -68,8 +68,9 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 * `mu`: **M**ark **U**nmark: Unmarks all files on the directory
 * `ca`: **C**ut **A**ll files in the current directory
 
-* `set`: Set a variable ([see Variables](#variables))
-* `unset`: Unset a variable ([see Variables](#variables))
+* `set`: Set a variable to true ([see Variables](#variables))
+* `unset`: Unset a variable (set to false, [see Variables](#variables))
+* `var`: Set a variable equal to something `var variable = false` ([see Variables](#variables) and ['config file'](#config-file))
 
 #### Renaming
 

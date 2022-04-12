@@ -293,6 +293,7 @@ int main(int argc, char ** argv) {
 					char * cmd = inp;
 					char * args = ++sp;
 					if (!strcmp(cmd, "set")) set(args);
+					else if (!strcmp(cmd, "var")) parse_var(args);
 					else if (!strcmp(cmd, "unset")) unset(args);
 				} else if (!strcmp(inp, "ma") && !cutting)
 					mark_all();
