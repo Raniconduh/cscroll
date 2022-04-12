@@ -6,9 +6,9 @@ A small and efficient file manager written in C.
 
 If an argument is provided, cscroll will open the path supplied. Otherwise it will open in the current working directory. ([see 'Options'](#options))
 
-Files will be highlighted and shown with an identifier in correspondence to the file type. If compiled with icons and the icons option is set, a nerd icons corresponding the file file type will be shows to its left.
+Files will be highlighted and shown with an identifier corresponding to the file type. If compiled with icons and the icons option is set, a nerd icon corresponding to the file's type will be shown to its left.
 
-Default configurations can be specified in the [config file](#config-file). These will be overwritten by any flags passed or through the `set` command but will persist in the file.
+Default configurations can be specified in the [config file](#config-file). These will be overwritten by any flags passed via the command line or through the `set` command but will persist in the file.
 
 #### Colors & Identifiers:
 
@@ -89,18 +89,17 @@ The config file allows for the specification of default variables cscroll will a
 
 The general syntax for configurations is `variable = value`. The variables that may be specified are the same as the ones the `set` command may take and are specified [here](#variables).
 
-The values that variables may be set to are limited to `true` and `false`
+The values that variables may be set to are limited to `true`, `false`, and a string in the case of a color variable.
 
 Example config file:
 
 ```
 long = true
-color = false
 icons = false
 dir_color = "#123abc"
 ```
 
-This will, by default, turn on long mode but turn off colors and icons. However, variables can still be set and unset when in cscroll itself. To turn off long listing mode once again, for example, one could run this command in cscroll: `:unset long`.
+This will, by default, turn on long mode, turn off icons, and set the color of directories to the specified hex code. However, variables can still be set and unset when in cscroll itself. To turn off long listing mode once again, for example, one could run this command in cscroll: `:unset long`.
 
 Variables specified in the configuration file will also be overwritten by command line arguments to cscroll. If the configuration specifies to show icons, the `-ni` flag will turn them off regardless. Configuration file values are of the least significance in regards to all other ways to set variables, although they will last indefinitely and will work for each run.
 
@@ -113,7 +112,7 @@ Variables allow changing settings while in cscroll itself as opposed to having t
 * `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
 * `long`: Turn on or off long mode
 
-The following variables are specific to the config file and may be set as a string. These control the colors for each of the type of file specified by their names. Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
+The following variables are specific to the config file and may be set as a string. These control the colors for each type of file specified by their names. Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
 
 * `dir_color`: Directories
 * `reg_color`: Regular files (i.e. any file which is not any other color)
