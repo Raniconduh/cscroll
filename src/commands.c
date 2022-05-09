@@ -108,6 +108,7 @@ void free_cuts(void) {
 
 	free(cut_start_dir);
 	cut_start_dir = NULL;
+	n_marked_files = 0;
 }
 
 
