@@ -33,7 +33,8 @@ static uint32_t hextorgb(char * hex) {
 	for (; *p; p++) {
 		char c = toupper(*p);
 		if (c >= 'A' && c <= 'F') c = htod[(int)c];
-		else c -= '0';
+		else if (c >= '0' && c <= '9') c -= '0';
+		else return COLOR_DEFAULT;
 		dec += c * pow(16, cpow);
 		cpow--;
 	}
@@ -44,6 +45,8 @@ static uint32_t hextorgb(char * hex) {
 	b = (float)(dec & 0xFF) / 255.0 * 1000;
 
 	return RGB(r, g, b);
+
+	return 0;
 }
 
 

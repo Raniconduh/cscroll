@@ -18,18 +18,18 @@ bool show_dot_files = false;
 bool color = true;
 bool p_long = false;
 
-int32_t custom_colors[11];
+uint32_t custom_colors[11];
 
-int32_t dir_color     = -1;
-int32_t link_color    = -1;
-int32_t exec_color    = -1;
-int32_t sock_color    = -1;
-int32_t fifo_color    = -1;
-int32_t unknown_color = -1;
-int32_t reg_color     = -1;
-int32_t blk_color     = -1;
-int32_t media_color   = -1;
-int32_t archive_color = -1;
+uint32_t dir_color     = COLOR_DEFAULT;
+uint32_t link_color    = COLOR_DEFAULT;
+uint32_t exec_color    = COLOR_DEFAULT;
+uint32_t sock_color    = COLOR_DEFAULT;
+uint32_t fifo_color    = COLOR_DEFAULT;
+uint32_t unknown_color = COLOR_DEFAULT;
+uint32_t reg_color     = COLOR_DEFAULT;
+uint32_t blk_color     = COLOR_DEFAULT;
+uint32_t media_color   = COLOR_DEFAULT;
+uint32_t archive_color = COLOR_DEFAULT;
 
 static char * default_config_dir = NULL;
 static char * csc_config_path = NULL;

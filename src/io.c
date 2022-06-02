@@ -74,11 +74,11 @@ void set_color(void) {
 	if (color) {
 		for (int i = CUSTOM_DIR; i <= CUSTOM_ARCHIVE; i++) {
 			int def = i - CUSTOM_DIR + 1; // default color / index
-			if (custom_colors[def] == -1) {
+			if (custom_colors[def] == COLOR_DEFAULT) {
 				init_pair(def, default_colors[def], COLOR_BLACK);
 			} else {
-				init_color(i, GET_RGB(custom_colors[def - 1]));
-				init_pair(def, i, COLOR_BLACK);
+				init_color(default_colors[def], GET_RGB(custom_colors[def - 1]));
+				init_pair(def, default_colors[def], COLOR_BLACK);
 			}
 		}
 
