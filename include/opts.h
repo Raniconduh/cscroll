@@ -8,7 +8,7 @@
 #define RGB(R, G, B) (((R << 20) | (G << 10)) | B)
 #define GET_RGB(C) ((C >> 20) & 0x3FF), ((C >> 10) & 0x3FF), (C & 0x3FF)
 
-#define COLOR_DEFAULT 0xFFFFFF
+#define COLOR_DEFAULT 0xFFFFFFFF
 
 #define ICONS_VAR "icons"
 extern bool show_icons;
