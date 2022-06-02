@@ -47,7 +47,7 @@ char * get_icon(struct dir_entry_t * f) {
 	char * t_ext = get_ext(f->name);
 	struct icon_pair * t = NULL;
 	if (t_ext) {
-		char * ext = malloc(strlen(t_ext));
+		char * ext = malloc(strlen(t_ext) + 1);
 		strcpy(ext, t_ext);
 		lowers(ext);
 
