@@ -70,14 +70,15 @@ void terminate_curses(void) {
 
 void set_color(void) {
 	generate_colors();
+	bool cc = can_change_color();
 
 	if (color) {
 		for (int i = CUSTOM_DIR; i <= CUSTOM_ARCHIVE; i++) {
 			int def = i - CUSTOM_DIR + 1; // default color / index
-			if (custom_colors[def] == COLOR_DEFAULT) {
+			if (custom_colors[def] == COLOR_DEFAULT || !cc) {
 				init_pair(def, default_colors[def], COLOR_BLACK);
 			} else {
-				init_color(i, GET_RGB(custom_colors[def - 1]));
+				init_color(i, GET_RGB(custom_colors[def]));
 				init_pair(def, i, COLOR_BLACK);
 			}
 		}

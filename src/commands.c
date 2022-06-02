@@ -62,7 +62,7 @@ long search_file(long c, char * s) {
 
 
 void create_cuts(char * wd, char ** ls) {
-	cut_start_dir = malloc(strlen(wd));
+	cut_start_dir = malloc(strlen(wd) + 1);
 	strcpy(cut_start_dir, wd);
 
 	cutting = true;
