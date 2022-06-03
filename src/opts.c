@@ -126,9 +126,9 @@ void parse_var(char * var) {
 	} else if (vlen > 2 && val[0] == '"' && val[vlen - 1] == '"') {
 		// empty strings not supported
 		val++;
-		size_t vlen = strlen(val);
 
-		val[vlen - 1] = 0;
+		// -2 to compensate for inc on prev line & for strlen
+		val[vlen - 2] = 0;
 		ptr_val = val;
 	} else {
 		// invalid line, silently fail again
