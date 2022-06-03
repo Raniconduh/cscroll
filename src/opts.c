@@ -102,6 +102,9 @@ void parse_var(char * var) {
 
 	// add null terminator to var
 	char * val = strchr(var, '=');
+	if (!val) return; // fail silently
+	// TODO: Show errors present in config file to user
+
 	while (val + n > line && isspace(val[--n]));
 	val[n + 1] = 0;
 	val++;
@@ -110,18 +113,26 @@ void parse_var(char * var) {
 	while (*val && *val != '=' && isspace(*val)) val++;
 
 	void * ptr_val = NULL;
-
 	bool bool_val = false;
+
+	size_t vlen = strlen(val);
+
 	if (!strcmp(val, "true")) {
 		bool_val = true;
 		ptr_val = &bool_val;
 	} else if (!strcmp(val, "false")) {
 		bool_val = false;
 		ptr_val = &bool_val;
-	} else if (val[0] == '"' && val[strlen(val) - 1] == '"') {
+	} else if (vlen > 2 && val[0] == '"' && val[vlen - 1] == '"') {
+		// empty strings not supported
 		val++;
-		val[strlen(val) - 1] = 0;
+		size_t vlen = strlen(val);
+
+		val[vlen - 1] = 0;
 		ptr_val = val;
+	} else {
+		// invalid line, silently fail again
+		return;
 	}
 
 	var_set(var, ptr_val);
