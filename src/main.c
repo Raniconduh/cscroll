@@ -55,7 +55,6 @@ int main(int argc, char ** argv) {
 
 	curses_init();
 
-	signal(SIGWINCH, sig_handler);
 	signal(SIGCONT, sig_handler);
 
 	list_dir(cwd);
@@ -363,6 +362,24 @@ int main(int argc, char ** argv) {
 					last_f = LAST_F;
 				}
 				break;
+			case KEY_RESIZE:
+/*
+				first_f = 0;
+				last_f = LAST_F;
+				cursor = 1;
+*/
+				if (LINES <= 6) {
+					if (first_f + 1 < n_dir_entries) last_f = first_f + 1;
+					else last_f = first_f;
+				} else if ((unsigned)LINES - 6 > n_dir_entries) last_f = n_dir_entries;
+				else last_f = first_f + LINES - 6;
+
+				if (cursor > last_f + 1) cursor = last_f + 1;
+
+				erase();
+				refresh();
+
+				break;
 			case CTRL_Z:
 				terminate_curses();
 				// send self SIGSTOP -- restore shell feature
@@ -413,13 +430,6 @@ void help(void) {
 
 void sig_handler(int signo) {
 	switch (signo) {
-		case SIGWINCH:
-			endwin();
-			refresh();
-
-			last_f = first_f + LINES - 6;
-			if (cursor > last_f) cursor = last_f;
-			break;
 		case SIGCONT:
 			curses_init();
 			break;
