@@ -345,9 +345,9 @@ int main(int argc, char ** argv) {
 				// replace '%f' with file name cursor is on
 				while ((f_sep = strstr(cmdp, "%f"))) {
 					// escape '%f' if '%%f' is found
-					if (f_sep[-1] == '%') {
+					if (f_sep != cmd && f_sep[-1] == '%') {
 						size_t seplen = strlen(f_sep);
-						memcpy(f_sep - 1, f_sep, seplen);
+						memmove(f_sep - 1, f_sep, seplen);
 						f_sep[seplen - 1] = 0;
 						cmdp = f_sep + 2;
 						continue;
