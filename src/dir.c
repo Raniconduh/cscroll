@@ -140,7 +140,11 @@ int list_dir(char * dir_path) {
 		if (buf->st_mode & S_ISUID)
 			dir_entry->mode |= M_SUID;
 
+#if defined(__APPLE__) || defined(__MACH__)
+		dir_entry->mtime = buf->st_mtime;	
+#else
 		dir_entry->mtime = buf->st_mtim.tv_sec;
+#endif
 		dir_entry->owner = buf->st_uid;
 		dir_entry->group = buf->st_gid;
 
