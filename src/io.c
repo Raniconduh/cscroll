@@ -223,11 +223,16 @@ void print_mode(struct dir_entry_t * f) {
 
 	char * mode = mode_to_s(f);
 	for (char * c = mode; *c; c++) {
+		bool dim = false;
+
 		int cp = m_colors[(int)*c];
 		if (!cp) cp = WHITE;
-		attron(COLOR_PAIR(cp));
+		if (cp == WHITE) dim = true;
+		cp = COLOR_PAIR(cp);
+		if (dim) cp |= A_DIM;
+		attron(cp);
 		addch(*c);
-		attroff(COLOR_PAIR(cp));
+		attroff(cp);
 	}
 	free(mode);
 }
