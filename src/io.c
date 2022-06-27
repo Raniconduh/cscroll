@@ -85,6 +85,8 @@ void set_color(void) {
 
 		init_pair(RED, COLOR_RED, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
+		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
+		init_pair(MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
 	} else {
 		// COLOR_ARCHIVE is highest enum value
 		for (int i = 1; i <= COLOR_ARCHIVE; i++) {
@@ -93,6 +95,8 @@ void set_color(void) {
 
 		init_pair(RED, COLOR_WHITE, COLOR_BLACK);
 		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
+		init_pair(YELLOW, COLOR_WHITE, COLOR_BLACK);
+		init_pair(MAGENTA, COLOR_WHITE, COLOR_BLACK);
 	}
 }
 
@@ -192,9 +196,10 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 	if (dir_entry->marked) printw("%c ", '-');
 	if (p_long) {
-		printw("%s %s %s %-4d%2s %s ",
-				smode, owner, group,
-				dir_entry->size, size, time);
+		print_mode(dir_entry);
+		printw(" %s %s %-4d%2s %s ",
+				owner, group, dir_entry->size,
+				size, time);
 		free(smode);
 	}
 #if ICONS
@@ -205,6 +210,26 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	attroff(cp);
 	printw("%c %s", f_ident, u_text);
 	addch('\n');
+}
+
+
+void print_mode(struct dir_entry_t * f) {
+	enum colors m_colors[127] = {
+		['s'] = YELLOW, ['d'] = COLOR_DIR, ['.'] = WHITE,
+		['r'] = RED,    ['w'] = MAGENTA,   ['x'] = COLOR_EXEC,
+		['S'] = YELLOW, ['t'] = RED,       ['T'] = RED,
+		['-'] = WHITE,
+	};
+
+	char * mode = mode_to_s(f);
+	for (char * c = mode; *c; c++) {
+		int cp = m_colors[(int)*c];
+		if (!cp) cp = WHITE;
+		attron(COLOR_PAIR(cp));
+		addch(*c);
+		attroff(COLOR_PAIR(cp));
+	}
+	free(mode);
 }
 
 

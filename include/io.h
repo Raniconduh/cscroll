@@ -32,8 +32,10 @@ enum colors {
 	CUSTOM_MEDIA  = 19,
 	CUSTOM_ARCHIVE = 20,
 
-	RED = 21,
-	WHITE = 22,
+	RED     = 21,
+	WHITE   = 22,
+	YELLOW  = 23,
+	MAGENTA = 24,
 };
 
 enum keys {
@@ -54,6 +56,7 @@ char * curses_getline(char *);
 void unmark_all(void);
 void mark_all(void);
 void set_color(void);
+void print_mode(struct dir_entry_t *);
 
 
 extern bool print_path;
