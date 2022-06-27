@@ -6,7 +6,7 @@ A small and efficient file manager written in C.
 
 If an argument is provided, cscroll will open the path supplied. Otherwise it will open in the current working directory. ([see 'Options'](#options))
 
-Files will be highlighted and shown with an identifier corresponding to the file type. If compiled with icons and the icons option is set, a nerd icon corresponding to the file's type will be shown to its left.
+Files will be highlighted and shown with an identifier corresponding to the file type. If compiled with icons and the icons option is set, a nerd icon corresponding to the file's type will be shown to its left. ([see 'Icons'](#icons))
 
 Default configurations can be specified in the [config file](#config-file). These will be overwritten by any flags passed via the command line or through the `set` command but will persist in the file.
 
@@ -110,7 +110,7 @@ Variables allow setting defaults or changing settings while in cscroll itself as
 
 * `color`: Turn on or off colors.
 * `dots`: Enable or disable the listing of dot files
-* `icons`: (If compiled with icons) If true, show icons. Otherwise don't.
+* `icons`: (If compiled with icons) If true, show [icons](#icons). Otherwise don't.
 * `long`: Turn on or off long mode
 
 The following variables may be set as a string and control the colors for each type of file specified by their names. The string must be wrapped with double quote characters (`"`) and not single quote characters (`'`). Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
@@ -125,6 +125,12 @@ The following variables may be set as a string and control the colors for each t
 * `exec_color`: Any executable file
 * `media_color`: Any media file (pictures, audio files, videos)
 * `archive_color`: Any file archives (tarballs, zips, etc.)
+
+#### Icons
+
+[Nerd icons](https://github.com/ryanoasis/nerd-fonts) are special icons built into certain fonts. In cscroll, they are used to show a known or predicted file type. The icons will be on the left of any given file. However, the use of these icons requires a patched font or font with icons built in. Without such a font, the icons may show as a little white box outline or the escape code itself may be shown (something similar to `~]~J`). Installation instructions may be found in the linked site.
+
+If you wish to use cscroll without any icons, they can be turned off at compile time with the `ICONS` variable, in the configuration file and at runtime with the `icons` variable, and with the command line option `-ni`.
 
 ## Compilation
 
