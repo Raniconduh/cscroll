@@ -197,7 +197,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if (dir_entry->marked) printw("%c ", '-');
 	if (p_long) {
 		print_mode(dir_entry);
-		printw(" %s %s %-4d%2s %s ",
+		printw(" %s %s %4d %-2s %s ",
 				owner, group, dir_entry->size,
 				size, time);
 		free(smode);
