@@ -57,6 +57,7 @@ void unmark_all(void);
 void mark_all(void);
 void set_color(void);
 void print_mode(struct dir_entry_t *);
+void padstr(size_t);
 
 
 extern bool print_path;

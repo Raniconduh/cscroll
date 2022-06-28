@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "type.h"
 #include "opts.h"
@@ -16,6 +18,8 @@
 char * cwd = NULL;
 
 size_t n_dir_entries = 0;
+size_t dir_longest_owner = 0;
+size_t dir_longest_group = 0;
 struct dir_entry_t ** dir_entries = NULL;
 
 bool permission_denied = false;
@@ -145,8 +149,13 @@ int list_dir(char * dir_path) {
 #else
 		dir_entry->mtime = buf->st_mtim.tv_sec;
 #endif
-		dir_entry->owner = buf->st_uid;
-		dir_entry->group = buf->st_gid;
+		size_t n;
+		dir_entry->owner = getpwuid(buf->st_uid)->pw_name;
+		if ((n = strlen(dir_entry->owner)) > dir_longest_owner)
+			dir_longest_owner = n;
+		dir_entry->group = getgrgid(buf->st_gid)->gr_name;
+		if ((n = strlen(dir_entry->group)) > dir_longest_group)
+			dir_longest_group = n;
 
 		dir_entry->size = buf->st_size;
 		dir_entry->u_size = 0;

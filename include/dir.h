@@ -49,8 +49,8 @@ struct dir_entry_t {
 
 	uint16_t mode;
 	time_t mtime;
-	long owner;
-	long group;
+	char * owner;
+	char * group;
 	int size;
 	enum f_size u_size;
 };
@@ -66,6 +66,10 @@ char * mode_to_s(struct dir_entry_t *);
 
 // number of directory entries
 extern size_t n_dir_entries;
+// longest owner name in dir
+extern size_t dir_longest_owner;
+// longest group name in dir
+extern size_t dir_longest_group;
 // actual directory entries
 extern struct dir_entry_t ** dir_entries;
 

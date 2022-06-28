@@ -7,8 +7,6 @@
 #include <locale.h>
 #include <fcntl.h>
 #include <time.h>
-#include <pwd.h>
-#include <grp.h>
 
 #if ICONS
 #include "type.h"
@@ -109,15 +107,13 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	char * icon = NULL;
 #endif
 	char * smode = NULL;
-	char * owner = NULL;
-	char * group = NULL;
+	char * owner = dir_entry->owner;
+	char * group = dir_entry->group;
 	char * size  = NULL;
 	char time[128];
 	
 	if (p_long) {
 		smode = mode_to_s(dir_entry);
-		owner = getpwuid(dir_entry->owner)->pw_name;
-		group = getgrgid(dir_entry->group)->gr_name;
 		switch (dir_entry->u_size) {
 			case 0: size = "B"; break;
 			case 1: size = "KB"; break;
@@ -197,9 +193,20 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	if (dir_entry->marked) printw("%c ", '-');
 	if (p_long) {
 		print_mode(dir_entry);
-		printw(" %s %s %4d %-2s %s ",
-				owner, group, dir_entry->size,
-				size, time);
+		// print owner
+		addch(' ');
+		addstr(owner);
+		size_t n = strlen(owner);
+		if (n < dir_longest_owner) padstr(dir_longest_owner - n);
+
+		// print group
+		addch(' ');
+		addstr(group);
+		n = strlen(owner);
+		if (n < dir_longest_group) padstr(dir_longest_group - n);
+
+		printw(" %4d %-2s %s ",
+				dir_entry->size, size, time);
 		free(smode);
 	}
 #if ICONS
@@ -235,6 +242,11 @@ void print_mode(struct dir_entry_t * f) {
 		attroff(cp);
 	}
 	free(mode);
+}
+
+
+void padstr(size_t n) {
+	for (size_t i = 0; i < n; i++) addch(' ');
 }
 
 
