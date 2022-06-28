@@ -204,7 +204,7 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 		// print group
 		addch(' ');
 		addstr(group);
-		n = strlen(owner);
+		n = strlen(group);
 		if (n < dir_longest_group) padstr(dir_longest_group - n);
 
 		printw(" %4d %-2s %s ",
