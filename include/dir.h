@@ -49,8 +49,8 @@ struct dir_entry_t {
 
 	uint16_t mode;
 	time_t mtime;
-	char * owner;
-	char * group;
+	long owner;
+	long group;
 	int size;
 	enum f_size u_size;
 };

@@ -150,11 +150,11 @@ int list_dir(char * dir_path) {
 		dir_entry->mtime = buf->st_mtim.tv_sec;
 #endif
 		size_t n;
-		dir_entry->owner = getpwuid(buf->st_uid)->pw_name;
-		if ((n = strlen(dir_entry->owner)) > dir_longest_owner)
+		dir_entry->owner = buf->st_uid;
+		if ((n = strlen(getpwuid(buf->st_uid)->pw_name)) > dir_longest_owner)
 			dir_longest_owner = n;
-		dir_entry->group = getgrgid(buf->st_gid)->gr_name;
-		if ((n = strlen(dir_entry->group)) > dir_longest_group)
+		dir_entry->group = buf->st_gid;
+		if ((n = strlen(getgrgid(buf->st_gid)->gr_name)) > dir_longest_group)
 			dir_longest_group = n;
 
 		dir_entry->size = buf->st_size;

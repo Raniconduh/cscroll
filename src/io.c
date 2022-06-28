@@ -7,6 +7,8 @@
 #include <locale.h>
 #include <fcntl.h>
 #include <time.h>
+#include <pwd.h>
+#include <grp.h>
 
 #if ICONS
 #include "type.h"
@@ -107,8 +109,8 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	char * icon = NULL;
 #endif
 	char * smode = NULL;
-	char * owner = dir_entry->owner;
-	char * group = dir_entry->group;
+	char * owner = getpwuid(dir_entry->owner)->pw_name;
+	char * group = getgrgid(dir_entry->group)->gr_name;
 	char * size  = NULL;
 	char time[128];
 	
