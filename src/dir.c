@@ -216,6 +216,9 @@ void cd_back(void) {
 		cwd[1] = '\0';
 	}
 	chdir(cwd);
+
+	dir_longest_owner = 0;
+	dir_longest_group = 0;
 }
 
 
@@ -230,6 +233,9 @@ void enter_dir(char * name) {
 	free(cwd);
 	cwd = tmp;
 	chdir(cwd);
+
+	dir_longest_owner = 0;
+	dir_longest_group = 0;
 }
 
 
