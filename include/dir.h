@@ -5,15 +5,15 @@
 #include <time.h>
 #include <stdint.h>
 
-#define MOWNER(M) (M >> 6)
-#define MGROUP(M) (M >> 3)
-#define POWNER(M) (M << 6)
-#define PGROUP(M) (M << 3)
+#define MOWNER(M) (M >> 8)
+#define MGROUP(M) (M >> 4)
+#define POWNER(M) (M << 8)
+#define PGROUP(M) (M << 4)
 
 #define M_EXEC  (1 << 0)
 #define M_WRITE (1 << 1)
 #define M_READ  (1 << 2)
-#define M_SUID  (1 << 10)
+#define M_SUID  (1 << 3)
 
 enum file_type_t {
 	FILE_REG,

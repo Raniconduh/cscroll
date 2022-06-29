@@ -124,6 +124,8 @@ int list_dir(char * dir_path) {
 			dir_entry->mode |= M_WRITE;
 		if (buf->st_mode & S_IXOTH)
 			dir_entry->mode |= M_EXEC;
+		if (buf->st_mode & S_ISVTX) // sticky
+			dir_entry->mode |= M_SUID;
 
 		// group mode
 		if (buf->st_mode & S_IRGRP)
@@ -132,6 +134,8 @@ int list_dir(char * dir_path) {
 			dir_entry->mode |= PGROUP(M_WRITE);
 		if (buf->st_mode & S_IXGRP)
 			dir_entry->mode |= PGROUP(M_EXEC);
+		if (buf->st_mode & S_ISGID) // suid; group
+			dir_entry->mode |= PGROUP(M_SUID);
 
 		// owner mode
 		if (buf->st_mode & S_IRUSR)
@@ -140,9 +144,9 @@ int list_dir(char * dir_path) {
 			dir_entry->mode |= POWNER(M_WRITE);
 		if (buf->st_mode & S_IXUSR)
 			dir_entry->mode |= POWNER(M_EXEC);
+		if (buf->st_mode & S_ISUID) // suid
+			dir_entry->mode |= POWNER(M_SUID);
 
-		if (buf->st_mode & S_ISUID)
-			dir_entry->mode |= M_SUID;
 
 #if defined(__APPLE__) || defined(__MACH__)
 		dir_entry->mtime = buf->st_mtime;	
@@ -255,34 +259,40 @@ char * mode_to_s(struct dir_entry_t * f) {
 	char * p = s;
 	uint16_t mode = f->mode;
 
-	char x = 'x';
-	if (f->mode & M_SUID) x = 's';
-	
 	if (f->file_type == FILE_DIR) *p++ = 'd';
 	else *p++ = '.';
 
+	// owner mode
 	if (MOWNER(mode) & M_READ) *p++ = 'r';
 	else *p++ = '-';
 	if (MOWNER(mode) & M_WRITE) *p++ = 'w';
 	else *p++ = '-';
-	if (MOWNER(mode) & M_EXEC) *p++ = x;
-	else if (mode & M_SUID) *p++ = 'S';
+	if (MOWNER(mode) & M_EXEC) {
+		if (MOWNER(mode) & M_SUID) *p++ = 's';
+		else *p++ = 'x';
+	} else if (MOWNER(mode) & M_SUID) *p++ = 'S';
 	else *p++ = '-';
 
+	// group mode
 	if (MGROUP(mode) & M_READ) *p++ = 'r';
 	else *p++ = '-';
 	if (MGROUP(mode) & M_WRITE) *p++ = 'w';
 	else *p++ = '-';
-	if (MGROUP(mode) & M_EXEC) *p++ = x;
-	else if (mode & M_SUID) *p++ = 'S';
+	if (MGROUP(mode) & M_EXEC) {
+		if (MGROUP(mode) & M_SUID) *p++ = 's';
+		else *p++ = 's';
+	} else if (MGROUP(mode) & M_SUID) *p++ = 'S';
 	else *p++ = '-';
 
+	// other mode
 	if (mode & M_READ) *p++ = 'r';
 	else *p++ = '-';
 	if (mode & M_WRITE) *p++ = 'w';
 	else *p++ = '-';
-	if (mode & M_EXEC) { if (mode & M_SUID) *p++ = 't'; else *p++ = 'x'; }
-	else if (mode & M_SUID) *p++ = 'T';
+	if (mode & M_EXEC) {
+		if (mode & M_SUID) *p++ = 't';
+		else *p++ = 'x';
+	} else if (mode & M_SUID) *p++ = 'T';
 	else *p++ = '-';
 
 	*p++ = 0;
