@@ -13,6 +13,7 @@
 #if ICONS
 #include "type.h"
 #endif
+#include "main.h"
 #include "opts.h"
 #include "dir.h"
 #include "io.h"
@@ -383,4 +384,22 @@ void unmark_all(void) {
 	for (size_t i = 0; i < n_dir_entries; i++)
 		dir_entries[i]->marked = false;
 	n_marked_files = 0;
+}
+
+
+void resize_fbuf(void) {
+	if (n_dir_entries <= (unsigned)LINES - 6) {
+		first_f = 0;
+		last_f = n_dir_entries;
+	} else if (LINES <= 6) {
+		if (first_f + 1 < n_dir_entries) last_f = first_f + 1;
+		else last_f = first_f;
+	} else if ((unsigned)LINES - 6 > n_dir_entries) {
+		last_f = n_dir_entries;
+	} else {
+		last_f = first_f + LINES - 6;
+	}
+
+	if (cursor > last_f + 1) cursor = last_f + 1;
+
 }

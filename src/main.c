@@ -372,26 +372,12 @@ int main(int argc, char ** argv) {
 				free_dir_entries();
 				list_dir(cwd);
 
-				if (cursor > n_dir_entries || last_f >= n_dir_entries) {
-					cursor = 1;
-					first_f = 0;
-					last_f = LAST_F;
-				}
+				resize_fbuf();
+
 				break;
 			case KEY_RESIZE:
-				if (n_dir_entries <= (unsigned)LINES - 6) {
-					first_f = 0;
-					last_f = n_dir_entries;
-				} else if (LINES <= 6) {
-					if (first_f + 1 < n_dir_entries) last_f = first_f + 1;
-					else last_f = first_f;
-				} else if ((unsigned)LINES - 6 > n_dir_entries) {
-					last_f = n_dir_entries;
-				} else {
-					last_f = first_f + LINES - 6;
-				}
 
-				if (cursor > last_f + 1) cursor = last_f + 1;
+				resize_fbuf();
 
 				erase();
 				refresh();
