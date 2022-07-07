@@ -139,7 +139,7 @@ static void set_archive(void * p) {
 
 
 void var_init(void) {
-	var_map = map_new(12);
+	var_map = map_new(14);
 
 	map_insert(var_map, ICONS_VAR, set_icons);
 	map_insert(var_map, COLOR_VAR, set_color_f);
