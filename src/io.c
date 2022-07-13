@@ -51,7 +51,7 @@ void curses_init(void) {
 	noecho();
 	raw();
 
-	mousemask(BUTTON1_PRESSED | REPORT_MOUSE_POSITION, NULL);
+	mousemask(BUTTON1_PRESSED, NULL);
 	
 	start_color();
 	set_color();
