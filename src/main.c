@@ -142,6 +142,18 @@ int main(int argc, char ** argv) {
 					ext_open(dir_entries[cursor - 1]->name);
 				}
 				break;
+			case KEY_MOUSE:;
+				MEVENT mouse_event;
+				if (getmouse(&mouse_event) == OK) {
+					int mrow = mouse_event.y; // row @ mouse click; start @ 1
+					if (mrow <= 3) break; // 3-top
+					if (mrow > LINES-3) break; // 3-bottom
+					if ((unsigned)mrow - 3 > n_dir_entries) break;
+
+					cursor = first_f + mrow - 3; // 3-pad
+				}
+
+				break;
 			case 'g':
 				cursor = 1;
 				first_f = 0;
