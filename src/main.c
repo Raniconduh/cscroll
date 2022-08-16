@@ -146,10 +146,10 @@ int main(int argc, char ** argv) {
 				MEVENT mouse_event;
 				if (getmouse(&mouse_event) == OK) {
 					int mrow = mouse_event.y; // row @ mouse click; start @ 1
-					if (mrow <= 3 || mrow > LINES - 3) break; // 3 pad top/bottom
+					if (mrow < 3 || mrow > LINES - 3) break; // 3 pad top/bottom
 					if ((unsigned)mrow - 3 > n_dir_entries) break;
 
-					cursor = first_f + mrow - 3; // 3-pad
+					cursor = first_f + mrow - 2; // 3-pad, mrow>0
 				}
 
 				break;
