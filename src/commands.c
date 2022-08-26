@@ -10,6 +10,7 @@
 #include "dir.h"
 #include "var.h"
 #include "opts.h"
+#include "main.h"
 #include "commands.h"
 
 
@@ -159,5 +160,22 @@ void unset(char * v) {
 		printw("Unknown variable (%s)", v);
 		refresh();
 		napms(500);
+	}
+}
+
+
+// attempt to "open" the file the cursor is on
+void open_cur_file(void) {
+	// enter directtory/link pointing to dir
+	if (dir_entries[cursor - 1]->file_type == FILE_DIR ||
+		dir_entries[cursor - 1]->under_link == FILE_DIR) {
+		enter_dir(dir_entries[cursor - 1]->name);
+		free_dir_entries();
+		list_dir(cwd);
+		cursor = 1;
+		first_f = 0;
+		last_f = LAST_F;
+	} else {
+		ext_open(dir_entries[cursor - 1]->name);
 	}
 }

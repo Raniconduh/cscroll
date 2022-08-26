@@ -129,27 +129,27 @@ int main(int argc, char ** argv) {
 			case 'l':
 			case '\n':
 				if (!n_dir_entries) break;
-				// open directory or links that point to a directory
-				if (dir_entries[cursor - 1]->file_type == FILE_DIR ||
-					dir_entries[cursor - 1]->under_link == FILE_DIR) {
-					enter_dir(dir_entries[cursor - 1]->name);
-					free_dir_entries();
-					list_dir(cwd);
-					cursor = 1;
-					first_f = 0;
-					last_f = LAST_F;
-				} else {
-					ext_open(dir_entries[cursor - 1]->name);
-				}
+				open_cur_file();
 				break;
 			case KEY_MOUSE:;
 				MEVENT mouse_event;
+				bool ok = false;
+				unsigned norm_row = 0;  // normalized row
 				if (getmouse(&mouse_event) == OK) {
+					ok = true;
 					int mrow = mouse_event.y; // row @ mouse click; start @ 1
 					if (mrow < 3 || mrow > LINES - 4) break; // 3 pad top/bottom
 					if ((unsigned)mrow - 3 >= n_dir_entries) break;
 
-					cursor = first_f + mrow - 2; // 3-pad, mrow>0
+					norm_row = first_f + mrow - 2; // 3-pad, mrow>0
+				}
+
+				if (ok) {
+					if (norm_row == cursor) {
+						open_cur_file();
+					} else {
+						cursor = norm_row;
+					}
 				}
 
 				break;

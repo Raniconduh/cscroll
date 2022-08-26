@@ -9,6 +9,7 @@ void paste_cuts(char *);
 void run_cmd(char *);
 void set(char *);
 void unset(char *);
+void open_cur_file(void);
 
 extern bool cutting;
 extern char * cut_start_dir;
