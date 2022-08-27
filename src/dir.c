@@ -300,3 +300,11 @@ char * mode_to_s(struct dir_entry_t * f) {
 	return s;
 }
 
+
+// check if path exists & is a dir
+bool check_dpath(char * s) {
+	struct stat buf;
+	if (stat(s, &buf) == -1) return false;
+	if ((buf.st_mode & S_IFMT) == S_IFDIR) return true;
+	return false;
+}

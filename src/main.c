@@ -42,13 +42,18 @@ int main(int argc, char ** argv) {
 				help();
 			} else {
 				cwd = realpath(argv[i], NULL);
+				if (!check_dpath(cwd)) {
+					fputs("Invalid directory specified\n", stderr);
+					exit(1);
+				}
 				chdir(cwd);
 			}
 		}
 	}
 
 	if (!cwd) {
-		char * p = getenv("PWD");
+		char p[PATH_MAX + 1];
+		getcwd(p, sizeof(p));
 		cwd = malloc(strlen(p) + 2);
 		strcpy(cwd, p);
 	}

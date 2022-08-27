@@ -62,6 +62,7 @@ void cd_back(void);
 void enter_dir(char *);
 void remove_marked(void);
 char * mode_to_s(struct dir_entry_t *);
+bool check_dpath(char *);
 
 
 // number of directory entries
