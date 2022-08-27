@@ -280,7 +280,7 @@ char * mode_to_s(struct dir_entry_t * f) {
 	else *p++ = '-';
 	if (MGROUP(mode) & M_EXEC) {
 		if (MGROUP(mode) & M_SUID) *p++ = 's';
-		else *p++ = 's';
+		else *p++ = 'x';
 	} else if (MGROUP(mode) & M_SUID) *p++ = 'S';
 	else *p++ = '-';
 
