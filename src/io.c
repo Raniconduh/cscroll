@@ -47,6 +47,7 @@ void curses_init(void) {
 
 	initscr();
 	keypad(stdscr, true);
+	mouseinterval(0);
 	curs_set(0);
 	noecho();
 	raw();
