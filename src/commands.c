@@ -26,6 +26,7 @@ void ext_open(char * file) {
 	char * f = malloc(strlen(cwd) + strlen(file) + 2);
 	sprintf(f, "%s/%s", cwd, file);
 
+	endwin();
 	pid_t pid = fork();
 	if (!pid) {
 		execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
@@ -34,6 +35,7 @@ void ext_open(char * file) {
 	wait(NULL);
 	free(f);
 
+	initscr();
 	clear();
 	refresh();
 }
@@ -128,6 +130,7 @@ void paste_cuts(char * path) {
 void run_cmd(char * cmd) {
 	clear();
 	refresh();
+	endwin();
 
 	if (!fork()) {
 		execvp("sh", (char*[]){"sh", "-c", cmd, NULL});
@@ -135,10 +138,10 @@ void run_cmd(char * cmd) {
 	}
 	wait(NULL);
 
-	addstr("\nPress enter to continue\n");
-	refresh();
-	while (getch() != '\n');
+	puts("\nPress enter to continue");
+	while (fgetc(stdin) != '\n');
 
+	initscr();
 	clear();
 	refresh();
 }
