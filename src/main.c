@@ -52,7 +52,7 @@ int main(int argc, char ** argv) {
 	}
 
 	if (!cwd) {
-		char p[PATH_MAX + 1];
+		char p[2048];
 		getcwd(p, sizeof(p));
 		cwd = malloc(strlen(p) + 2);
 		strcpy(cwd, p);
