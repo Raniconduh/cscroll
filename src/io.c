@@ -37,6 +37,30 @@ static int default_colors[] = {
 };
 
 
+static char * ansi_colors[] = {
+	[RED]           = ANSI_RED,
+	[YELLOW]        = ANSI_YELLOW,
+	[MAGENTA]       = ANSI_MAGENTA,
+	[WHITE]         = ANSI_WHITE,
+
+	[COLOR_DIR]     = ANSI_BLUE,
+	[COLOR_LINK]    = ANSI_CYAN,
+	[COLOR_EXEC]    = ANSI_GREEN,
+	[COLOR_SOCK]    = ANSI_YELLOW,
+	[COLOR_FIFO]    = ANSI_YELLOW,
+	[COLOR_UNKNOWN] = ANSI_RED,
+	[COLOR_FILE]    = ANSI_WHITE,
+	[COLOR_BLOCK]   = ANSI_YELLOW,
+	[COLOR_MEDIA]   = ANSI_MAGENTA,
+	[COLOR_ARCHIVE] = ANSI_RED,
+};
+
+
+static char * size_strings[] = {
+	"B", "KB", "MB", "GB", "TB", "PB"
+};
+
+
 void curses_init(void) {
 	if (print_path) {
 		stdout_back = dup(STDOUT_FILENO);
@@ -120,61 +144,14 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	
 	if (p_long) {
 		smode = mode_to_s(dir_entry);
-		switch (dir_entry->u_size) {
-			case 0: size = "B"; break;
-			case 1: size = "KB"; break;
-			case 2: size = "MB"; break;
-			case 3: size = "GB"; break;
-			case 4: size = "TB"; break;
-			case 5: size = "PB"; break;
-		}
+		size = size_strings[dir_entry->u_size];
 		strftime(time, sizeof(time), "%b %d %H:%M %Y",
 				localtime(&dir_entry->mtime));
 	}
 
-	switch (dir_entry->file_type) {
-		case FILE_DIR:
-			cp = COLOR_DIR;
-			f_ident = '/';
-			break;
-		case FILE_FIFO:
-			cp = COLOR_FIFO;
-			f_ident = '|';
-			break;
-		case FILE_BLK:
-			cp = COLOR_BLOCK;
-			f_ident = '#';
-			break;
-		case FILE_LINK:
-			if (dir_entry->under_link == FILE_DIR)
-				u_text = "=> /";
-			cp = COLOR_LINK;
-			f_ident = '@';
-			break;
-		case FILE_SOCK:
-			cp = COLOR_SOCK;
-			f_ident = '=';
-			break;
-		case FILE_UNKNOWN:
-			cp = COLOR_UNKNOWN;
-			f_ident = '?';
-			break;
-		default:
-			f_ident = NO_IDENT;
-			break;
-	}
-
-	switch (dir_entry->m_type) {
-		case MIME_MEDIA:
-			cp = COLOR_MEDIA;
-			break;
-		case MIME_ARCHIVE:
-			cp = COLOR_ARCHIVE;
-			break;
-		case MIME_UNKNOWN:
-		default:
-			break;
-	}
+	cp = get_file_color(dir_entry);
+	f_ident = get_file_ident(dir_entry);
+	u_text = dir_entry->under_link == FILE_DIR ? "=> /" : "";
 
 #if ICONS
 	// find icon if it is not a dir
@@ -182,16 +159,6 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 		icon = get_icon(dir_entry);
 	}
 #endif
-
-	if ((dir_entry->mode & POWNER(M_EXEC)) &&
-			dir_entry->file_type != FILE_LINK &&
-			dir_entry->file_type != FILE_DIR) {
-		cp = COLOR_EXEC;
-		if (f_ident == NO_IDENT) f_ident = '*';
-	} else if (cp == -1) {
-		cp = COLOR_FILE;
-		f_ident = ' ';
-	}
 
 	cp = COLOR_PAIR((unsigned)cp);
 	if (highlight) cp |= A_REVERSE;
@@ -236,23 +203,36 @@ void print_mode(struct dir_entry_t * f) {
 
 	char * mode = mode_to_s(f);
 	for (char * c = mode; *c; c++) {
-		bool dim = false;
+		if (oneshot) {
+			if (color) {
+				char * color = ansi_colors[m_colors[(int)*c]];
+				printf("%s%c" ANSI_RESET, color, *c);
+			} else {
+				fputc(*c, stdout);
+			}
+		} else {
+			bool dim = false;
 
-		int cp = m_colors[(int)*c];
-		if (!cp) cp = WHITE;
-		if (cp == WHITE) dim = true;
-		cp = COLOR_PAIR(cp);
-		if (dim) cp |= A_DIM;
-		attron(cp);
-		addch(*c);
-		attroff(cp);
+			int cp = m_colors[(int)*c];
+			if (!cp) cp = WHITE;
+			if (cp == WHITE) dim = true;
+			cp = COLOR_PAIR(cp);
+			if (dim) cp |= A_DIM;
+			attron(cp);
+			addch(*c);
+			attroff(cp);
+		}
 	}
 	free(mode);
 }
 
 
 void padstr(size_t n) {
-	for (size_t i = 0; i < n; i++) addch(' ');
+	if (oneshot) {
+		for (size_t i = 0; i < n; i++) fputc(' ', stdout);
+	} else {
+		for (size_t i = 0; i < n; i++) addch(' ');
+	}
 }
 
 
@@ -405,4 +385,131 @@ void resize_fbuf(void) {
 
 	if (cursor > last_f + 1) cursor = last_f + 1;
 
+}
+
+
+void print_oneshot(void) {
+	if (p_long) {
+		char * icon = "";
+		char *owner, *group, *size;
+		char time[128];
+		for (size_t i = 0; i < n_dir_entries; i++) {
+			struct dir_entry_t * de = dir_entries[i];
+
+			char * color;
+			enum colors cp = get_file_color(de);
+			if (cp == COLOR_WHITE) color = "";
+			else color = ansi_colors[cp];
+			char f_ident = get_file_ident(de);
+			char * u_text = de->under_link == FILE_DIR ? "=> /" : "";
+
+#if ICONS
+			if (show_icons) icon = get_icon(de);
+#endif
+			size = size_strings[de->u_size];
+			strftime(time, sizeof(time), "%b %d %H:%M %Y",
+					localtime(&de->mtime));
+			owner = getpwuid(de->owner)->pw_name;
+			group = getgrgid(de->group)->gr_name;
+
+			// print mode
+			print_mode(de);
+
+			// print owner
+			fputc(' ', stdout);
+			fputs(owner, stdout);
+			size_t n = strlen(owner);
+			if (n < dir_longest_owner) padstr(dir_longest_owner - n);
+
+			// print group
+			fputc(' ', stdout);
+			fputs(group, stdout);
+			n = strlen(group);
+			if (n < dir_longest_owner) padstr(dir_longest_owner - n);
+
+			// print rest of the long mode info
+			printf(" %4d %-2s %s %s%s %s%s%c %s\n",
+					de->size, size, time, color, icon, de->name,
+					ANSI_RESET, f_ident, u_text);
+		}
+	}
+}
+
+
+enum colors get_file_color(struct dir_entry_t * de) {
+	int cp = -1;
+
+	switch (de->file_type) {
+		case FILE_DIR:
+			cp = COLOR_DIR;     break;
+		case FILE_FIFO:
+			cp = COLOR_FIFO;    break;
+		case FILE_BLK:
+			cp = COLOR_BLOCK;   break;
+		case FILE_LINK:
+			cp = COLOR_LINK;    break;
+		case FILE_SOCK:
+			cp = COLOR_SOCK;    break;
+		case FILE_UNKNOWN:
+			cp = COLOR_UNKNOWN; break;
+		case FILE_REG:
+			cp = COLOR_FILE;    break;
+	}
+
+	switch (de->m_type) {
+		case MIME_MEDIA:
+			cp = COLOR_MEDIA;    break;
+		case MIME_ARCHIVE:
+			cp = COLOR_ARCHIVE;  break;
+		case MIME_UNKNOWN:
+		default: break;
+	}
+
+	if ((de->mode & POWNER(M_EXEC)) &&
+			de->file_type != FILE_LINK &&
+			de->file_type != FILE_DIR) {
+		cp = COLOR_EXEC;
+	} else if (cp == -1) {
+		cp = COLOR_FILE;
+	}
+
+	return (enum colors)cp;
+}
+
+
+char get_file_ident(struct dir_entry_t * de) {
+	char f_ident;
+
+	switch (de->file_type) {
+		case FILE_DIR:
+			f_ident = '/';
+			break;
+		case FILE_FIFO:
+			f_ident = '|';
+			break;
+		case FILE_BLK:
+			f_ident = '#';
+			break;
+		case FILE_LINK:
+			f_ident = '@';
+			break;
+		case FILE_SOCK:
+			f_ident = '=';
+			break;
+		case FILE_UNKNOWN:
+			f_ident = '?';
+			break;
+		default:
+			f_ident = NO_IDENT;
+			break;
+	}
+
+	if ((de->mode & POWNER(M_EXEC)) &&
+			de->file_type != FILE_LINK &&
+			de->file_type != FILE_DIR &&
+			f_ident == NO_IDENT) {
+		f_ident = '*';
+	}
+
+	return f_ident;
 }

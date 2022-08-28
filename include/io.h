@@ -9,6 +9,17 @@
 #define NO_IDENT 0
 
 
+#define ESC "\033"
+#define ANSI_RED      ESC "[31m"
+#define ANSI_GREEN    ESC "[32m"
+#define ANSI_YELLOW   ESC "[33m"
+#define ANSI_BLUE     ESC "[34m"
+#define ANSI_MAGENTA  ESC "[35m"
+#define ANSI_CYAN     ESC "[36m"
+#define ANSI_WHITE    ESC "[37m"
+#define ANSI_RESET    ESC "[0m"
+
+
 enum colors {
 	COLOR_DIR     = 1,
 	COLOR_LINK    = 2,
@@ -59,6 +70,9 @@ void set_color(void);
 void print_mode(struct dir_entry_t *);
 void padstr(size_t);
 void resize_fbuf(void);
+void print_oneshot(void);
+enum colors get_file_color(struct dir_entry_t *);
+char get_file_ident(struct dir_entry_t *);
 
 
 extern bool print_path;

@@ -41,6 +41,9 @@ extern uint32_t archive_color;
 
 extern uint32_t custom_colors[11];
 
+extern bool oneshot;
+
+
 bool check_config(void);
 void create_config(void);
 void read_config(void);

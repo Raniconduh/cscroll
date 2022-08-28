@@ -40,6 +40,8 @@ int main(int argc, char ** argv) {
 				p_long = true;
 			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 				help();
+			} else if (!strcmp(argv[i], "--oneshot")) {
+				oneshot = true;
 			} else {
 				cwd = realpath(argv[i], NULL);
 				if (!check_dpath(cwd)) {
@@ -56,6 +58,18 @@ int main(int argc, char ** argv) {
 		getcwd(p, sizeof(p));
 		cwd = malloc(strlen(p) + 2);
 		strcpy(cwd, p);
+	}
+
+
+	if (oneshot) {
+		list_dir(cwd);
+
+		print_oneshot();
+
+		free_dir_entries();
+		free(dir_entries);
+		terminate_var();
+		exit(0);
 	}
 
 	curses_init();
@@ -440,6 +454,7 @@ void help(void) {
 #endif
 			"  -l                  Print files in long mode\n"
 			"  -p                  Print the path cscroll is in when it exits\n"
+			"  --oneshot           Print and exit as if cscroll is ls\n"
 			"\n"
 			"See https://github.com/Raniconduh/cscroll for documentation\n"
 		);
