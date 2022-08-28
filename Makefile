@@ -8,6 +8,7 @@ ICONS ?= 1
 CC ?= cc
 CFLAGS += -DICONS=$(ICONS) -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
 
+UNAME := $(shell uname)
 $(shell pkg-config --exists ncursesw)
 ifeq ($(.SHELLSTATUS),0)
         NCURSES := ncursesw
@@ -15,7 +16,10 @@ else
         NCURSES := ncurses
 endif
 
-LIBS += $(shell pkg-config --libs $(NCURSES)) -ltinfo -lm
+LIBS += $(shell pkg-config --libs $(NCURSES)) -lm
+ifneq ($(UNAME), Darwin)
+	LIBS += -ltinfo
+endif
 
 PREFIX ?= /usr/local
 
