@@ -396,10 +396,14 @@ void print_oneshot(void) {
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
 
-			char * color;
-			enum colors cp = get_file_color(de);
-			if (cp == COLOR_WHITE) color = "";
-			else color = ansi_colors[cp];
+			char * fcolor;
+			if (color) {
+				enum colors cp = get_file_color(de);
+				if (cp == COLOR_WHITE) fcolor = "";
+				else fcolor = ansi_colors[cp];
+			} else {
+				fcolor = "";
+			}
 			char f_ident = get_file_ident(de);
 			char * u_text = de->under_link == FILE_DIR ? "=> /" : "";
 
@@ -429,7 +433,7 @@ void print_oneshot(void) {
 
 			// print rest of the long mode info
 			printf(" %4d %-2s %s %s%s %s%s%c %s\n",
-					de->size, size, time, color, icon, de->name,
+					de->size, size, time, fcolor, icon, de->name,
 					ANSI_RESET, f_ident, u_text);
 		}
 	}
