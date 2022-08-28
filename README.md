@@ -35,7 +35,8 @@ File colors can also be customized. ([see variables](#variables))
 * `-nc`: Turn off coloring. cscroll will run in black and white mode
 * `-ni`: (If compiled with icons) turn off icons on start
 * `-l`: Display files in long mode (file mode, owner, group, size, modification time)
-* `-h`, `--help`: Show the help screen
+* `--help`: Show the help screen
+* `--oneshot`: cscroll will print the files and exit, acting as if it were `ls`. The `-p` option will have no effect in oneshot mode.
 
 ### Commands
 
@@ -55,6 +56,8 @@ File colors can also be customized. ([see variables](#variables))
 * `/`: Search for a file in the current directory using a POSIX regex
 * `!`: Run a shell command ([see shell commands](#shell-commands))
 * `q`: Quit
+
+A mouse click will move the cursor to file that was clicked on. If the cursor was already on that file, it will be opened or cscroll will enter it if it is a directory.
 
 #### Options Prompt
 
