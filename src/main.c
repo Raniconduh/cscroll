@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
 #endif
 			} else if (!strcmp(argv[i], "-l")) {
 				p_long = true;
-			} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			} else if (!strcmp(argv[i], "--help")) {
 				help();
 			} else if (!strcmp(argv[i], "--oneshot")) {
 				oneshot = true;
@@ -447,7 +447,7 @@ void help(void) {
 			"  cscroll [OPTION]... [DIR]\n"
 			"\n"
 			"Options:\n"
-			"  -h, --help          Show this screen and exit\n"
+			"  --help          Show this screen and exit\n"
 			"  -nc                 Turn off colors\n"
 #if ICONS
 			"  -ni                 Turn off icons\n"
