@@ -31,6 +31,8 @@ File colors can also be customized. ([see variables](#variables))
 
 ### Options
 
+* `-A`: Show dotfiles in listings but exclude . and ..
+* `-a`: (Only available in oneshot mode) List all dotfiles including . and ..
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
 * `-nc`: Turn off coloring. cscroll will run in black and white mode
 * `-ni`: (If compiled with icons) turn off icons on start

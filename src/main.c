@@ -457,13 +457,16 @@ void help(void) {
 			"  cscroll [OPTION]... [DIR]\n"
 			"\n"
 			"Options:\n"
-			"  --help          Show this screen and exit\n"
+			"  -A                  Show dotfiles except . and ..\n"
+			"  -a                  Show all dotfiles, including . and ..\n"
+			"                      Only available in oneshot mode\n"
 			"  -nc                 Turn off colors\n"
 #if ICONS
 			"  -ni                 Turn off icons\n"
 #endif
 			"  -l                  Print files in long mode\n"
 			"  -p                  Print the path cscroll is in when it exits\n"
+			"  --help              Show this screen and exit\n"
 			"  --oneshot           Print and exit as if cscroll is ls\n"
 			"\n"
 			"See https://github.com/Raniconduh/cscroll for documentation\n"
