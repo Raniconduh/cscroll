@@ -18,6 +18,7 @@ bool show_dot_files = false;
 bool color = true;
 bool p_long = false;
 bool oneshot = false;
+bool show_dot_dirs = false;
 
 uint32_t custom_colors[11];
 

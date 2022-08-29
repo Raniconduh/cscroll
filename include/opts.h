@@ -42,6 +42,7 @@ extern uint32_t archive_color;
 extern uint32_t custom_colors[11];
 
 extern bool oneshot;
+extern bool show_dot_dirs;
 
 
 bool check_config(void);

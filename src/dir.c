@@ -64,7 +64,8 @@ int list_dir(char * dir_path) {
 		char * d_name = d_entry->d_name;
 		size_t d_name_len = strlen(d_name);
 
-		if (!strcmp(d_name, ".") || !strcmp(d_name, "..")) {
+		if ((!strcmp(d_name, ".") || !strcmp(d_name, ".."))
+				&& !show_dot_dirs) {
 			free(dir_entry);
 			continue;
 		}

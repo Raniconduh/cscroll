@@ -38,6 +38,11 @@ int main(int argc, char ** argv) {
 #endif
 			} else if (!strcmp(argv[i], "-l")) {
 				p_long = true;
+			} else if (!strcmp(argv[i], "-A")) {
+				show_dot_files = true;
+			} else if (!strcmp(argv[i], "-a")) {
+				show_dot_dirs = true;
+				show_dot_files = true;
 			} else if (!strcmp(argv[i], "--help")) {
 				help();
 			} else if (!strcmp(argv[i], "--oneshot")) {
@@ -51,6 +56,11 @@ int main(int argc, char ** argv) {
 				chdir(cwd);
 			}
 		}
+	}
+
+	if (show_dot_dirs && !oneshot) {
+		fputs("-a is only available in oneshot mode\n", stderr);
+		exit(1);
 	}
 
 	if (!cwd) {
