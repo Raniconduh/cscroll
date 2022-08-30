@@ -43,6 +43,8 @@ int main(int argc, char ** argv) {
 			} else if (!strcmp(argv[i], "-a")) {
 				show_dot_dirs = true;
 				show_dot_files = true;
+			} else if (!strcmp(argv[i], "-h")) {
+				// no-op
 			} else if (!strcmp(argv[i], "--help")) {
 				help();
 			} else if (!strcmp(argv[i], "--oneshot")) {
@@ -471,6 +473,7 @@ void help(void) {
 			"  -A                  Show dotfiles except . and ..\n"
 			"  -a                  Show all dotfiles, including . and ..\n"
 			"                      Only available in oneshot mode\n"
+			"  -h                  No-op: for compatibility purposes\n"
 			"  -nc                 Turn off colors\n"
 #if ICONS
 			"  -ni                 Turn off icons\n"
