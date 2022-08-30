@@ -1,3 +1,4 @@
+#include <sys/ioctl.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
@@ -466,6 +467,91 @@ void print_oneshot(void) {
 					de->size, size, time, fcolor, icon, de->name,
 					ANSI_RESET, f_ident, u_text);
 		}
+	} else { // regular printing mode
+		struct winsize w;
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+		int t_width = w.ws_col;
+
+		int col_widths[128] = {0};
+		int cur_col = 0;
+		int line_width = 0;
+
+		bool nl_term = false;
+
+		// divide until screen row is full
+		// or until 128 colums of files have been used
+		// first calculate padding
+		for (size_t i = 0; i < n_dir_entries; i++) {
+			struct dir_entry_t * de = dir_entries[i];
+
+			// acount for 2 spaces after each file
+			int f_width = 2;
+			f_width += strlen(de->name);
+#if ICONS
+			// icon + whitespace
+			if (show_icons) f_width += 2;
+#endif
+
+			f_width += 1; // file ident = 1 char
+
+			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
+				line_width = f_width;
+				cur_col = 0;
+			} else {
+				line_width += f_width;
+			}
+
+			if (f_width > col_widths[cur_col])
+				col_widths[cur_col] = f_width;
+
+			cur_col++;
+		}
+
+		cur_col = 0;
+		line_width = 0;
+
+		for (size_t i = 0; i < n_dir_entries; i++) {
+			struct dir_entry_t * de = dir_entries[i];
+
+			char * icon = "";
+			char f_ident;
+
+			int f_width = 2;
+			f_width += strlen(de->name);
+
+#if ICONS
+			if (show_icons) f_width += 2;
+			icon = get_icon(de);
+#endif
+
+			f_ident = get_file_ident(de);
+			f_width += 1;
+
+			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
+				line_width = f_width;
+				cur_col = 0;
+				putchar('\n');
+				nl_term = true;
+			} else {
+				line_width += f_width;
+				nl_term = false;
+			}
+
+			char * fcolor = "";
+			char * fcreset = "";
+			if (color) {
+				enum colors cp = get_file_color(de);
+				if (cp == COLOR_WHITE) fcolor = "";
+				else fcolor = ansi_colors[cp];
+				fcreset = ANSI_RESET;
+			}
+
+			printf("%s%s %s%s%c  ", icon, fcolor, de->name, fcreset, f_ident);
+			int padn = col_widths[cur_col] - f_width;
+			padstr(padn < 0 ? 0 : padn);
+		}
+
+		if (!nl_term) putchar('\n');
 	}
 }
 
