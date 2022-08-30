@@ -389,6 +389,19 @@ void resize_fbuf(void) {
 }
 
 
+int get_fwidth(struct dir_entry_t * de) {
+	int w = 0;
+	w += strlen(de->name);
+#ifdef ICONS
+	if (show_icons) w += 2;
+#endif
+
+	if (get_file_ident(de)) w += 1;
+
+	return w;
+}
+
+
 void print_oneshot(void) {
 	if (cwd_is_file) {
 		char * end_sep = strrchr(cwd, '/');
@@ -484,15 +497,7 @@ void print_oneshot(void) {
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
 
-			// acount for 2 spaces after each file
-			int f_width = 2;
-			f_width += strlen(de->name);
-#if ICONS
-			// icon + whitespace
-			if (show_icons) f_width += 2;
-#endif
-
-			f_width += 1; // file ident = 1 char
+			int f_width = get_fwidth(de);
 
 			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
 				line_width = f_width;
@@ -516,16 +521,13 @@ void print_oneshot(void) {
 			char * icon = "";
 			char f_ident;
 
-			int f_width = 2;
-			f_width += strlen(de->name);
+			int f_width = get_fwidth(de);
 
 #if ICONS
-			if (show_icons) f_width += 2;
-			icon = get_icon(de);
+			if (show_icons) icon = get_icon(de);
 #endif
 
 			f_ident = get_file_ident(de);
-			f_width += 1;
 
 			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
 				line_width = f_width;
@@ -547,8 +549,10 @@ void print_oneshot(void) {
 			}
 
 			printf("%s%s %s%s%c  ", icon, fcolor, de->name, fcreset, f_ident);
-			int padn = col_widths[cur_col] - f_width;
+			int padn = col_widths[cur_col] - f_width - 2;
 			padstr(padn < 0 ? 0 : padn);
+
+			cur_col++;
 		}
 
 		if (!nl_term) putchar('\n');
