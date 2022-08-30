@@ -49,18 +49,9 @@ int main(int argc, char ** argv) {
 				oneshot = true;
 			} else {
 				cwd = realpath(argv[i], NULL);
-				if (!check_dpath(cwd)) {
-					fputs("Invalid directory specified\n", stderr);
-					exit(1);
-				}
-				chdir(cwd);
+				if (!cwd) cwd = strdup(argv[i]);
 			}
 		}
-	}
-
-	if (show_dot_dirs && !oneshot) {
-		fputs("-a is only available in oneshot mode\n", stderr);
-		exit(1);
 	}
 
 	if (!cwd) {
@@ -70,15 +61,33 @@ int main(int argc, char ** argv) {
 		strcpy(cwd, p);
 	}
 
+	if (oneshot) {
+		if (!check_dpath(cwd)) cwd_is_file = true;
+	} else if (!check_dpath(cwd)) {
+		if (oneshot) {
+			cwd_is_file = true;
+		} else {
+			fputs("Invalid directory specified\n", stderr);
+			exit(1);
+		}
+	} else {
+		chdir(cwd);
+	}
+
+	if (show_dot_dirs && !oneshot) {
+		fputs("-a is only available in oneshot mode\n", stderr);
+		exit(1);
+	}
 
 	if (oneshot) {
-		list_dir(cwd);
+		if (!cwd_is_file) list_dir(cwd);
 
 		print_oneshot();
 
 		free_dir_entries();
 		free(dir_entries);
 		terminate_var();
+		free(cwd);
 		exit(0);
 	}
 
@@ -443,6 +452,8 @@ done:
 	terminate_curses();
 
 	if (print_path) puts(cwd);
+
+	free(cwd);
 
 	return 0;
 }

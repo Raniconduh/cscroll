@@ -389,6 +389,36 @@ void resize_fbuf(void) {
 
 
 void print_oneshot(void) {
+	if (cwd_is_file) {
+		char * end_sep = strrchr(cwd, '/');
+		char * f_name;
+		char * wd;
+		bool malloc_wd = false;
+
+		if (end_sep) {
+			*end_sep = '\0';
+			f_name = end_sep + 1;
+			wd = cwd;
+		} else {
+			f_name = cwd;
+			malloc_wd = true;
+			wd = malloc(128);
+			getcwd(wd, 128);
+		}
+
+		struct dir_entry_t * de = gen_dir_entry(wd, f_name);
+		if (malloc_wd) free(wd);
+		if (!de) {
+			fputs("No such file or directory\n", stderr);
+			free(cwd);
+			exit(1);
+		}
+
+		n_dir_entries = 1;
+		dir_entries = malloc(sizeof(struct dir_entry_t));
+		dir_entries[0] = de;
+	}
+
 	if (p_long) {
 		char * icon = "";
 		char *owner, *group, *size;

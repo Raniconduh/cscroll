@@ -23,6 +23,7 @@ size_t dir_longest_group = 0;
 struct dir_entry_t ** dir_entries = NULL;
 
 bool permission_denied = false;
+bool cwd_is_file = false;
 
 
 static int cmp(const void * a, const void * b) {
@@ -44,6 +45,126 @@ static int acmp(const void * a, const void * b) {
 }
 
 
+struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
+	struct dir_entry_t * dir_entry = malloc(sizeof(struct dir_entry_t) + 12);
+
+	size_t d_name_len = strlen(d_name);
+
+
+	struct stat * buf = malloc(sizeof(struct stat));
+	char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
+	sprintf(tmp_path, "%s/%s", dir_path, d_name);
+	if (lstat(tmp_path, buf) == -1) {
+		free(dir_entry);
+		free(buf);
+		free(tmp_path);
+
+		return NULL;
+	}
+
+	dir_entry->name = malloc(d_name_len + 1);
+
+	strcpy(dir_entry->name, d_name);
+
+	dir_entry->file_type = FILE_UNKNOWN;
+	switch(buf->st_mode & S_IFMT) {
+		case S_IFBLK:
+		case S_IFCHR:
+			dir_entry->file_type = FILE_BLK;
+			break;
+		case S_IFSOCK:
+			dir_entry->file_type = FILE_SOCK;
+			break;
+		case S_IFDIR:
+			dir_entry->file_type = FILE_DIR;
+			break;
+		case S_IFLNK:
+			dir_entry->file_type = FILE_LINK;
+			struct stat * buf2 = malloc(sizeof(struct stat));
+			stat(tmp_path, buf2);
+			if ((buf2->st_mode & S_IFMT) == S_IFDIR)
+				dir_entry->under_link = FILE_DIR;
+			else dir_entry->under_link = FILE_UNKNOWN;
+			free(buf2);
+			break;
+		case S_IFIFO:
+			dir_entry->file_type = FILE_FIFO;
+			break;
+		case S_IFREG:
+			dir_entry->file_type = FILE_REG;
+			break;
+		default:
+			dir_entry->file_type = FILE_UNKNOWN;
+			break;
+	}
+
+	dir_entry->mode = 0;
+
+	// other mode
+	if (buf->st_mode & S_IROTH)
+		dir_entry->mode |= M_READ;
+	if (buf->st_mode & S_IWOTH)
+		dir_entry->mode |= M_WRITE;
+	if (buf->st_mode & S_IXOTH)
+		dir_entry->mode |= M_EXEC;
+	if (buf->st_mode & S_ISVTX) // sticky
+		dir_entry->mode |= M_SUID;
+
+	// group mode
+	if (buf->st_mode & S_IRGRP)
+		dir_entry->mode |= PGROUP(M_READ);
+	if (buf->st_mode & S_IWGRP)
+		dir_entry->mode |= PGROUP(M_WRITE);
+	if (buf->st_mode & S_IXGRP)
+		dir_entry->mode |= PGROUP(M_EXEC);
+	if (buf->st_mode & S_ISGID) // suid; group
+		dir_entry->mode |= PGROUP(M_SUID);
+
+	// owner mode
+	if (buf->st_mode & S_IRUSR)
+		dir_entry->mode |= POWNER(M_READ);
+	if (buf->st_mode & S_IWUSR)
+		dir_entry->mode |= POWNER(M_WRITE);
+	if (buf->st_mode & S_IXUSR)
+		dir_entry->mode |= POWNER(M_EXEC);
+	if (buf->st_mode & S_ISUID) // suid
+		dir_entry->mode |= POWNER(M_SUID);
+
+
+#if defined(__APPLE__) || defined(__MACH__)
+	dir_entry->mtime = buf->st_mtime;
+#else
+	dir_entry->mtime = buf->st_mtim.tv_sec;
+#endif
+	size_t n;
+	dir_entry->owner = buf->st_uid;
+	if ((n = strlen(getpwuid(buf->st_uid)->pw_name)) > dir_longest_owner)
+		dir_longest_owner = n;
+	dir_entry->group = buf->st_gid;
+	if ((n = strlen(getgrgid(buf->st_gid)->gr_name)) > dir_longest_group)
+		dir_longest_group = n;
+
+	dir_entry->size = buf->st_size;
+	dir_entry->u_size = 0;
+
+	for (int i = 0; i <= PB; i++) {
+		if (dir_entry->size < 1000) break;
+		dir_entry->size /= 1000;
+		dir_entry->u_size++;
+	}
+
+	free(tmp_path);
+	free(buf);
+
+	// figure out file 'mime' type
+	dir_entry->m_type = get_mime(dir_entry->name);
+
+	dir_entry->marked = false;
+
+	return dir_entry;
+}
+
+
 int list_dir(char * dir_path) {
 	struct dirent * d_entry;
 	DIR * dir = opendir(dir_path);
@@ -59,126 +180,22 @@ int list_dir(char * dir_path) {
 	permission_denied = false;
 
 	while ((d_entry = readdir(dir))) {
-		struct dir_entry_t * dir_entry = malloc(sizeof(struct dir_entry_t) + 12);
-
 		char * d_name = d_entry->d_name;
-		size_t d_name_len = strlen(d_name);
 
 		if ((!strcmp(d_name, ".") || !strcmp(d_name, ".."))
-				&& !show_dot_dirs) {
-			free(dir_entry);
+			&& !show_dot_dirs) {
 			continue;
-		}
-		else if (!show_dot_files && d_name[0] == '.') {
-			free(dir_entry);
+		} else if (!show_dot_files && d_name[0] == '.') {
 			continue;
 		}
 
-		struct stat * buf = malloc(sizeof(struct stat));
-		char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
-		sprintf(tmp_path, "%s/%s", dir_path, d_name);
-		lstat(tmp_path, buf);
+		struct dir_entry_t * dir_entry = gen_dir_entry(dir_path, d_name);
+
+		if (!dir_entry) {
+			continue; // possibly display message
+		}
 
 		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t) * (n_dir_entries + 1));
-		dir_entry->name = malloc(d_name_len + 1);
-		
-		strcpy(dir_entry->name, d_name);
-
-		dir_entry->file_type = FILE_UNKNOWN;
-		switch(buf->st_mode & S_IFMT) {
-			case S_IFBLK:
-			case S_IFCHR:
-				dir_entry->file_type = FILE_BLK;
-				break;
-			case S_IFSOCK:
-				dir_entry->file_type = FILE_SOCK;
-				break;
-			case S_IFDIR:
-				dir_entry->file_type = FILE_DIR;
-				break;
-			case S_IFLNK:
-				dir_entry->file_type = FILE_LINK;
-				struct stat * buf2 = malloc(sizeof(struct stat));
-				stat(tmp_path, buf2);
-				if ((buf2->st_mode & S_IFMT) == S_IFDIR)
-					dir_entry->under_link = FILE_DIR;
-				else dir_entry->under_link = FILE_UNKNOWN;
-				free(buf2);
-				break;
-			case S_IFIFO:
-				dir_entry->file_type = FILE_FIFO;
-				break;
-			case S_IFREG:
-				dir_entry->file_type = FILE_REG;
-				break;
-			default:
-				dir_entry->file_type = FILE_UNKNOWN;
-				break;
-		}
-
-		dir_entry->mode = 0;
-
-		// other mode
-		if (buf->st_mode & S_IROTH)
-			dir_entry->mode |= M_READ;
-		if (buf->st_mode & S_IWOTH)
-			dir_entry->mode |= M_WRITE;
-		if (buf->st_mode & S_IXOTH)
-			dir_entry->mode |= M_EXEC;
-		if (buf->st_mode & S_ISVTX) // sticky
-			dir_entry->mode |= M_SUID;
-
-		// group mode
-		if (buf->st_mode & S_IRGRP)
-			dir_entry->mode |= PGROUP(M_READ);
-		if (buf->st_mode & S_IWGRP)
-			dir_entry->mode |= PGROUP(M_WRITE);
-		if (buf->st_mode & S_IXGRP)
-			dir_entry->mode |= PGROUP(M_EXEC);
-		if (buf->st_mode & S_ISGID) // suid; group
-			dir_entry->mode |= PGROUP(M_SUID);
-
-		// owner mode
-		if (buf->st_mode & S_IRUSR)
-			dir_entry->mode |= POWNER(M_READ);
-		if (buf->st_mode & S_IWUSR)
-			dir_entry->mode |= POWNER(M_WRITE);
-		if (buf->st_mode & S_IXUSR)
-			dir_entry->mode |= POWNER(M_EXEC);
-		if (buf->st_mode & S_ISUID) // suid
-			dir_entry->mode |= POWNER(M_SUID);
-
-
-#if defined(__APPLE__) || defined(__MACH__)
-		dir_entry->mtime = buf->st_mtime;	
-#else
-		dir_entry->mtime = buf->st_mtim.tv_sec;
-#endif
-		size_t n;
-		dir_entry->owner = buf->st_uid;
-		if ((n = strlen(getpwuid(buf->st_uid)->pw_name)) > dir_longest_owner)
-			dir_longest_owner = n;
-		dir_entry->group = buf->st_gid;
-		if ((n = strlen(getgrgid(buf->st_gid)->gr_name)) > dir_longest_group)
-			dir_longest_group = n;
-
-		dir_entry->size = buf->st_size;
-		dir_entry->u_size = 0;
-
-		for (int i = 0; i <= PB; i++) {
-			if (dir_entry->size < 1000) break;
-			dir_entry->size /= 1000;
-			dir_entry->u_size++;
-		}
-
-		free(tmp_path);
-		free(buf);
-
-		// figure out file 'mime' type
-		dir_entry->m_type = get_mime(dir_entry->name);
-
-		dir_entry->marked = false;
-
 		dir_entries[n_dir_entries] = dir_entry;
 		n_dir_entries++;
 	}
