@@ -396,7 +396,8 @@ int get_fwidth(struct dir_entry_t * de) {
 	if (show_icons) w += 2;
 #endif
 
-	if (get_file_ident(de)) w += 1;
+	// file ident
+	w += 1;
 
 	return w;
 }
@@ -485,77 +486,93 @@ void print_oneshot(void) {
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 		int t_width = w.ws_col;
 
-		int col_widths[128] = {0};
+		int col_widths[127] = {0};
+		int max_cols = sizeof(col_widths) + 1;
 		int cur_col = 0;
 		int line_width = 0;
 
-		bool nl_term = false;
+		struct dir_entry_t * prev = NULL;
 
-		// divide until screen row is full
+		// print until screen row is file
 		// or until 128 colums of files have been used
 		// first calculate padding
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
 
-			int f_width = get_fwidth(de);
+			int fwidth = get_fwidth(de);
 
-			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
-				line_width = f_width;
+			// reached max columns
+			// or file with + padding > terminal width
+			if (cur_col == max_cols || (line_width && line_width + fwidth + 2 >= t_width)) {
 				cur_col = 0;
-			} else {
-				line_width += f_width;
+				line_width = 0;
+
+				prev->last_in_col = true;
 			}
 
-			if (f_width > col_widths[cur_col])
-				col_widths[cur_col] = f_width;
+			if (fwidth > col_widths[cur_col]) {
+				col_widths[cur_col] = fwidth;
+			}
 
+			line_width += col_widths[cur_col] + 2;
 			cur_col++;
+
+			prev = de;
 		}
 
 		cur_col = 0;
-		line_width = 0;
 
+		bool neednl = false;
+
+		// print files
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
 
-			char * icon = "";
-			char f_ident;
+			char * fcolor = "";
+			char * creset = "";
 
-			int f_width = get_fwidth(de);
+			if (color) {
+				fcolor = ansi_colors[get_file_color(de)];
+				creset = ANSI_RESET;
+			}
 
-#if ICONS
+			char * icon = NULL;
+			char ident = get_file_ident(de);
+
+			int fwidth = get_fwidth(de);
+
+
+#ifdef ICONS
 			if (show_icons) icon = get_icon(de);
 #endif
 
-			f_ident = get_file_ident(de);
-
-			if ((i > 0 && line_width + f_width > t_width) || cur_col == 127) {
-				line_width = f_width;
-				cur_col = 0;
-				putchar('\n');
-				nl_term = true;
-			} else {
-				line_width += f_width;
-				nl_term = false;
+			if (icon) {
+				fputs(icon, stdout);
+				putchar(' ');
 			}
 
-			char * fcolor = "";
-			char * fcreset = "";
-			if (color) {
-				enum colors cp = get_file_color(de);
-				if (cp == COLOR_WHITE) fcolor = "";
-				else fcolor = ansi_colors[cp];
-				fcreset = ANSI_RESET;
-			}
+			printf("%s%s%s", fcolor, de->name, creset);
+			if (ident == NO_IDENT) ident = ' ';
+			putchar(ident);
 
-			printf("%s%s %s%s%c  ", icon, fcolor, de->name, fcreset, f_ident);
-			int padn = col_widths[cur_col] - f_width - 2;
-			padstr(padn < 0 ? 0 : padn);
+			if (!de->last_in_col) {
+				fputs("  ", stdout);
+				// string padding
+				for (int i = 0; i < col_widths[cur_col] - fwidth; i++)
+					putchar(' ');
+			}
 
 			cur_col++;
+
+			if (de->last_in_col) {
+				cur_col = 0;
+				putchar('\n');
+				neednl = false;
+			} else neednl = true;
+
 		}
 
-		if (!nl_term) putchar('\n');
+		if (neednl) putchar('\n');
 	}
 }
 
