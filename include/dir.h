@@ -53,6 +53,9 @@ struct dir_entry_t {
 	long group;
 	int size;
 	enum f_size u_size;
+
+	// oneshot args
+	bool last_in_col;
 };
 
 

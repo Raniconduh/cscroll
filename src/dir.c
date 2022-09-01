@@ -160,6 +160,7 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 	dir_entry->m_type = get_mime(dir_entry->name);
 
 	dir_entry->marked = false;
+	dir_entry->last_in_col = false;
 
 	return dir_entry;
 }
