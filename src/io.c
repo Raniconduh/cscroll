@@ -341,6 +341,11 @@ char * curses_getline(char * p) {
 	size_t l = 0;
 	char c;
 	while ((c = getch()) != '\n') {
+		if (l % 127 == 0) {
+			// add 1 to size as l starts at 0
+			inp = realloc(inp, l + 129);
+		}
+
 		if (c == 127) {
 			if (l > 0) l--;
 			addch(' ');
