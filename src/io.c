@@ -186,9 +186,32 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 #if ICONS
 	if (show_icons) printw("%s ", icon);
 #endif
+
+	size_t name_len = strlen(dir_entry->name);
+	size_t ext_len = 0;
+	if (f_ident != NO_IDENT) ext_len++;
+	if (*u_text) ext_len += strlen(u_text);
+
+	int y, x;
+	getyx(stdscr, y, x);
+	(void)y;
+
 	attron(cp);
-	printw("%s", dir_entry->name);
-	attroff(cp);
+
+	if (x + name_len + ext_len >= (unsigned)COLS) {
+		// allow space for ident and u_text
+		int padding = 4; // 3 for ..., 1 for space before NL
+		padding += ext_len ? ext_len + 1 : 0;
+		if (padding > COLS - x) padding = 4;
+
+		addnstr(dir_entry->name, COLS - x - padding);
+		attroff(cp);
+		addstr("...");
+	} else {
+		printw("%s", dir_entry->name);
+		attroff(cp);
+	}
+
 	printw("%c %s", f_ident, u_text);
 	addch('\n');
 }
