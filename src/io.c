@@ -261,16 +261,32 @@ void padstr(size_t n) {
 
 
 char * prompt(char * t, char ** args) {
-	int sub_cols = 30;
-	int sub_rows = sub_cols / 2;
+	size_t tlen = strlen(t);
+
+	int sub_cols;
+	// wider than 75% of the screen; need to break it down
+	if (tlen > (unsigned)(COLS * 3) / 4) sub_cols = COLS * 3 / 4 - 1;
+	// default is 4 wider than printed text (padding)
+	else  sub_cols = tlen + 4;
+
+	/**********
+	 * calculate the number of lines the text will need
+	 * 2 lines padding top/bottom
+	 * lines_of_text + 1 for prompt
+	 * extra line between text and options
+	 * 2 lines for options
+	 * 6 total
+	 **********/
+	size_t n_text_lines = tlen / sub_cols + 1; // +1 for int division
+	int sub_rows = n_text_lines + 6;
+
 	// newwin(rows, cols, y, x)
 	WINDOW * w = newwin(sub_rows, sub_cols, LINES / 2 - sub_rows / 2, COLS / 2 - sub_cols / 2);
 	werase(w);
 	
 	box(w, 0, 0);
 
-	// print text strinf
-	size_t tlen = strlen(t);
+	// print text string
 	if (tlen < (unsigned)sub_cols - 2)
 		mvwprintw(w, 2, sub_cols / 2 - tlen / 2, "%s", t);
 	else {
