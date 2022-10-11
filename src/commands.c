@@ -29,7 +29,11 @@ void ext_open(char * file) {
 	endwin();
 	pid_t pid = fork();
 	if (!pid) {
+#if defined(__APPLE__) || defined(__MACH__)
+		execvp("open", (char*[3]){"open", f, NULL});
+#else
 		execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
+#endif
 		exit(0);
 	}
 	wait(NULL);
