@@ -46,9 +46,8 @@ bool check_config(void) {
 	char * xdg_config = getenv("XDG_CONFIG_HOME");
 	char * cfg_path = NULL;
 	if (!xdg_config) {
-		char * home = getenv("HOME");
-		cfg_path = malloc(strlen(home) + 9 + csc_len + 1);
-		sprintf(cfg_path, "%s/.config", home);
+		cfg_path = malloc(strlen(homedir) + 9 + csc_len + 1);
+		sprintf(cfg_path, "%s/.config", homedir);
 	} else {
 		cfg_path = malloc(strlen(xdg_config) + 2 + csc_len);
 		strcpy(cfg_path, xdg_config);

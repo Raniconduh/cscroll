@@ -67,6 +67,7 @@ void remove_marked(void);
 char * mode_to_s(struct dir_entry_t *);
 bool check_dpath(char *);
 struct dir_entry_t * gen_dir_entry(char *, char *);
+void get_home(void);
 
 
 // number of directory entries
@@ -80,6 +81,7 @@ extern struct dir_entry_t ** dir_entries;
 
 // current working directory
 extern char * cwd;
+extern char * homedir;
 
 extern bool permission_denied;
 extern bool cwd_is_file;

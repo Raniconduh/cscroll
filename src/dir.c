@@ -16,6 +16,7 @@
 
 
 char * cwd = NULL;
+char * homedir = NULL;
 
 size_t n_dir_entries = 0;
 size_t dir_longest_owner = 0;
@@ -326,4 +327,15 @@ bool check_dpath(char * s) {
 	if (stat(s, &buf) == -1) return false;
 	if ((buf.st_mode & S_IFMT) == S_IFDIR) return true;
 	return false;
+}
+
+
+void get_home(void) {
+	char * s = getenv("HOME");
+	if (!s || *s == '\0') { // no var or empty
+		struct passwd * pw = getpwuid(geteuid());
+		homedir = strdup(pw->pw_dir);
+	} else {
+		homedir = strdup(s);
+	}
 }

@@ -21,6 +21,9 @@ size_t first_f = 0, last_f = 0, cursor = 0;
 int main(int argc, char ** argv) {
 	var_init();
 
+	// config file needs home directory
+	get_home();
+
 	if (!check_config()) create_config();
 	else read_config();
 	terminate_opts();
@@ -451,6 +454,7 @@ done:
 	if (print_path) puts(cwd);
 
 	free(cwd);
+	free(homedir);
 
 	return 0;
 }
