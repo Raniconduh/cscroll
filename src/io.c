@@ -433,6 +433,26 @@ void resize_fbuf(void) {
 }
 
 
+void resize_fbufcur(long c) {
+	// all files can fit on screen
+	if (n_dir_entries <= (unsigned)LINES - 6) {
+		first_f = 0;
+		last_f = n_dir_entries;
+	// somewhere in middle but no need to scroll
+	} else if (cursor > first_f && cursor <= last_f) {
+		; // no-op
+	// somewhere in the middle
+	} else if (cursor + LINES - 7 <= n_dir_entries) {
+		first_f = c;
+		last_f = first_f + LINES - 6;
+	// at the end
+	} else if (n_dir_entries > (unsigned)LINES - 6) {
+		last_f = n_dir_entries;
+		first_f = last_f - LINES + 6;
+	}
+}
+
+
 int get_fwidth(struct dir_entry_t * de) {
 	int w = 0;
 	w += strlen(de->name);

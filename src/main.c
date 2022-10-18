@@ -163,13 +163,30 @@ int main(int argc, char ** argv) {
 				break;
 			case KEY_LEFT:
 			case CTRL_B:
-			case 'h':
+			case 'h':;
+				// can't cd back when in /
+				if (cwd[0] == '/' && cwd[1] == '\0') break;
+
+				char * cur_dir = strdup(strrchr(cwd, '/') + 1);
+
 				cd_back();
 				free_dir_entries();
 				list_dir(cwd);
+
 				cursor = 1;
-				first_f = 0;
-				last_f = LAST_F;
+
+				// set cursor to old dir
+				long lc = search_file(cursor, cur_dir);
+				if (lc >= 0) {
+					cursor = lc + 1;
+					resize_fbufcur(lc);
+				} else {
+					cursor = 1;
+					first_f = 0;
+					last_f = LAST_F;
+				}
+
+				free(cur_dir);
 				break;
 			case KEY_RIGHT:
 			case CTRL_F:
@@ -369,26 +386,9 @@ int main(int argc, char ** argv) {
 				free(search_str);
 
 				if (c == -1) break;
-
 				cursor = c + 1;
 
-				// all files can fit on screen
-				if (n_dir_entries <= (unsigned)LINES - 6) {
-					first_f = 0;
-					last_f = n_dir_entries;
-				// somewhere in middle but no need to scroll
-				} else if (cursor > first_f && cursor <= last_f) {
-					; // no-op
-				// somewhere in the middle
-				} else if (cursor + LINES - 7 <= n_dir_entries) {
-					first_f = c;
-					last_f = first_f + LINES - 6;
-				// at the end
-				} else if (n_dir_entries > (unsigned)LINES - 6) {
-					last_f = n_dir_entries;
-					first_f = last_f - LINES + 6;
-				}
-
+				resize_fbufcur(c);
 				break;
 			case '!':;
 				char * cmd = curses_getline("!");

@@ -70,6 +70,7 @@ void set_color(void);
 void print_mode(struct dir_entry_t *);
 void padstr(size_t);
 void resize_fbuf(void);
+void resize_fbufcur(long);
 void print_oneshot(void);
 enum colors get_file_color(struct dir_entry_t *);
 char get_file_ident(struct dir_entry_t *);
