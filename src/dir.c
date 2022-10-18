@@ -340,14 +340,15 @@ bool check_dpath(char * s) {
 
 void get_home(void) {
 	char * s = getenv("HOME");
-	if (!s || *s == '\0') { // no var or empty
+	// check if var exists & is a real dir
+	if (s && *s && check_dpath(s)) {
+		homedir_len = strlen(s);
+		homedir = malloc(homedir_len + 1);
+		strcpy(homedir, s);
+	} else { // no var or empty
 		struct passwd * pw = getpwuid(geteuid());
 		homedir_len = strlen(pw->pw_dir);
 		homedir = malloc(homedir_len + 1);
 		strcpy(homedir, pw->pw_dir);
-	} else {
-		homedir_len = strlen(s);
-		homedir = malloc(homedir_len + 1);
-		strcpy(homedir, s);
 	}
 }
