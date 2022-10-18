@@ -17,6 +17,8 @@
 
 char * cwd = NULL;
 char * homedir = NULL;
+size_t homedir_len = 0;
+bool in_home_subdir = false;
 
 size_t n_dir_entries = 0;
 size_t dir_longest_owner = 0;
@@ -243,6 +245,9 @@ void cd_back(void) {
 
 	dir_longest_owner = 0;
 	dir_longest_group = 0;
+
+	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
+	else in_home_subdir = false;
 }
 
 
@@ -260,6 +265,9 @@ void enter_dir(char * name) {
 
 	dir_longest_owner = 0;
 	dir_longest_group = 0;
+
+	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
+	else in_home_subdir = false;
 }
 
 
@@ -334,8 +342,12 @@ void get_home(void) {
 	char * s = getenv("HOME");
 	if (!s || *s == '\0') { // no var or empty
 		struct passwd * pw = getpwuid(geteuid());
-		homedir = strdup(pw->pw_dir);
+		homedir_len = strlen(pw->pw_dir);
+		homedir = malloc(homedir_len + 1);
+		strcpy(homedir, pw->pw_dir);
 	} else {
-		homedir = strdup(s);
+		homedir_len = strlen(s);
+		homedir = malloc(homedir_len + 1);
+		strcpy(homedir, s);
 	}
 }

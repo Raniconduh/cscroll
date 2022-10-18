@@ -91,6 +91,8 @@ int main(int argc, char ** argv) {
 		chdir(cwd);
 	}
 
+	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
+
 	curses_init();
 
 	signal(SIGCONT, sig_handler);
@@ -116,7 +118,14 @@ int main(int argc, char ** argv) {
 		}
 		
 		// print path at top
-		printw("\n%s", cwd);
+		addch('\n');
+		if (in_home_subdir) {
+			addch('~');
+			// cwd == homedir
+			if (cwd[homedir_len] == '\0') addch('/');
+			else addstr(cwd + homedir_len);
+		} else addstr(cwd);
+
 		if (permission_denied) {
 			attron(COLOR_PAIR(RED));
 			printw("\tPermission Denied");

@@ -82,6 +82,8 @@ extern struct dir_entry_t ** dir_entries;
 // current working directory
 extern char * cwd;
 extern char * homedir;
+extern size_t homedir_len;
+extern bool in_home_subdir;
 
 extern bool permission_denied;
 extern bool cwd_is_file;
