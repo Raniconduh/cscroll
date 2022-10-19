@@ -173,10 +173,8 @@ int main(int argc, char ** argv) {
 				free_dir_entries();
 				list_dir(cwd);
 
-				cursor = 1;
-
 				// set cursor to old dir
-				long lc = search_file(cursor, cur_dir);
+				long lc = search_file(0, cur_dir);
 				if (lc >= 0) {
 					cursor = lc + 1;
 					resize_fbufcur(lc);
