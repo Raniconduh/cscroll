@@ -10,6 +10,11 @@
 
 #define COLOR_DEFAULT 0xFFFFFFFF
 
+struct opener_t {
+	char * fpath;
+	size_t nlen;
+};
+
 #define ICONS_VAR "icons"
 extern bool show_icons;
 #define DOTS_VAR "dots"
@@ -38,6 +43,8 @@ extern uint32_t exec_color;
 extern uint32_t media_color;
 #define ARCHIVE_COLOR_VAR "archive_color"
 extern uint32_t archive_color;
+#define OPENER_VAR "opener"
+extern struct opener_t opener;
 
 extern uint32_t custom_colors[11];
 

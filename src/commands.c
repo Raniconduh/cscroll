@@ -29,11 +29,15 @@ void ext_open(char * file) {
 	endwin();
 	pid_t pid = fork();
 	if (!pid) {
+		if (!opener.fpath){
 #if defined(__APPLE__) || defined(__MACH__)
-		execvp("open", (char*[3]){"open", f, NULL});
+			execvp("open", (char*[3]){"open", f, NULL});
 #else
-		execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
+			execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
 #endif
+		} else {
+			execvp(opener.fpath, (char*[3]){opener.fpath, f, NULL});
+		}
 		exit(0);
 	}
 	wait(NULL);

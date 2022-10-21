@@ -19,6 +19,7 @@ bool color = true;
 bool p_long = false;
 bool oneshot = false;
 bool show_dot_dirs = false;
+struct opener_t opener = {NULL, 0};
 
 uint32_t custom_colors[11];
 

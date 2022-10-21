@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <ncurses.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
@@ -138,8 +139,31 @@ static void set_archive(void * p) {
 }
 
 
+static void set_opener(void * p) {
+	char * s = (char*)p;
+	if (s && *s) {
+		size_t l = strlen(s);
+		if (l < opener.nlen) {
+			opener.nlen = l;
+			opener.fpath = realloc(opener.fpath, l + 1);
+			strcpy(opener.fpath, s);
+		} else if (l == opener.nlen) {
+			strcpy(opener.fpath, s);
+		} else { /* l > nlen */
+			opener.nlen = l;
+			opener.fpath = realloc(opener.fpath, l + 1);
+			strcpy(opener.fpath, s);
+		}
+	} else {
+		if (opener.fpath) free(opener.fpath);
+		opener.fpath = NULL;
+		opener.nlen = 0;
+	}
+}
+
+
 void var_init(void) {
-	var_map = map_new(14);
+	var_map = map_new(15);
 
 	map_insert(var_map, ICONS_VAR, set_icons);
 	map_insert(var_map, COLOR_VAR, set_color_f);
@@ -156,6 +180,8 @@ void var_init(void) {
 	map_insert(var_map, EXEC_COLOR_VAR, set_exec);
 	map_insert(var_map, MEDIA_COLOR_VAR, set_media);
 	map_insert(var_map, ARCHIVE_COLOR_VAR, set_archive);
+
+	map_insert(var_map, OPENER_VAR, set_opener);
 }
 
 
@@ -170,4 +196,5 @@ bool var_set(char * k, void * p) {
 
 void terminate_var(void) {
 	map_nuke(var_map);
+	free(opener.fpath);
 }
