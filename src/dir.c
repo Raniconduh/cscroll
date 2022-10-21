@@ -53,7 +53,6 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 
 	size_t d_name_len = strlen(d_name);
 
-
 	struct stat * buf = malloc(sizeof(struct stat));
 	char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
 	sprintf(tmp_path, "%s/%s", dir_path, d_name);
@@ -66,10 +65,10 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 	}
 
 	dir_entry->name = malloc(d_name_len + 1);
-
 	strcpy(dir_entry->name, d_name);
 
 	dir_entry->file_type = FILE_UNKNOWN;
+	dir_entry->under_link = FILE_UNKNOWN;
 	switch(buf->st_mode & S_IFMT) {
 		case S_IFBLK:
 		case S_IFCHR:
@@ -87,7 +86,6 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 			stat(tmp_path, buf2);
 			if ((buf2->st_mode & S_IFMT) == S_IFDIR)
 				dir_entry->under_link = FILE_DIR;
-			else dir_entry->under_link = FILE_UNKNOWN;
 			free(buf2);
 			break;
 		case S_IFIFO:
@@ -148,7 +146,7 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 		dir_longest_group = n;
 
 	dir_entry->size = buf->st_size;
-	dir_entry->u_size = 0;
+	dir_entry->u_size = B;
 
 	for (int i = 0; i <= PB; i++) {
 		if (dir_entry->size < 1000) break;
