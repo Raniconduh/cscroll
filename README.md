@@ -112,14 +112,24 @@ Variables specified in the configuration file will also be overwritten by comman
 
 #### Variables
 
-Variables allow setting defaults or changing settings while in cscroll itself as opposed to having to stop and restart it with different flags.
+Variables allow setting defaults or changing settings while in cscroll itself as opposed to having to stop and restart it with different flags. Variables are set with `var = value`
+
+##### Boolean Variables
+
+Boolean variables hold the value `true` or `false`. The following are boolean variables:
 
 * `color`: Turn on or off colors.
 * `dots`: Enable or disable the listing of dot files
 * `icons`: (If compiled with icons) If true, show [icons](#icons). Otherwise don't.
 * `long`: Turn on or off long mode
 
-The following variables may be set as a string and control the colors for each type of file specified by their names. The string must be wrapped with double quote characters (`"`) and not single quote characters (`'`). Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
+##### String Variables
+
+String variables can hold and value encased in two double-quotes. Single quotes will not create a valid string. For example, `variable = "my string"`. The following are string variables:
+
+* `opener`: Change the default file opener from `open` on Mac `xdg-open` on other systems to the specified value.
+
+The following string variables control the colors for each type of file specified by their names. Their values must be specified as six digit hexadecimal numbers with or without a leading hash (#). An example could be `dir_color = "#123abc"`.
 
 * `dir_color`: Directories
 * `reg_color`: Regular files (i.e. any file which is not any other color)
