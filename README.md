@@ -31,15 +31,18 @@ File colors can also be customized. ([see variables](#variables))
 
 ### Options
 
+* `-n`: Negate the next option
 * `-A`: Show dotfiles in listings but exclude . and ..
 * `-a`: (Only available in oneshot mode) List all dotfiles including . and ..
+* `-c`: Use colors in listings (default)
 * `-h`: No-op: for compatibility with ls
+* `-i`: Show icons (default)
 * `-p`: Print the path cscroll ends in. Useful for commands like `cd $(cscroll -p)` to cd into the last directory
-* `-nc`: Turn off coloring. cscroll will run in black and white mode
-* `-ni`: (If compiled with icons) turn off icons on start
 * `-l`: Display files in long mode (file mode, owner, group, size, modification time)
 * `--help`: Show the help screen
 * `--oneshot`: cscroll will print the files and exit, acting as if it were `ls`. The `-p` option will have no effect in oneshot mode.
+
+Options beginning with a single `-` may be stacked: e.g. `cscroll -la`. The `-n` option is useful with the `-i` and `-c` flags (`-ni`, `-nc`) to turn off icons or colors.
 
 ### Commands
 
