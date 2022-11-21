@@ -30,28 +30,58 @@ int main(int argc, char ** argv) {
 	generate_colors();
 
 	if (argc > 1) {
+		bool parse_opts = true;
+		bool negate_next = false;
+
 		for (int i = 1; i < argc; i++) {
-			if (!strcmp(argv[i], "-p")) {
-				print_path = true;
-			} else if (!strcmp(argv[i], "-nc")) {
-				color = false;
-#if ICONS
-			} else if (!strcmp(argv[i], "-ni")) {
-				show_icons = false;
+			if (parse_opts && argv[i][0] == '-') {
+				if (argv[i][0] != '\0' && argv[i][1] == '-') {
+					if (argv[i][2] == '\0') parse_opts = false;
+					else if (!strcmp(argv[i] + 2, "help"))
+						help();
+					else if (!strcmp(argv[i] + 2, "oneshot"))
+						oneshot = true;
+					else {
+						fprintf(stderr, "Unknown option: %s\n", argv[i]);
+						exit(1);
+					}
+				} else {
+					for (char * c = &argv[i][1]; *c; c++) {
+						switch (*c) {
+							case 'n':
+								negate_next = true;
+								break;
+							case 'p':
+								print_path = !negate_next;
+								break;
+							case 'c':
+								color = !negate_next;
+								break;
+#ifdef ICONS
+							case 'i':
+								show_icons = !negate_next;
+								break;
 #endif
-			} else if (!strcmp(argv[i], "-l")) {
-				p_long = true;
-			} else if (!strcmp(argv[i], "-A")) {
-				show_dot_files = true;
-			} else if (!strcmp(argv[i], "-a")) {
-				show_dot_dirs = true;
-				show_dot_files = true;
-			} else if (!strcmp(argv[i], "-h")) {
-				// no-op
-			} else if (!strcmp(argv[i], "--help")) {
-				help();
-			} else if (!strcmp(argv[i], "--oneshot")) {
-				oneshot = true;
+							case 'l':
+								p_long = !negate_next;
+								break;
+							case 'A':
+								show_dot_files = !negate_next;
+								break;
+							case 'a':
+								show_dot_files = !negate_next;
+								show_dot_dirs = !negate_next;
+								break;
+							case 'h': break;
+							default:
+								fprintf(stderr, "Unknown option: -%c\n", *c);
+								exit(1);
+								break;
+						}
+
+						if (*c != 'n') negate_next = false;
+					}
+				}
 			} else {
 				cwd = realpath(argv[i], NULL);
 				if (!cwd) cwd = strdup(argv[i]);
