@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <strings.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
@@ -39,11 +40,11 @@ static int cmp(const void * a, const void * b) {
 	else if (d->file_type == FILE_DIR && c->file_type != FILE_DIR)
 		return 1;
 	else
-		return strcmp(c->name, d->name);
+		return strcasecmp(c->name, d->name);
 }
 
 static int acmp(const void * a, const void * b) {
-	return strcmp((*(const struct dir_entry_t**)a)->name,
+	return strcasecmp((*(const struct dir_entry_t**)a)->name,
 			(*(const struct dir_entry_t**)b)->name);
 }
 
