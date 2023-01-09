@@ -146,24 +146,25 @@ void read_config(void) {
 
 	bool done = false;
 	// read by line
+	char line[256];
+
 	while (!done) {
-		char line[256] = {0}; // 0 initialize
-		char * lp = line;
+		*line = '\0';
+
+		short len = 0; // only needs to go up to 255
 
 		// read line from file into buffer
 		int c;
 		while ((c = fgetc(fp)) != '\n') {
-			if (c == EOF) {
-				done = true;
+			if (len >= 255 || c == EOF) {
+				line[len] = '\0';
+				done = c == EOF; // only done at EOF
 				break;
 			}
-			*lp++ = c;
+			line[len++] = c;
 		}
 
-		if (!*line) break;
-
-
-		parse_var(line);
+		if (*line) parse_var(line);
 	}
 
 	fclose(fp);
