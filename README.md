@@ -43,7 +43,7 @@ File colors can also be customized. ([see variables](#variables))
 * `--oneshot`: cscroll will print the files and exit, acting as if it were `ls`. The `-p` option will have no effect in oneshot mode.
 * `--`: Stop parsing command line flags
 
-Options beginning with a single `-` may be stacked: e.g. `cscroll -la`. The `-n` option is useful with the `-i` and `-c` flags (`-ni`, `-nc`) to turn off icons or colors. The `--` option allows running cscroll in a directory which is prefized with a `&`. E.g. `cscroll -- -mydir` will open cscroll in the directory `-mydir`.
+Options beginning with a single `-` may be stacked: e.g. `cscroll -la`. The `-n` option is useful with the `-i` and `-c` flags (`-ni`, `-nc`) to turn off icons or colors. The `--` option allows running cscroll in a directory which is prefized with a `-`. E.g. `cscroll -- -mydir` will open cscroll in the directory `-mydir`.
 
 ### Commands
 
