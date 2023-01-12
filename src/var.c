@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
-#include <math.h>
 
 #include "hash.h"
 #include "opts.h"
@@ -29,15 +28,14 @@ static uint32_t hextorgb(char * hex) {
 
 	uint16_t r, g, b;
 	uint32_t dec = 0;
-	int cpow = strlen(p) - 1;
 
 	for (; *p; p++) {
 		char c = toupper(*p);
 		if (c >= 'A' && c <= 'F') c = htod[(int)c];
 		else if (c >= '0' && c <= '9') c -= '0';
 		else return COLOR_DEFAULT;
-		dec += c * pow(16, cpow);
-		cpow--;
+		dec *= 16;
+		dec += c;
 	}
 
 	// convert to 10 bit color over 8 bit color
