@@ -149,15 +149,12 @@ void read_config(void) {
 	char line[256];
 
 	while (!done) {
-		*line = '\0';
-
 		short len = 0; // only needs to go up to 255
 
 		// read line from file into buffer
 		int c;
 		while ((c = fgetc(fp)) != '\n') {
 			if (len >= 255 || c == EOF) {
-				line[len] = '\0';
 				done = c == EOF; // only done at EOF
 				break;
 			}
