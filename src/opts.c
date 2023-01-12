@@ -164,6 +164,7 @@ void read_config(void) {
 			line[len++] = c;
 		}
 
+		line[len] = '\0';
 		if (*line) parse_var(line);
 	}
 
