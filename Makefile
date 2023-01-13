@@ -14,7 +14,7 @@ all: ${BIN}
 ${BIN}: ${OBJ}
 	${CC} ${CFLAGS} ${OBJ} -o $@ ${LDFLAGS}
 
-%.o:
+src/.c.o:
 	${CC} -c ${CFLAGS} $<
 
 clean:
