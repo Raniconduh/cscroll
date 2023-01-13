@@ -138,8 +138,8 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	char * icon = NULL;
 #endif
 	char * smode = NULL;
-	char * owner = getpwuid(dir_entry->owner)->pw_name;
-	char * group = getgrgid(dir_entry->group)->gr_name;
+	char * owner = get_oname(dir_entry->owner);
+	char * group = get_gname(dir_entry->group);
 	char * size  = NULL;
 	char time[128];
 	
@@ -214,6 +214,9 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 	printw("%c %s", f_ident, u_text);
 	addch('\n');
+
+	free(owner);
+	free(group);
 }
 
 
@@ -541,7 +544,7 @@ void print_oneshot(void) {
 			if (n < dir_longest_owner) padstr(dir_longest_owner - n);
 
 			// print rest of the long mode info
-			printf(" %4d %-2s %s %s%s %s%s%c %s\n",
+			printf(" %4lu %-2s %s %s%s %s%s%c %s\n",
 					de->size, size, time, fcolor, icon, de->name,
 					ANSI_RESET, f_ident, u_text);
 		}
@@ -717,4 +720,44 @@ char get_file_ident(struct dir_entry_t * de) {
 	}
 
 	return f_ident;
+}
+
+
+size_t get_ilen(long i, int base) {
+	size_t l = 0;
+
+	while (i > 0) {
+		i /= base;
+		l++;
+	}
+
+	return l;
+}
+
+
+char * get_oname(uid_t uid) {
+	char * buf = NULL;
+	struct passwd * pw = getpwuid(uid);
+	if (!pw) {
+		buf = malloc(get_ilen(uid, 10) + 1);
+		sprintf(buf, "%d", uid);
+	} else {
+		buf = malloc(strlen(pw->pw_name) + 1);
+		strcpy(buf, pw->pw_name);
+	}
+	return buf;
+}
+
+
+char * get_gname(gid_t gid) {
+	char * buf = NULL;
+	struct group * gr = getgrgid(gid);
+	if (!gr) {
+		buf = malloc(get_ilen(gid, 10) + 1);
+		sprintf(buf, "%d", gid);
+	} else {
+		buf = malloc(strlen(gr->gr_name) + 1);
+		strcpy(buf, gr->gr_name);
+	}
+	return buf;
 }

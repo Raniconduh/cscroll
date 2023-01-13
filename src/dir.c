@@ -138,13 +138,22 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 #else
 	dir_entry->mtime = buf->st_mtim.tv_sec;
 #endif
-	size_t n;
+
 	dir_entry->owner = buf->st_uid;
-	if ((n = strlen(getpwuid(buf->st_uid)->pw_name)) > dir_longest_owner)
-		dir_longest_owner = n;
 	dir_entry->group = buf->st_gid;
-	if ((n = strlen(getgrgid(buf->st_gid)->gr_name)) > dir_longest_group)
-		dir_longest_group = n;
+
+	struct passwd * pw = getpwuid(buf->st_uid);
+	size_t pw_l = 0;
+	if (!pw) pw_l = get_ilen(buf->st_uid, 10);
+	else pw_l = strlen(pw->pw_name);
+
+	struct group * gr = getgrgid(buf->st_gid);
+	size_t gr_l = 0;
+	if (!gr) gr_l = get_ilen(buf->st_gid, 10);
+	else gr_l = strlen(gr->gr_name);
+
+	if (pw_l > dir_longest_owner) dir_longest_owner = pw_l;
+	if (gr_l > dir_longest_group) dir_longest_group = gr_l;
 
 	dir_entry->size = buf->st_size;
 	dir_entry->u_size = B;

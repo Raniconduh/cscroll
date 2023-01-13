@@ -51,7 +51,7 @@ struct dir_entry_t {
 	time_t mtime;
 	long owner;
 	long group;
-	int size;
+	size_t size;
 	enum f_size u_size;
 
 	// oneshot args
