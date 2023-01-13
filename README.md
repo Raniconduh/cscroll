@@ -158,6 +158,8 @@ To run, cscroll requires libncurses and libterminfo. Compilation, however, also 
 
 On Debian and Ubuntu based system, libncurses may be titled `libncurses-dev` or simply `libncurses` and can be installed with `sudo apt install libncurses{,-dev}`.
 
+Any compilation configuration can be done in the `config.mk` file.
+
 To compile, simply run `make`. Nerd icons are enabled by default. To turn them off, compile with `ICONS=0`.
 
 The program will then be accessible by running `./cscroll`.
