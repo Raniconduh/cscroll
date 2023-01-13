@@ -12,7 +12,7 @@ CC ?= cc
 all: ${BIN}
 
 ${BIN}: ${OBJ}
-	${CC} ${LDFLAGS} ${OBJ} -o $@
+	${CC} ${CFLAGS} ${OBJ} -o $@ ${LDFLAGS}
 
 %.o:
 	${CC} -c ${CFLAGS} $<
