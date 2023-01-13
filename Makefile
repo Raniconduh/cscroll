@@ -1,42 +1,30 @@
-SOURCES ?= src/*.c
-HEADERS ?= include/*.h
-INCLUDEDIR ?= include
-DEST ?= cscroll
+.POSIX:
 
-ICONS ?= 1
+include config.mk
+
+BIN = cscroll
+SRC = src/commands.c src/dir.c src/hash.c src/io.c src/main.c \
+      src/opts.c src/type.c src/var.c
+OBJ = ${SRC:.c=.o}
 
 CC ?= cc
-CFLAGS += -DICONS=$(ICONS) -Wall -Wextra -pedantic $(shell pkg-config --cflags ncurses)
 
-UNAME := $(shell uname)
-$(shell pkg-config --exists ncursesw)
-ifeq ($(.SHELLSTATUS),0)
-        NCURSES := ncursesw
-else
-        NCURSES := ncurses
-endif
+all: ${BIN}
 
-LIBS += $(shell pkg-config --libs $(NCURSES)) -lm
-ifneq ($(UNAME), Darwin)
-	LIBS += -ltinfo
-endif
+${BIN}: ${OBJ}
+	${CC} ${LDFLAGS} ${OBJ} -o $@
 
-PREFIX ?= /usr/local
-
-all: cscroll
-
-cscroll: $(SOURCES) $(HEADERS)
-	$(CC) -I$(INCLUDEDIR) -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS)
-
-debug: $(SOURCES) $(HEADERS)
-	$(CC) -I$(INCLUDEDIR) -DDEBUG -o $(DEST) $(SOURCES) $(CFLAGS) $(LIBS) -g
-
-install: all
-	install -D $(DEST) $(DESTDIR)$(PREFIX)/bin/$(DEST)
-
-uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/$(DEST)
+%.o:
+	${CC} -c ${CFLAGS} $<
 
 clean:
-	rm -f $(DEST)
+	rm -f ${BIN} ${OBJ}
 
+install: all
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	install -Dm755 ${BIN} ${DESTDIR}${PREFIX}/bin/${BIN}
+
+uninstall:
+	rm -f ${DESTDIR}${PREFIX}/bin/${BIN}
+
+.PHONY: all clean install uninstall
