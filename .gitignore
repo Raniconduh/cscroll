@@ -1,2 +1,3 @@
 .*.swp
 cscroll
+src/*.o
