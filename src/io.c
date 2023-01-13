@@ -456,7 +456,7 @@ void resize_fbufcur(long c) {
 int get_fwidth(struct dir_entry_t * de) {
 	int w = 0;
 	w += strlen(de->name);
-#ifdef ICONS
+#if ICONS
 	if (show_icons) w += 2;
 #endif
 
@@ -606,7 +606,7 @@ void print_oneshot(void) {
 			int fwidth = get_fwidth(de);
 
 
-#ifdef ICONS
+#if ICONS
 			if (show_icons) icon = get_icon(de);
 #endif
 

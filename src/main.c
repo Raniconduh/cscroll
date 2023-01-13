@@ -57,7 +57,7 @@ int main(int argc, char ** argv) {
 							case 'c':
 								color = !negate_next;
 								break;
-#ifdef ICONS
+#if ICONS
 							case 'i':
 								show_icons = !negate_next;
 								break;
