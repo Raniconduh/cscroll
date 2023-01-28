@@ -186,7 +186,6 @@ int list_dir(char * dir_path) {
 	if (!dir) {
 		if (errno == EACCES)
 			permission_denied = true;
-		closedir(dir);
 		return 1;
 	}
 	permission_denied = false;
