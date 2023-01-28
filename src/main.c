@@ -245,11 +245,13 @@ int main(int argc, char ** argv) {
 				}
 
 				break;
+			case KEY_HOME:
 			case 'g':
 				cursor = 1;
 				first_f = 0;
 				last_f = LAST_F;
 				break;
+			case KEY_END:
 			case 'G':
 				cursor = n_dir_entries;
 				last_f = n_dir_entries - 1;
