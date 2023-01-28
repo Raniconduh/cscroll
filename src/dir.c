@@ -207,7 +207,7 @@ int list_dir(char * dir_path) {
 			continue; // possibly display message
 		}
 
-		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t) * (n_dir_entries + 1));
+		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t*) * (n_dir_entries + 1));
 		dir_entries[n_dir_entries] = dir_entry;
 		n_dir_entries++;
 	}

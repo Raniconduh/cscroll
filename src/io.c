@@ -520,7 +520,7 @@ void print_oneshot(void) {
 		}
 
 		n_dir_entries = 1;
-		dir_entries = malloc(sizeof(struct dir_entry_t));
+		dir_entries = malloc(sizeof(struct dir_entry_t*));
 		dir_entries[0] = de;
 	}
 
