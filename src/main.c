@@ -316,10 +316,7 @@ int main(int argc, char ** argv) {
 				if (n_marked_files)
 					break;
 				char * nn = curses_getline(NULL); // new name
-				if (strlen(nn) < 1) {
-					free(nn);
-					break;
-				}
+				if (!nn) break;
 				// old path
 				char * op = malloc(strlen(cwd) + strlen(dir_entries[cursor - 1]->name) + 2);
 				// new path
@@ -389,6 +386,8 @@ int main(int argc, char ** argv) {
 				break;
 			case ':':;
 				char * inp = curses_getline(":");
+				if (!inp) break;
+
 				char * sp = strchr(inp, ' ');
 				if (sp) {
 					*sp = 0;
@@ -410,6 +409,8 @@ int main(int argc, char ** argv) {
 				break;
 			case '/':;
 				char * search_str = curses_getline("/");
+				if (!search_str) break;
+
 				long c = search_file(cursor, search_str);
 				free(search_str);
 
@@ -420,7 +421,7 @@ int main(int argc, char ** argv) {
 				break;
 			case '!':;
 				char * cmd = curses_getline("!");
-				if (!cmd[0]) break;
+				if (!cmd) break;
 				// file name & length to sub
 				char * f = dir_entries[cursor - 1]->name;
 				size_t flen = strlen(f);

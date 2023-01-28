@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <time.h>
 #include <pwd.h>
 #include <grp.h>
@@ -372,33 +373,55 @@ done:;
 
 char * curses_getline(char * p) {
 	curs_set(1);
-	echo();
-	noraw();
 
-	if (p)
-		printw("%s", p);
-	refresh();
+	size_t plen = 0;
+	if (p) {
+		addstr(p);
+		plen = strlen(p);
+		refresh();
+	}
 
 	char * inp = malloc(128);
 	size_t l = 0;
 	char c;
 	while ((c = getch()) != '\n') {
-		if (l % 127 == 0) {
-			// add 1 to size as l starts at 0
+		if ((l + 1) % 127 == 0) {
+			// add 1 byte to prevent buffer overrun on deletion
 			inp = realloc(inp, l + 129);
 		}
 
 		if (c == 127) {
 			if (l > 0) l--;
-			addch(' ');
-		}
-		inp[l++] = c;
-	}
-	inp[l] = '\0';
+		} else if (isprint(c)) {
+			// do not bother with non-printable characters
+			// line editing may be added later
+			inp[l++] = c;
+		} else continue;
 
+		int y, x;
+		getyx(stdscr, y, x);
+
+		// it is time to scroll
+		if (l >= COLS - plen - 1) {
+			move(y, plen);
+			for (size_t i = l - COLS + plen + 1; i < l; i++) {
+				addch(inp[i]);
+			}
+		} else if ((unsigned)x != plen && c == 127) {
+			mvaddch(y, x - 1, ' ');
+			move(y, x - 1);
+		} else if (c != 127) {
+			addch(c);
+		}
+
+		refresh();
+	}
+
+	if (l == 0) {
+		free(inp);
+		inp = NULL;
+	} else inp[l] = '\0';
 	curs_set(0);
-	noecho();
-	raw();
 
 	return inp;
 }
