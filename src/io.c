@@ -855,7 +855,7 @@ void page_info(void) {
 	while (!done) {
 		erase();
 
-		for (size_t i = first_info; i < last_info; i++) {
+		for (size_t i = first_info; i <= last_info; i++) {
 			int cp = get_info_color(info_buffer.i[i]);
 			attron(cp);
 			addstr(info_buffer.i[i]->msg);
@@ -864,7 +864,7 @@ void page_info(void) {
 		}
 
 		printw("LINES %lu-%lu/%lu, q to close\n",
-				first_info + 1, last_info, info_buffer.n);
+				first_info + 1, last_info + 1, info_buffer.n);
 
 		refresh();
 
