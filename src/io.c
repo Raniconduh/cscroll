@@ -841,7 +841,7 @@ void refresh_info(void) {
 }
 
 
-void page_info() {
+void page_info(void) {
 	if (info_buffer.n == 0 || !info_buffer.w) return;
 
 	clear();

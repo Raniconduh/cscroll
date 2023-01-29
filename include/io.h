@@ -115,6 +115,7 @@ void info_init(void);
 void display_info(enum info_t, char *);
 void refresh_info(void);
 int get_info_color(struct info_node *);
+void page_info(void);
 
 
 extern bool print_path;
