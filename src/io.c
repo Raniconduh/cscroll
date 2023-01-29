@@ -877,7 +877,7 @@ void page_info(void) {
 				}
 				break;
 			case DOWN_KEYS:
-				if (last_info < info_buffer.n) {
+				if (last_info < info_buffer.n - 1) {
 					first_info++;
 					last_info++;
 				}
