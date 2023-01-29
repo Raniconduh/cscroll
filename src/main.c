@@ -219,19 +219,13 @@ int main(int argc, char ** argv) {
 
 		int c = getch();
 		switch (c) {
-			case KEY_UP:
-			case CTRL_P:
-			case 'k':
+			case UP_KEYS:
 				if (cursor > 1) cursor--;
 				break;
-			case KEY_DOWN:
-			case CTRL_N:
-			case 'j':
+			case DOWN_KEYS:
 				if (cursor < n_dir_entries) cursor++;
 				break;
-			case KEY_LEFT:
-			case CTRL_B:
-			case 'h':;
+			case LEFT_KEYS:
 				// can't cd back when in /
 				if (cwd[0] == '/' && cwd[1] == '\0') break;
 
@@ -254,9 +248,7 @@ int main(int argc, char ** argv) {
 
 				free(cur_dir);
 				break;
-			case KEY_RIGHT:
-			case CTRL_F:
-			case 'l':
+			case RIGHT_KEYS:
 			case '\n':
 				if (!n_dir_entries) break;
 				open_cur_file();
@@ -444,6 +436,8 @@ int main(int argc, char ** argv) {
 				} else if (!strcmp(inp, "ca") && !cutting) {
 					mark_all();
 					create_cuts(cwd, NULL);
+				} else if (!strcmp(inp, "i")) {
+					page_info();
 				}
 				free(inp);
 				break;

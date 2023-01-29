@@ -21,6 +21,27 @@
 #define ANSI_RESET    ESC "[0m"
 
 
+#define UP_KEYS \
+	KEY_UP: \
+	case CTRL_P: \
+	case 'k'
+
+#define DOWN_KEYS \
+	KEY_DOWN: \
+	case CTRL_N: \
+	case 'j'
+
+#define LEFT_KEYS \
+	KEY_LEFT: \
+	case CTRL_B: \
+	case 'h'
+
+#define RIGHT_KEYS \
+	KEY_RIGHT: \
+	case CTRL_F: \
+	case 'l'
+
+
 enum colors {
 	COLOR_DIR     = 1,
 	COLOR_LINK    = 2,
@@ -93,6 +114,7 @@ char * get_gname(gid_t);
 void info_init(void);
 void display_info(enum info_t, char *);
 void refresh_info(void);
+int get_info_color(struct info_node *);
 
 
 extern bool print_path;

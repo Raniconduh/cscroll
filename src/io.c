@@ -346,20 +346,12 @@ char * prompt(char * t, char ** args) {
 
 		int c = getch();
 		switch (c) {
-			case KEY_UP:
-			case KEY_LEFT:
-			case CTRL_P:
-			case CTRL_B:
-			case 'h':
-			case 'k':
+			case UP_KEYS:
+			case LEFT_KEYS:
 				if (cursor > 1) cursor--;
 				break;
-			case KEY_DOWN:
-			case KEY_RIGHT:
-			case CTRL_N:
-			case CTRL_F:
-			case 'l':
-			case 'j':
+			case DOWN_KEYS:
+			case RIGHT_KEYS:
 				if ((unsigned)cursor < argcount) cursor++;
 				break;
 			case '\n':
@@ -823,22 +815,85 @@ void display_info(enum info_t type, char * msg) {
 }
 
 
+int get_info_color(struct info_node * n) {
+	switch (n->type) {
+		default:
+		case INFO_INFO: return COLOR_PAIR(WHITE);
+		case INFO_WARN: return COLOR_PAIR(YELLOW) | A_REVERSE;
+		case INFO_ERR:  return COLOR_PAIR(RED) | A_REVERSE;
+	}
+}
+
+
 void refresh_info(void) {
 	if (info_buffer.n == 0 || !info_buffer.w) return;
 
 	size_t n = info_buffer.n - 1;
 
-	int cp = 0;
-	switch (info_buffer.i[n]->type) {
-		case INFO_INFO: cp = COLOR_PAIR(WHITE); break;
-		case INFO_WARN: cp = COLOR_PAIR(YELLOW) | A_REVERSE; break;
-		case INFO_ERR:  cp = COLOR_PAIR(RED) | A_REVERSE; break;
-	}
 
+	int cp = get_info_color(info_buffer.i[n]);
 	werase(info_buffer.w);
 	waddstr(info_buffer.w, "(:i) ");
 	wattron(info_buffer.w, cp);
 	waddstr(info_buffer.w, info_buffer.i[n]->msg);
 	wattroff(info_buffer.w, cp);
 	wrefresh(info_buffer.w);
+}
+
+
+void page_info() {
+	if (info_buffer.n == 0 || !info_buffer.w) return;
+
+	clear();
+
+	size_t first_info = 0;
+	size_t last_info = info_buffer.n - 1;
+	if (last_info >= (unsigned)LINES - 1) last_info = LINES - 1;
+
+	bool done = false;
+
+	while (!done) {
+		erase();
+
+		for (size_t i = first_info; i < last_info; i++) {
+			int cp = get_info_color(info_buffer.i[i]);
+			attron(cp);
+			addstr(info_buffer.i[i]->msg);
+			attroff(cp);
+			addch('\n');
+		}
+
+		printw("LINES %lu-%lu/%lu, q to close\n",
+				first_info + 1, last_info, info_buffer.n);
+
+		refresh();
+
+		int c = getch();
+		switch (c) {
+			case UP_KEYS:
+				if (first_info > 0) {
+					first_info--;
+					last_info--;
+				}
+				break;
+			case DOWN_KEYS:
+				if (last_info < info_buffer.n) {
+					first_info++;
+					last_info++;
+				}
+				break;
+			case KEY_RESIZE:
+				// jump back to the top, it is fine.
+				first_info = 0;
+				last_info = info_buffer.n - 1;
+				if (last_info >= (unsigned)LINES - 1) last_info = LINES - 1;
+				// make sure the file buffer is resized too
+				resize_fbuf();
+				break;
+			case CTRL_C:
+			case 'q':
+				done = true;
+				break;
+		}
+	}
 }
