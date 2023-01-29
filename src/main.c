@@ -146,23 +146,59 @@ int main(int argc, char ** argv) {
 			first_f--;
 			last_f--;
 		}
-		
-		// print path at top
-		addch('\n');
-		if (in_home_subdir) {
-			addch('~');
-			// cwd == homedir
-			if (cwd[homedir_len] == '\0') addch('/');
-			else addstr(cwd + homedir_len);
-		} else addstr(cwd);
 
+		// computer however many characters of cwd will be printed
+		int cwd_len = 0;
+		if (in_home_subdir) cwd_len = strlen(cwd) - homedir_len + 1;
+		else cwd_len = strlen(cwd);
+
+		// print cwd at top
+		if (cwd_len >= COLS) {
+			char * p = cwd + (cwd_len - COLS);
+			if (in_home_subdir) {
+				addch('~');
+				p += homedir_len;
+			}
+
+			// there is not enough room for an elipsis,
+			// just print whatever is left
+			if (p + 5 > cwd + strlen(cwd)) {
+				//addstr(p);
+			} else {
+				p += 5; // strlen("/...")
+				addch('/');
+				attron(A_DIM);
+				addstr("...");
+				attroff(A_DIM);
+				addstr(p);
+			}
+		// write the full path regularly
+		} else {
+			char * p = cwd;
+			if (in_home_subdir) {
+				addch('~');
+				p += homedir_len;
+			}
+
+			if (!*p) addch('/');
+			else addstr(p);
+		}
+
+		addch('\n');
+		bool printed_info = false;
 		if (permission_denied) {
+			printed_info = true;
 			attron(COLOR_PAIR(RED));
-			printw("\tPermission Denied");
+			addstr("Permission Denied");
 			attroff(COLOR_PAIR(RED));
 		}
-		if (cutting) printw("  cut");
-		printw("\n\n");
+		if (cutting) {
+			printed_info = true;
+			if (permission_denied) padstr(2);
+			addstr("Cut");
+		}
+		if (printed_info) addch('\n');
+		addch('\n');
 
 		// print files
 		for (size_t i = first_f; i < last_f; i++) {
