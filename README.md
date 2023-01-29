@@ -82,6 +82,8 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 * `unset`: Unset a variable (set to false, [see Variables](#variables))
 * `var`: Set a variable equal to something `var variable = false` ([see Variables](#variables) and ['config file'](#config-file))
 
+* `i`: Open the [info buffer](#info-buffer) viewer
+
 #### Renaming
 
 The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory.
@@ -93,6 +95,14 @@ E.g. if the directory cscroll is in is `/home/user/downloads` and the file `imag
 Pressing `!` will open a prompt prefixed with `!` which will run the shell command entered into it. Entering `%f` will format the command entered with the name of the file the cursor is currently on. To escape this format (i.e. to not have it be replaced with the file name), enter `%%f`. The output will be literally `%f`.
 
 E.g. `vim %f` will format to `vim FILE` where `FILE` is the name of the file the cursor is on. `echo %%f`, however, will format to `echo %f` and the output of the command will literally be `%f`.
+
+#### Info Buffer
+
+The info buffer shows all information messages, warnings, and errors. The `:i` command opens a pager to view every message at once. To scroll up the buffer, any of the up keys will work. To scroll down, any of the down keys will work. To close the buffer, press `q` or `Ctrl+c`.
+
+When the info buffer is not opened, the latest info message will be shown at the bottom of the screen.
+
+Messages highlighted in red are errors, yellow are warnings, and messages without highlighting are general information.
 
 #### Config File
 
