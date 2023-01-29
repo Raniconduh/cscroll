@@ -59,6 +59,18 @@ enum keys {
 	CTRL_Z = 26,
 };
 
+enum info_t {
+	INFO_INFO,
+	INFO_WARN,
+	INFO_ERR,
+};
+
+
+struct info_node {
+	enum info_t type;
+	char * msg;
+};
+
 
 void curses_init(void);
 void terminate_curses(void);
@@ -78,6 +90,9 @@ char get_file_ident(struct dir_entry_t *);
 size_t get_ilen(long, int);
 char * get_oname(uid_t);
 char * get_gname(gid_t);
+void info_init(void);
+void display_info(enum info_t, char *);
+void refresh_info(void);
 
 
 extern bool print_path;

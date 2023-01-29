@@ -104,8 +104,10 @@ void parse_var(char * var) {
 
 	// add null terminator to var
 	char * val = strchr(var, '=');
-	if (!val) return; // fail silently
-	// TODO: Show errors present in config file to user
+	if (!val) {
+		display_info(INFO_WARN, "Missing '=' in config file");
+		return;
+	}
 
 	while (val + n > line && isspace(val[--n]));
 	val[n + 1] = 0;
@@ -133,7 +135,7 @@ void parse_var(char * var) {
 		val[vlen - 2] = 0;
 		ptr_val = val;
 	} else {
-		// invalid line, silently fail again
+		display_info(INFO_WARN, "Unknown variable type in config file");
 		return;
 	}
 

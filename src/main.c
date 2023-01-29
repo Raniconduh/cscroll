@@ -124,6 +124,7 @@ int main(int argc, char ** argv) {
 	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
 
 	curses_init();
+	info_init();
 
 	signal(SIGCONT, sig_handler);
 
@@ -214,6 +215,7 @@ int main(int argc, char ** argv) {
 			printw("\n%lu/%lu\n", cursor, n_dir_entries);
 
 		refresh();
+		refresh_info();
 
 		int c = getch();
 		switch (c) {

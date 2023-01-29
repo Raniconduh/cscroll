@@ -203,7 +203,8 @@ int list_dir(char * dir_path) {
 		struct dir_entry_t * dir_entry = gen_dir_entry(dir_path, d_name);
 
 		if (!dir_entry) {
-			continue; // possibly display message
+			display_info(INFO_WARN, strerror(errno));
+			continue;
 		}
 
 		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t*) * (n_dir_entries + 1));
@@ -266,15 +267,18 @@ void enter_dir(char * name) {
 	else
 		sprintf(tmp, "%s%s", cwd, name);
 
-	free(cwd);
-	cwd = tmp;
-	chdir(cwd);
+	if (chdir(tmp) == -1) {
+		display_info(INFO_ERR, strerror(errno));
+	} else {
+		free(cwd);
+		cwd = tmp;
 
-	dir_longest_owner = 0;
-	dir_longest_group = 0;
+		dir_longest_owner = 0;
+		dir_longest_group = 0;
 
-	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
-	else in_home_subdir = false;
+		if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
+		else in_home_subdir = false;
+	}
 }
 
 

@@ -25,6 +25,14 @@ bool print_path = false;
 int stdout_back = 0;
 size_t n_marked_files = false;
 
+
+static struct {
+	WINDOW * w;
+	struct info_node ** i;
+	size_t n;
+} info_buffer = {NULL, NULL, 0};
+
+
 static int default_colors[] = {
 	[COLOR_DIR]     = COLOR_BLUE,
 	[COLOR_LINK]    = COLOR_CYAN,
@@ -783,4 +791,54 @@ char * get_gname(gid_t gid) {
 		strcpy(buf, gr->gr_name);
 	}
 	return buf;
+}
+
+
+void info_init(void) {
+	info_buffer.w = newwin(1, COLS, LINES - 1, 0);
+	wclear(info_buffer.w);
+	refresh();
+}
+
+
+void display_info(enum info_t type, char * msg) {
+	if (!info_buffer.i) info_buffer.i = malloc(sizeof(struct info_node*) * 32);
+
+	// realloc every 32
+	if ((info_buffer.n + 1) % 32 == 0) {
+		info_buffer.i = realloc(info_buffer.i,
+				(info_buffer.n + 32) * sizeof(struct info_node*));
+	}
+
+	size_t n = info_buffer.n;
+	info_buffer.i[n] = malloc(sizeof(struct info_node));
+	info_buffer.i[n]->type = type;
+
+	info_buffer.i[n]->msg = malloc(strlen(msg) + 1);
+	strcpy(info_buffer.i[n]->msg, msg);
+
+	info_buffer.n++;
+
+	refresh_info();
+}
+
+
+void refresh_info(void) {
+	if (info_buffer.n == 0 || !info_buffer.w) return;
+
+	size_t n = info_buffer.n - 1;
+
+	int cp = 0;
+	switch (info_buffer.i[n]->type) {
+		case INFO_INFO: cp = COLOR_PAIR(WHITE); break;
+		case INFO_WARN: cp = COLOR_PAIR(YELLOW) | A_REVERSE; break;
+		case INFO_ERR:  cp = COLOR_PAIR(RED) | A_REVERSE; break;
+	}
+
+	werase(info_buffer.w);
+	waddstr(info_buffer.w, "(:i) ");
+	wattron(info_buffer.w, cp);
+	waddstr(info_buffer.w, info_buffer.i[n]->msg);
+	wattroff(info_buffer.w, cp);
+	wrefresh(info_buffer.w);
 }
