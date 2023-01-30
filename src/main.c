@@ -202,6 +202,8 @@ int main(int argc, char ** argv) {
 		if (printed_info) addch('\n');
 		addch('\n');
 
+		int fstart_y, _fstart_x;
+		getyx(stdscr, fstart_y, _fstart_x);
 		// print files
 		for (size_t i = first_f; i < last_f; i++) {
 			bool h = false;
@@ -210,6 +212,8 @@ int main(int argc, char ** argv) {
 
 			curses_write_file(dir_entries[i], h);
 		}
+		int fend_y, _fend_x;
+		getyx(stdscr, fend_y, _fend_x);
 
 		// print cursor / total entries
 		if (n_dir_entries)
@@ -261,10 +265,9 @@ int main(int argc, char ** argv) {
 				if (getmouse(&mouse_event) == OK) {
 					ok = true;
 					int mrow = mouse_event.y; // row @ mouse click; start @ 1
-					if (mrow < 3 || mrow > LINES - 4) break; // 3 pad top/bottom
-					if ((unsigned)mrow - 3 >= n_dir_entries) break;
+					if (mrow < fstart_y || mrow >= fend_y) break;
 
-					norm_row = first_f + mrow - 2; // 3-pad, mrow>0
+					norm_row = first_f + (mrow - fstart_y) + 1;
 				}
 
 				if (ok) {
