@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "info.h"
 #include "opts.h"
 #include "var.h"
 #include "io.h"

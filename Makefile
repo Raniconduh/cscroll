@@ -4,7 +4,7 @@ include config.mk
 
 BIN = cscroll
 SRC = src/commands.c src/dir.c src/hash.c src/io.c src/main.c \
-      src/opts.c src/type.c src/var.c
+      src/opts.c src/type.c src/var.c src/info.c
 OBJ = ${SRC:.c=.o}
 
 CC ?= cc

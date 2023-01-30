@@ -10,6 +10,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "info.h"
 #include "type.h"
 #include "opts.h"
 #include "dir.h"

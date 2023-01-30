@@ -8,6 +8,7 @@
 #include <signal.h>
 
 #include "commands.h"
+#include "info.h"
 #include "main.h"
 #include "opts.h"
 #include "dir.h"
