@@ -118,16 +118,12 @@ void parse_var(char * var) {
 	while (*val && *val != '=' && isspace(*val)) val++;
 
 	void * ptr_val = NULL;
-	bool bool_val = false;
-
 	size_t vlen = strlen(val);
 
 	if (!strcmp(val, "true")) {
-		bool_val = true;
-		ptr_val = &bool_val;
+		ptr_val = VAR_TRUE;
 	} else if (!strcmp(val, "false")) {
-		bool_val = false;
-		ptr_val = &bool_val;
+		ptr_val = VAR_FALSE;
 	} else if (vlen > 2 && val[0] == '"' && val[vlen - 1] == '"') {
 		// empty strings not supported
 		val++;

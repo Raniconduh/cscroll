@@ -9,6 +9,7 @@
 #include "hash.h"
 #include "opts.h"
 #include "main.h"
+#include "var.h"
 #include "dir.h"
 #include "io.h"
 
@@ -18,6 +19,8 @@ static map * var_map = NULL;
 
 // must be 6 characters long
 static uint32_t hextorgb(char * hex) {
+	if (hex == VAR_FALSE || hex == VAR_TRUE) return COLOR_DEFAULT;
+
 	char * p = hex;
 	if (*p == '#') p++;
 
@@ -44,30 +47,28 @@ static uint32_t hextorgb(char * hex) {
 	b = (float)(dec & 0xFF) / 255.0 * 1000;
 
 	return RGB(r, g, b);
-
-	return 0;
 }
 
 
 // void * p -> bool p
 static void set_icons(void * p) {
-	show_icons = *(bool*)p;
+	show_icons = (bool)p;
 }
 
 
 static void set_color_f(void * p) {
-	color = *(bool*)p;
+	color = (bool)p;
 	set_color();
 }
 
 
 static void set_long(void * p) {
-	p_long = *(bool*)p;
+	p_long = (bool)p;
 }
 
 
 static void set_dots(void * p) {
-	show_dot_files = *(bool*)p;
+	show_dot_files = (bool)p;
 
 	free_dir_entries();
 	list_dir(cwd);
@@ -138,6 +139,8 @@ static void set_archive(void * p) {
 
 
 static void set_opener(void * p) {
+	if (p == VAR_FALSE || p == VAR_TRUE) return;
+
 	char * s = (char*)p;
 	if (s && *s) {
 		size_t l = strlen(s);
