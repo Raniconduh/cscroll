@@ -9,7 +9,7 @@ enum info_t {
 
 
 void info_init(void);
-void display_info(enum info_t, char *);
+void display_info(enum info_t, char *, ...);
 void refresh_info(void);
 void page_info(void);
 

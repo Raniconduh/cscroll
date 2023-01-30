@@ -427,8 +427,19 @@ int main(int argc, char ** argv) {
 					char * cmd = inp;
 					char * args = ++sp;
 					if (!strcmp(cmd, "set")) set(args);
-					else if (!strcmp(cmd, "var")) parse_var(args);
-					else if (!strcmp(cmd, "unset")) unset(args);
+					else if (!strcmp(cmd, "var")) switch (parse_var(args)) {
+						case VAR_STAT_NOEQ:
+							display_info(INFO_WARN,
+							             "Missing '=' in variable definition");
+							break;
+						case VAR_STAT_NOTYPE:
+							display_info(INFO_WARN,
+							             "Missing or unknown type");
+							break;
+						default:
+						case VAR_STAT_OK:
+							break;
+					} else if (!strcmp(cmd, "unset")) unset(args);
 				} else if (!strcmp(inp, "ma") && !cutting)
 					mark_all();
 				else if (!strcmp(inp, "mu")) {

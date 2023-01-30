@@ -1,6 +1,8 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #include "info.h"
 #include "io.h"
@@ -36,7 +38,7 @@ void info_init(void) {
 }
 
 
-void display_info(enum info_t type, char * msg) {
+void display_info(enum info_t type, char * fmt, ...) {
 	if (!info_buffer.i) info_buffer.i = malloc(sizeof(struct info_node*) * 32);
 
 	// realloc every 32
@@ -49,11 +51,16 @@ void display_info(enum info_t type, char * msg) {
 	info_buffer.i[n] = malloc(sizeof(struct info_node));
 	info_buffer.i[n]->type = type;
 
-	info_buffer.i[n]->msg = malloc(strlen(msg) + 1);
-	strcpy(info_buffer.i[n]->msg, msg);
+	va_list vlist;
+	va_start(vlist, fmt);
+
+	size_t nl = vsnprintf(NULL, 0, fmt, vlist);
+	info_buffer.i[n]->msg = malloc(nl + 1);
+	vsprintf(info_buffer.i[n]->msg, fmt, vlist);
+
+	va_end(vlist);
 
 	info_buffer.n++;
-
 	refresh_info();
 }
 

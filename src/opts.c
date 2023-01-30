@@ -96,7 +96,7 @@ void create_config(void) {
 }
 
 
-void parse_var(char * var) {
+enum var_stat parse_var(char * var) {
 	char * line = var;
 	// go past leading white space
 	while (*var && isspace(*var)) var++;
@@ -105,10 +105,7 @@ void parse_var(char * var) {
 
 	// add null terminator to var
 	char * val = strchr(var, '=');
-	if (!val) {
-		display_info(INFO_WARN, "Missing '=' in config file");
-		return;
-	}
+	if (!val) return VAR_STAT_NOEQ;
 
 	while (val + n > line && isspace(val[--n]));
 	val[n + 1] = 0;
@@ -131,18 +128,17 @@ void parse_var(char * var) {
 		// -2 to compensate for inc on prev line & for strlen
 		val[vlen - 2] = 0;
 		ptr_val = val;
-	} else {
-		display_info(INFO_WARN, "Unknown variable type in config file");
-		return;
-	}
+	} else return VAR_STAT_NOTYPE;
 
 	var_set(var, ptr_val);
+	return VAR_STAT_OK;
 }
 
 
 void read_config(void) {
 	FILE * fp = fopen(csc_config_file, "r");
 
+	size_t l = 1;
 	bool done = false;
 	// read by line
 	char line[256];
@@ -161,7 +157,21 @@ void read_config(void) {
 		}
 
 		line[len] = '\0';
-		if (*line) parse_var(line);
+		if (*line) switch (parse_var(line)) {
+			case VAR_STAT_NOEQ:
+				display_info(INFO_WARN,
+				             "Config line %lu: Missing '=' in variable definition", l);
+				break;
+			case VAR_STAT_NOTYPE:
+				display_info(INFO_WARN,
+				             "Config line %lu: Missing or unknown type", l);
+				break;
+			default:
+			case VAR_STAT_OK:
+				break;
+		}
+
+		l++;
 	}
 
 	fclose(fp);

@@ -10,6 +10,12 @@
 
 #define COLOR_DEFAULT 0xFFFFFFFF
 
+enum var_stat {
+	VAR_STAT_OK,
+	VAR_STAT_NOEQ, // no equals sign
+	VAR_STAT_NOTYPE,
+};
+
 struct opener_t {
 	char * fpath;
 	size_t nlen;
@@ -57,6 +63,6 @@ void create_config(void);
 void read_config(void);
 void terminate_opts(void);
 void generate_colors(void);
-void parse_var(char *);
+enum var_stat parse_var(char *);
 
 #endif /* _OPTS_H */
