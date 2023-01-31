@@ -54,23 +54,34 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 	struct dir_entry_t * dir_entry = malloc(sizeof(struct dir_entry_t) + 12);
 
 	size_t d_name_len = strlen(d_name);
+	dir_entry->name = malloc(d_name_len + 1);
+	strcpy(dir_entry->name, d_name);
+
+	// figure out file 'mime' type
+	dir_entry->m_type = get_mime(dir_entry->name);
+
+	dir_entry->file_type = FILE_UNKNOWN;
+	dir_entry->under_link = FILE_UNKNOWN;
+	dir_entry->mode = 0;
+	dir_entry->mtime = 0;
+	dir_entry->owner = 0;
+	dir_entry->group = 0;
+	dir_entry->size = 0;
+	dir_entry->u_size = B;
+
+	dir_entry->marked = false;
+	dir_entry->last_in_col = false;
 
 	struct stat * buf = malloc(sizeof(struct stat));
 	char * tmp_path = malloc(d_name_len + strlen(dir_path) + 2);
 	sprintf(tmp_path, "%s/%s", dir_path, d_name);
 	if (lstat(tmp_path, buf) == -1) {
-		free(dir_entry);
 		free(buf);
 		free(tmp_path);
 
-		return NULL;
+		return dir_entry;
 	}
 
-	dir_entry->name = malloc(d_name_len + 1);
-	strcpy(dir_entry->name, d_name);
-
-	dir_entry->file_type = FILE_UNKNOWN;
-	dir_entry->under_link = FILE_UNKNOWN;
 	switch(buf->st_mode & S_IFMT) {
 		case S_IFBLK:
 		case S_IFCHR:
@@ -100,8 +111,6 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 			dir_entry->file_type = FILE_UNKNOWN;
 			break;
 	}
-
-	dir_entry->mode = 0;
 
 	// other mode
 	if (buf->st_mode & S_IROTH)
@@ -157,7 +166,6 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 	if (gr_l > dir_longest_group) dir_longest_group = gr_l;
 
 	dir_entry->size = buf->st_size;
-	dir_entry->u_size = B;
 
 	for (int i = 0; i <= PB; i++) {
 		if (dir_entry->size < 1000) break;
@@ -167,12 +175,6 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 
 	free(tmp_path);
 	free(buf);
-
-	// figure out file 'mime' type
-	dir_entry->m_type = get_mime(dir_entry->name);
-
-	dir_entry->marked = false;
-	dir_entry->last_in_col = false;
 
 	return dir_entry;
 }
@@ -202,11 +204,6 @@ int list_dir(char * dir_path) {
 		}
 
 		struct dir_entry_t * dir_entry = gen_dir_entry(dir_path, d_name);
-
-		if (!dir_entry) {
-			display_info(INFO_WARN, strerror(errno));
-			continue;
-		}
 
 		dir_entries = realloc(dir_entries, sizeof(struct dir_entry_t*) * (n_dir_entries + 1));
 		dir_entries[n_dir_entries] = dir_entry;
@@ -296,6 +293,12 @@ void remove_marked(void) {
 
 char * mode_to_s(struct dir_entry_t * f) {
 	char * s = malloc(11);
+
+	if (f->file_type == FILE_UNKNOWN) {
+		strcpy(s, "??????????");
+		return s;
+	}
+
 	char * p = s;
 	uint16_t mode = f->mode;
 

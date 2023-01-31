@@ -97,8 +97,8 @@ void print_oneshot(void);
 enum colors get_file_color(struct dir_entry_t *);
 char get_file_ident(struct dir_entry_t *);
 size_t get_ilen(long, int);
-char * get_oname(uid_t);
-char * get_gname(gid_t);
+char * get_oname(struct dir_entry_t *);
+char * get_gname(struct dir_entry_t *);
 
 
 extern bool print_path;

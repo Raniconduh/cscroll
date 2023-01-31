@@ -141,8 +141,8 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 	char * icon = NULL;
 #endif
 	char * smode = NULL;
-	char * owner = get_oname(dir_entry->owner);
-	char * group = get_gname(dir_entry->group);
+	char * owner = get_oname(dir_entry);
+	char * group = get_gname(dir_entry);
 	char * size  = NULL;
 	char time[128];
 	
@@ -752,7 +752,10 @@ size_t get_ilen(long i, int base) {
 }
 
 
-char * get_oname(uid_t uid) {
+char * get_oname(struct dir_entry_t * de) {
+	if (de->file_type == FILE_UNKNOWN) return strdup("?");
+
+	uid_t uid = de->owner;
 	char * buf = NULL;
 	struct passwd * pw = getpwuid(uid);
 	if (!pw) {
@@ -766,7 +769,10 @@ char * get_oname(uid_t uid) {
 }
 
 
-char * get_gname(gid_t gid) {
+char * get_gname(struct dir_entry_t * de) {
+	if (de->file_type == FILE_UNKNOWN) return strdup("?");
+
+	gid_t gid = de->group;
 	char * buf = NULL;
 	struct group * gr = getgrgid(gid);
 	if (!gr) {
