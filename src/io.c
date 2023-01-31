@@ -22,6 +22,10 @@
 #include "io.h"
 
 
+int (*i_putc)(int) = NULL;
+int (*i_puts)(const char *) = NULL;
+int (*i_printf)(const char *, ...) = NULL;
+
 bool print_path = false;
 int stdout_back = 0;
 size_t n_marked_files = false;
@@ -64,6 +68,15 @@ static char * size_strings[] = {
 	"B", "KB", "MB", "GB", "TB", "PB"
 };
 
+
+int putsnonl(const char * s) {
+	return fputs(s, stdout);
+}
+
+
+int addch_signed(int c) {
+	return addch((unsigned)c);
+}
 
 void curses_init(void) {
 	if (print_path) {
@@ -134,92 +147,9 @@ void set_color(void) {
 
 
 void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
-	int cp = -1;
-	char f_ident;
-	char * u_text = "";
-#if ICONS
-	char * icon = NULL;
-#endif
-	char * smode = NULL;
-	char * owner = get_oname(dir_entry);
-	char * group = get_gname(dir_entry);
-	char * size  = NULL;
-	char time[128];
-	
-	if (p_long) {
-		smode = mode_to_s(dir_entry);
-		size = size_strings[dir_entry->u_size];
-		strftime(time, sizeof(time), "%b %d %H:%M %Y",
-				localtime(&dir_entry->mtime));
-	}
-
-	cp = get_file_color(dir_entry);
-	f_ident = get_file_ident(dir_entry);
-	u_text = dir_entry->under_link == FILE_DIR ? "=> /" : "";
-
-#if ICONS
-	// find icon if it is not a dir
-	if (show_icons) {
-		icon = get_icon(dir_entry);
-	}
-#endif
-
-	cp = COLOR_PAIR((unsigned)cp);
-	if (highlight) cp |= A_REVERSE;
-
-	if (dir_entry->marked) printw("%c ", '-');
-	if (p_long) {
-		print_mode(dir_entry);
-		// print owner
-		addch(' ');
-		addstr(owner);
-		size_t n = strlen(owner);
-		if (n < dir_longest_owner) padstr(dir_longest_owner - n);
-
-		// print group
-		addch(' ');
-		addstr(group);
-		n = strlen(group);
-		if (n < dir_longest_group) padstr(dir_longest_group - n);
-
-		printw(" %4lu %-2s %s ",
-				dir_entry->size, size, time);
-		free(smode);
-	}
-#if ICONS
-	if (show_icons) printw("%s ", icon);
-#endif
-
-	size_t name_len = strlen(dir_entry->name);
-	size_t ext_len = 0;
-	if (f_ident != NO_IDENT) ext_len++;
-	if (*u_text) ext_len += strlen(u_text);
-
-	int y, x;
-	getyx(stdscr, y, x);
-	(void)y;
-
-	attron(cp);
-
-	if (x + name_len + ext_len >= (unsigned)COLS) {
-		// allow space for ident and u_text
-		int padding = 4; // 3 for ..., 1 for space before NL
-		padding += ext_len ? ext_len + 1 : 0;
-		if (padding > COLS - x) padding = 4;
-
-		addnstr(dir_entry->name, COLS - x - padding);
-		attroff(cp);
-		addstr("...");
-	} else {
-		printw("%s", dir_entry->name);
-		attroff(cp);
-	}
-
-	printw("%c %s", f_ident, u_text);
+	if (p_long) print_long_info(dir_entry);
+	print_file_name(dir_entry, highlight);
 	addch('\n');
-
-	free(owner);
-	free(group);
 }
 
 
@@ -228,7 +158,7 @@ void print_mode(struct dir_entry_t * f) {
 		['s'] = YELLOW, ['d'] = COLOR_DIR, ['.'] = WHITE,
 		['r'] = RED,    ['w'] = MAGENTA,   ['x'] = COLOR_EXEC,
 		['S'] = YELLOW, ['t'] = RED,       ['T'] = RED,
-		['-'] = WHITE,
+		['-'] = WHITE,  ['?'] = WHITE,
 	};
 
 	char * mode = mode_to_s(f);
@@ -258,11 +188,7 @@ void print_mode(struct dir_entry_t * f) {
 
 
 void padstr(size_t n) {
-	if (oneshot) {
-		for (size_t i = 0; i < n; i++) fputc(' ', stdout);
-	} else {
-		for (size_t i = 0; i < n; i++) addch(' ');
-	}
+	for (size_t i = 0; i < n; i++) i_putc(' ');
 }
 
 
@@ -519,51 +445,12 @@ void print_oneshot(void) {
 	}
 
 	if (p_long) {
-		char * icon = "";
-		char *owner, *group, *size;
-		char time[128];
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
 
-			char * fcolor;
-			if (color) {
-				enum colors cp = get_file_color(de);
-				if (cp == COLOR_WHITE) fcolor = "";
-				else fcolor = ansi_colors[cp];
-			} else {
-				fcolor = "";
-			}
-			char f_ident = get_file_ident(de);
-			char * u_text = de->under_link == FILE_DIR ? "=> /" : "";
-
-#if ICONS
-			if (show_icons) icon = get_icon(de);
-#endif
-			size = size_strings[de->u_size];
-			strftime(time, sizeof(time), "%b %d %H:%M %Y",
-					localtime(&de->mtime));
-			owner = getpwuid(de->owner)->pw_name;
-			group = getgrgid(de->group)->gr_name;
-
-			// print mode
-			print_mode(de);
-
-			// print owner
-			fputc(' ', stdout);
-			fputs(owner, stdout);
-			size_t n = strlen(owner);
-			if (n < dir_longest_owner) padstr(dir_longest_owner - n);
-
-			// print group
-			fputc(' ', stdout);
-			fputs(group, stdout);
-			n = strlen(group);
-			if (n < dir_longest_owner) padstr(dir_longest_owner - n);
-
-			// print rest of the long mode info
-			printf(" %4lu %-2s %s %s%s %s%s%c %s\n",
-					de->size, size, time, fcolor, icon, de->name,
-					ANSI_RESET, f_ident, u_text);
+			print_long_info(de);
+			print_file_name(de, false);
+			putchar('\n');
 		}
 	} else { // regular printing mode
 		struct winsize w;
@@ -611,39 +498,13 @@ void print_oneshot(void) {
 		// print files
 		for (size_t i = 0; i < n_dir_entries; i++) {
 			struct dir_entry_t * de = dir_entries[i];
-
-			char * fcolor = "";
-			char * creset = "";
-
-			if (color) {
-				fcolor = ansi_colors[get_file_color(de)];
-				creset = ANSI_RESET;
-			}
-
-			char * icon = NULL;
-			char ident = get_file_ident(de);
-
 			int fwidth = get_fwidth(de);
 
-
-#if ICONS
-			if (show_icons) icon = get_icon(de);
-#endif
-
-			if (icon) {
-				fputs(icon, stdout);
-				putchar(' ');
-			}
-
-			printf("%s%s%s", fcolor, de->name, creset);
-			if (ident == NO_IDENT) ident = ' ';
-			putchar(ident);
+			print_file_name(de, false);
 
 			if (!de->last_in_col) {
 				fputs("  ", stdout);
-				// string padding
-				for (int i = 0; i < col_widths[cur_col] - fwidth; i++)
-					putchar(' ');
+				padstr(col_widths[cur_col] - fwidth);
 			}
 
 			cur_col++;
@@ -783,4 +644,92 @@ char * get_gname(struct dir_entry_t * de) {
 		strcpy(buf, gr->gr_name);
 	}
 	return buf;
+}
+
+
+void print_file_name(struct dir_entry_t * de, bool highlight) {
+#if ICONS
+	if (show_icons) {
+		i_puts(get_icon(de));
+		i_putc(' ');
+	}
+#endif
+
+	char f_ident = get_file_ident(de);
+	char * u_text = de->under_link == FILE_DIR ? "=> /" : NULL;
+	int cp = get_file_color(de);
+
+	if (oneshot) {
+		char * fcolor = NULL;
+
+		if (cp != COLOR_WHITE) fcolor = ansi_colors[cp];
+
+		if (fcolor) i_puts(fcolor);
+		i_puts(de->name);
+		if (fcolor) i_puts(ANSI_RESET);
+	} else {
+		cp = COLOR_PAIR((unsigned)cp);
+
+		int y, x;
+		(void)(y);
+		getyx(stdscr, y, x);
+
+		size_t ext_len = 0;
+		if (f_ident != NO_IDENT) ext_len++;
+		if (u_text) ext_len += strlen(u_text);
+
+		if (highlight) cp |= A_REVERSE;
+
+		attron(cp);
+		// trim the file name so that it fits on the screen
+		if (x + strlen(de->name) + ext_len >= (unsigned)COLS) {
+			int padding = 4; // 3 for ..., 1 for space before NL
+			padding += ext_len ? ext_len + 1 : 0;
+			if (padding > COLS - x) padding = 4;
+
+			addnstr(de->name, COLS - x - padding);
+			attron(A_DIM);
+			addstr("...");
+			attroff(A_DIM);
+		} else {
+			i_puts(de->name);
+		}
+		attroff(cp);
+	}
+
+	if (f_ident) i_putc(f_ident);
+	if (u_text) {
+		i_putc(' ');
+		i_puts(u_text);
+	}
+}
+
+
+void print_long_info(struct dir_entry_t * de) {
+	char * owner = get_oname(de);
+	char * group = get_gname(de);
+	size_t n;
+
+	print_mode(de);
+
+	// write owner
+	i_putc(' ');
+	i_puts(owner);
+	n = strlen(owner);
+	if (n < dir_longest_owner) padstr(dir_longest_owner - n);
+	free(owner);
+
+	// write group
+	i_putc(' ');
+	i_puts(group);
+	n = strlen(group);
+	if (n < dir_longest_group) padstr(dir_longest_group - n);
+	free(group);
+
+	// write size and time
+	char * size = size_strings[de->u_size];
+	char time[128];
+	strftime(time, sizeof(time), "%b %d %H:%M %Y", localtime(&de->mtime));
+
+	i_printf(" %4lu %-2s %s ", de->size, size, time);
 }

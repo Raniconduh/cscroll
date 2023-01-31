@@ -99,7 +99,15 @@ char get_file_ident(struct dir_entry_t *);
 size_t get_ilen(long, int);
 char * get_oname(struct dir_entry_t *);
 char * get_gname(struct dir_entry_t *);
+void print_long_info(struct dir_entry_t *);
+void print_file_name(struct dir_entry_t *, bool);
+int putsnonl(const char *);
+int addch_signed(int c);
 
+
+extern int (*i_putc)(int);
+extern int (*i_puts)(const char *);
+extern int (*i_printf)(const char *, ...);
 
 extern bool print_path;
 extern int stdout_back;

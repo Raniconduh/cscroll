@@ -105,6 +105,10 @@ int main(int argc, char ** argv) {
 	bool cwd_is_dir = check_dpath(cwd);
 
 	if (oneshot) {
+		i_putc = putchar;
+		i_puts = putsnonl;
+		i_printf = printf;
+
 		if (!cwd_is_dir) cwd_is_file = true;
 		else list_dir(cwd);
 
@@ -121,6 +125,10 @@ int main(int argc, char ** argv) {
 	} else {
 		chdir(cwd);
 	}
+
+	i_putc = addch_signed;
+	i_puts = addstr;
+	i_printf = printw;
 
 	if (!strncmp(cwd, homedir, homedir_len)) in_home_subdir = true;
 
