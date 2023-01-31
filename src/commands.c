@@ -156,8 +156,7 @@ void run_cmd(char * cmd) {
 
 
 void set(char * v) {
-	bool tmp = true;
-	if (!var_set(v, &tmp)) {
+	if (!var_set(v, VAR_TRUE)) {
 		printw("Unknown variable (%s)", v);
 		refresh();
 		napms(500);
@@ -166,8 +165,7 @@ void set(char * v) {
 
 
 void unset(char * v) {
-	bool tmp = false;
-	if (!var_set(v, &tmp)) {
+	if (!var_set(v, VAR_FALSE)) {
 		printw("Unknown variable (%s)", v);
 		refresh();
 		napms(500);
