@@ -1,4 +1,5 @@
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <locale.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <time.h>
@@ -431,13 +433,17 @@ void print_oneshot(void) {
 			getcwd(wd, 128);
 		}
 
-		struct dir_entry_t * de = gen_dir_entry(wd, f_name);
-		if (malloc_wd) free(wd);
-		if (!de) {
-			fputs("No such file or directory\n", stderr);
+		// need to manually check if it exists
+		struct stat st_buf;
+		if (stat(f_name, &st_buf) == -1) {
+			fputs(strerror(errno), stderr);
+			fputc('\n', stderr);
 			free(cwd);
 			exit(1);
 		}
+
+		struct dir_entry_t * de = gen_dir_entry(wd, f_name);
+		if (malloc_wd) free(wd);
 
 		n_dir_entries = 1;
 		dir_entries = malloc(sizeof(struct dir_entry_t*));
