@@ -267,6 +267,7 @@ void enter_dir(char * name) {
 
 	if (chdir(tmp) == -1) {
 		display_info(INFO_ERR, strerror(errno));
+		free(tmp);
 	} else {
 		free(cwd);
 		cwd = tmp;
