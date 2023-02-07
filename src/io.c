@@ -281,7 +281,7 @@ char * prompt(char * t, char ** args) {
 				delwin(w);
 				return args[cursor - 1];
 			case 'q':
-			case 27:
+			case KEY_ESC:
 				goto done;
 			default:
 				break;
@@ -305,14 +305,14 @@ char * curses_getline(char * p) {
 
 	char * inp = malloc(128);
 	size_t l = 0;
-	char c;
+	int c;
 	while ((c = getch()) != '\n') {
 		if ((l + 1) % 127 == 0) {
 			// add 1 byte to prevent buffer overrun on deletion
 			inp = realloc(inp, l + 129);
 		}
 
-		if (c == 127) {
+		if (c == KEY_DEL || c == KEY_BACKSPACE) {
 			if (l > 0) l--;
 		} else if (isprint(c)) {
 			// do not bother with non-printable characters
@@ -329,10 +329,10 @@ char * curses_getline(char * p) {
 			for (size_t i = l - COLS + plen + 1; i < l; i++) {
 				addch(inp[i]);
 			}
-		} else if ((unsigned)x != plen && c == 127) {
+		} else if ((unsigned)x != plen && (c == KEY_DEL || c == KEY_BACKSPACE)) {
 			mvaddch(y, x - 1, ' ');
 			move(y, x - 1);
-		} else if (c != 127) {
+		} else if (c != KEY_DEL && c != KEY_BACKSPACE) {
 			addch(c);
 		}
 
