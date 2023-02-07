@@ -97,6 +97,7 @@ void curses_init(void) {
 
 	mousemask(BUTTON1_PRESSED, NULL);
 	
+	use_default_colors();
 	start_color();
 	set_color();
 }
@@ -123,27 +124,27 @@ void set_color(void) {
 		for (int i = CUSTOM_DIR; i <= CUSTOM_ARCHIVE; i++) {
 			int def = i - CUSTOM_DIR + 1; // default color / index
 			if (custom_colors[def] == COLOR_DEFAULT || !cc) {
-				init_pair(def, default_colors[def], COLOR_BLACK);
+				init_pair(def, default_colors[def], -1);
 			} else {
 				init_color(i, GET_RGB(custom_colors[def]));
-				init_pair(def, i, COLOR_BLACK);
+				init_pair(def, i, -1);
 			}
 		}
 
-		init_pair(RED, COLOR_RED, COLOR_BLACK);
-		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
-		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
-		init_pair(MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
+		init_pair(RED, COLOR_RED, -1);
+		init_pair(WHITE, COLOR_WHITE, -1);
+		init_pair(YELLOW, COLOR_YELLOW, -1);
+		init_pair(MAGENTA, COLOR_MAGENTA, -1);
 	} else {
 		// COLOR_ARCHIVE is highest enum value
 		for (int i = 1; i <= COLOR_ARCHIVE; i++) {
-			init_pair(i, COLOR_WHITE, COLOR_BLACK);
+			init_pair(i, -1, -1);
 		}
 
-		init_pair(RED, COLOR_WHITE, COLOR_BLACK);
-		init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
-		init_pair(YELLOW, COLOR_WHITE, COLOR_BLACK);
-		init_pair(MAGENTA, COLOR_WHITE, COLOR_BLACK);
+		init_pair(RED, -1, -1);
+		init_pair(WHITE, -1, -1);
+		init_pair(YELLOW, -1, -1);
+		init_pair(MAGENTA, -1, -1);
 	}
 }
 
