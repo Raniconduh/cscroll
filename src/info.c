@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "info.h"
 #include "io.h"
@@ -11,6 +12,8 @@
 struct info_node {
 	enum info_t type;
 	char * msg;
+	time_t start;
+	bool disp;
 };
 
 
@@ -60,16 +63,22 @@ void display_info(enum info_t type, char * fmt, ...) {
 
 	va_end(vlist);
 
+	info_buffer.i[n]->disp = true;
+	info_buffer.i[n]->start = time(NULL);
+
 	info_buffer.n++;
 	refresh_info();
 }
 
 
 void refresh_info(void) {
-	if (info_buffer.n == 0 || !info_buffer.w) return;
-
 	size_t n = info_buffer.n - 1;
+	if (info_buffer.n == 0 || !info_buffer.w || !info_buffer.i[n]->disp) return;
 
+	if (time(NULL) - info_buffer.i[n]->start >= INFO_TIMEOUT) {
+		info_buffer.i[n]->disp = false;
+		return;
+	}
 
 	int cp = get_info_color(info_buffer.i[n]);
 	werase(info_buffer.w);

@@ -1,6 +1,8 @@
 #ifndef _INFO_H
 #define _INFO_H
 
+#define INFO_TIMEOUT 5 // 5 second timeout for info messages
+
 enum info_t {
 	INFO_INFO,
 	INFO_WARN,
