@@ -29,6 +29,16 @@ Symbolic links that point to directories will be suffixed with `@ => /` and may 
 
 File colors can also be customized. ([see variables](#variables))
 
+Additionally, in long mode, the leftmost character in the mode string will correspond to file type:
+
+* `.`: Regular file
+* `b`: Block device
+* `c`: Character device
+* `d`: Directory
+* `l`: Symbolic link
+* `|`: FIFO/named pipe
+* `=`: Unix socket
+
 ### Options
 
 * `-n`: Negate the next option
@@ -150,6 +160,7 @@ The following string variables control the colors for each type of file specifie
 * `fifo_color`: FIFO/Named pipes
 * `link_color`: Symbolic links
 * `block_color`: Block files (typically devices found in `/dev`)
+* `char_color`: Character devices
 * `sock_color`: Unix sockets
 * `unknown_color`: A file that cannot be accessed to determine type
 * `exec_color`: Any executable file
