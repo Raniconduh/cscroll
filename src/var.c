@@ -108,6 +108,12 @@ static void set_block(void * p) {
 }
 
 
+static void set_char(void * p) {
+	chr_color = hextorgb((char*)p);
+	set_color();
+}
+
+
 static void set_sock(void * p) {
 	sock_color = hextorgb((char*)p);
 	set_color();
@@ -164,7 +170,7 @@ static void set_opener(void * p) {
 
 
 void var_init(void) {
-	var_map = map_new(15);
+	var_map = map_new(18);
 
 	map_insert(var_map, ICONS_VAR, set_icons);
 	map_insert(var_map, COLOR_VAR, set_color_f);
@@ -176,6 +182,7 @@ void var_init(void) {
 	map_insert(var_map, FIFO_COLOR_VAR, set_fifo);
 	map_insert(var_map, LINK_COLOR_VAR, set_link);
 	map_insert(var_map, BLK_COLOR_VAR, set_block);
+	map_insert(var_map, CHR_COLOR_VAR, set_char);
 	map_insert(var_map, SOCK_COLOR_VAR, set_sock);
 	map_insert(var_map, UNKNOWN_COLOR_VAR, set_unknown);
 	map_insert(var_map, EXEC_COLOR_VAR, set_exec);

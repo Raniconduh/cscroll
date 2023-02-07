@@ -22,7 +22,7 @@ bool oneshot = false;
 bool show_dot_dirs = false;
 struct opener_t opener = {NULL, 0};
 
-uint32_t custom_colors[11];
+uint32_t custom_colors[12];
 
 uint32_t dir_color     = COLOR_DEFAULT;
 uint32_t link_color    = COLOR_DEFAULT;
@@ -32,6 +32,7 @@ uint32_t fifo_color    = COLOR_DEFAULT;
 uint32_t unknown_color = COLOR_DEFAULT;
 uint32_t reg_color     = COLOR_DEFAULT;
 uint32_t blk_color     = COLOR_DEFAULT;
+uint32_t chr_color     = COLOR_DEFAULT;
 uint32_t media_color   = COLOR_DEFAULT;
 uint32_t archive_color = COLOR_DEFAULT;
 
@@ -194,6 +195,7 @@ void generate_colors(void) {
 	custom_colors[COLOR_UNKNOWN] = unknown_color;
 	custom_colors[COLOR_FILE]    = reg_color;
 	custom_colors[COLOR_BLOCK]   = blk_color;
+	custom_colors[COLOR_CHAR]    = chr_color;
 	custom_colors[COLOR_MEDIA]   = media_color;
 	custom_colors[COLOR_ARCHIVE] = archive_color;
 }

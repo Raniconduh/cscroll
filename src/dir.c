@@ -84,8 +84,10 @@ struct dir_entry_t * gen_dir_entry(char * dir_path, char * d_name) {
 
 	switch(buf->st_mode & S_IFMT) {
 		case S_IFBLK:
-		case S_IFCHR:
 			dir_entry->file_type = FILE_BLK;
+			break;
+		case S_IFCHR:
+			dir_entry->file_type = FILE_CHR;
 			break;
 		case S_IFSOCK:
 			dir_entry->file_type = FILE_SOCK;
@@ -303,9 +305,16 @@ char * mode_to_s(struct dir_entry_t * f) {
 	char * p = s;
 	uint16_t mode = f->mode;
 
-	if (f->file_type == FILE_DIR) *p++ = 'd';
-	else *p++ = '.';
+	switch (f->file_type) {
+		case FILE_BLK:  *p++ = 'b'; break;
+		case FILE_CHR:  *p++ = 'c'; break;
+		case FILE_DIR:  *p++ = 'd'; break;
+		case FILE_LINK: *p++ = 'l'; break;
+		case FILE_FIFO: *p++ = '|'; break;
+		case FILE_SOCK: *p++ = '='; break;
+		default: *p++ = '.'; break;
 
+	}
 	// owner mode
 	if (MOWNER(mode) & M_READ) *p++ = 'r';
 	else *p++ = '-';

@@ -42,6 +42,7 @@ static int default_colors[] = {
 	[COLOR_UNKNOWN] = COLOR_RED,
 	[COLOR_FILE]    = COLOR_WHITE,
 	[COLOR_BLOCK]   = COLOR_YELLOW,
+	[COLOR_CHAR]    = COLOR_YELLOW,
 	[COLOR_MEDIA]   = COLOR_MAGENTA,
 	[COLOR_ARCHIVE] = COLOR_RED,
 };
@@ -61,6 +62,7 @@ static char * ansi_colors[] = {
 	[COLOR_UNKNOWN] = ANSI_RED,
 	[COLOR_FILE]    = ANSI_WHITE,
 	[COLOR_BLOCK]   = ANSI_YELLOW,
+	[COLOR_CHAR]    = ANSI_YELLOW,
 	[COLOR_MEDIA]   = ANSI_MAGENTA,
 	[COLOR_ARCHIVE] = ANSI_RED,
 };
@@ -158,10 +160,13 @@ void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
 
 void print_mode(struct dir_entry_t * f) {
 	enum colors m_colors[127] = {
-		['s'] = YELLOW, ['d'] = COLOR_DIR, ['.'] = WHITE,
-		['r'] = RED,    ['w'] = MAGENTA,   ['x'] = COLOR_EXEC,
-		['S'] = YELLOW, ['t'] = RED,       ['T'] = RED,
-		['-'] = WHITE,  ['?'] = WHITE,
+		['s'] = YELLOW,     ['r'] = RED,    ['w'] = MAGENTA,
+		['x'] = COLOR_EXEC, ['S'] = YELLOW, ['t'] = RED,
+		['T'] = RED,        ['-'] = WHITE,  ['?'] = WHITE,
+
+		['.'] = WHITE,
+		['d'] = COLOR_DIR,  ['b'] = COLOR_BLOCK, ['c'] = COLOR_CHAR,
+		['l'] = COLOR_LINK, ['|'] = COLOR_FIFO,  ['='] = COLOR_SOCK,
 	};
 
 	char * mode = mode_to_s(f);
@@ -539,6 +544,8 @@ enum colors get_file_color(struct dir_entry_t * de) {
 			cp = COLOR_FIFO;    break;
 		case FILE_BLK:
 			cp = COLOR_BLOCK;   break;
+		case FILE_CHR:
+			cp = COLOR_CHAR;    break;
 		case FILE_LINK:
 			cp = COLOR_LINK;    break;
 		case FILE_SOCK:
@@ -581,6 +588,7 @@ char get_file_ident(struct dir_entry_t * de) {
 			f_ident = '|';
 			break;
 		case FILE_BLK:
+		case FILE_CHR:
 			f_ident = '#';
 			break;
 		case FILE_LINK:

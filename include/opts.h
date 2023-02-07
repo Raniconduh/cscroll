@@ -39,6 +39,8 @@ extern uint32_t fifo_color;
 extern uint32_t link_color;
 #define BLK_COLOR_VAR "block_color"
 extern uint32_t blk_color;
+#define CHR_COLOR_VAR "char_color"
+extern uint32_t chr_color;
 #define SOCK_COLOR_VAR "sock_color"
 extern uint32_t sock_color;
 #define UNKNOWN_COLOR_VAR "unknown_color"
@@ -52,7 +54,7 @@ extern uint32_t archive_color;
 #define OPENER_VAR "opener"
 extern struct opener_t opener;
 
-extern uint32_t custom_colors[11];
+extern uint32_t custom_colors[12];
 
 extern bool oneshot;
 extern bool show_dot_dirs;
