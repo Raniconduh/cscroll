@@ -678,6 +678,7 @@ void print_file_name(struct dir_entry_t * de, bool highlight) {
 		char * fcolor = NULL;
 
 		if (cp != COLOR_WHITE) fcolor = ansi_colors[cp];
+		if (!color) fcolor  = "";
 
 		if (fcolor) i_puts(fcolor);
 		i_puts(de->name);
