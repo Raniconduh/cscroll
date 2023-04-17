@@ -415,7 +415,10 @@ int get_fwidth(struct dir_entry_t * de) {
 #endif
 
 	// file ident
-	w += 1;
+	if (get_file_ident(de) != NO_IDENT) w += 1;
+
+	// final ident will be: @ => /
+	if (de->under_link == FILE_DIR) w += 5;
 
 	return w;
 }
@@ -469,67 +472,30 @@ void print_oneshot(void) {
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 		int t_width = w.ws_col;
 
-		int col_widths[127] = {0};
-		int max_cols = sizeof(col_widths) + 1;
-		int cur_col = 0;
-		int line_width = 0;
-
-		struct dir_entry_t * prev = NULL;
-
-		// print until screen row is file
-		// or until 128 colums of files have been used
-		// first calculate padding
+		// calculate the maximum columns
+		size_t longest_file = 0;
 		for (size_t i = 0; i < n_dir_entries; i++) {
-			struct dir_entry_t * de = dir_entries[i];
-
-			int fwidth = get_fwidth(de);
-
-			// reached max columns
-			// or file with + padding > terminal width
-			if (cur_col == max_cols || (line_width && line_width + fwidth + 2 >= t_width)) {
-				cur_col = 0;
-				line_width = 0;
-
-				prev->last_in_col = true;
-			}
-
-			if (fwidth > col_widths[cur_col]) {
-				col_widths[cur_col] = fwidth;
-			}
-
-			line_width += col_widths[cur_col] + 2;
-			cur_col++;
-
-			prev = de;
+			size_t l = get_fwidth(dir_entries[i]);
+			if (l > longest_file) longest_file = l;
 		}
+		int cols = t_width / (longest_file + 2);
+		if (n_dir_entries < (unsigned)cols) cols = n_dir_entries;
 
-		cur_col = 0;
-
-		bool neednl = false;
+		// calculate padding
+		int col_widths[cols];
+		memset(col_widths, 0, sizeof(col_widths));
+		for (size_t i = 0; i < n_dir_entries; i++) {
+			size_t l = get_fwidth(dir_entries[i]);
+			if (l > (unsigned)col_widths[i % cols])
+				col_widths[i % cols] = l;
+		}
 
 		// print files
 		for (size_t i = 0; i < n_dir_entries; i++) {
-			struct dir_entry_t * de = dir_entries[i];
-			int fwidth = get_fwidth(de);
-
-			print_file_name(de, false);
-
-			if (!de->last_in_col) {
-				fputs("  ", stdout);
-				padstr(col_widths[cur_col] - fwidth);
-			}
-
-			cur_col++;
-
-			if (de->last_in_col) {
-				cur_col = 0;
-				putchar('\n');
-				neednl = false;
-			} else neednl = true;
-
+			print_file_name(dir_entries[i], false);
+			if ((i + 1) % cols == 0 || i + 1 == n_dir_entries) putchar('\n');
+			else padstr(col_widths[i % cols] - get_fwidth(dir_entries[i]) + 2);
 		}
-
-		if (neednl) putchar('\n');
 	}
 }
 
