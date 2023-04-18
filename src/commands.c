@@ -49,6 +49,28 @@ void ext_open(char * file) {
 }
 
 
+long lit_search(long c, char * s) {
+	long ret = -1;
+	for (long i = c; i < (signed)n_dir_entries; i++) {
+		if (!strcmp(s, dir_entries[i]->name)) {
+			ret = i;
+			break;
+		}
+	}
+
+	if (ret == -1 && c > 1) {
+		for (long i = 0; i < c; i++) {
+			if (!strcmp(s, dir_entries[i]->name)) {
+				ret = i;
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
+
 long search_file(long c, char * s) {
 	long ret = -1;
 	regex_t r;

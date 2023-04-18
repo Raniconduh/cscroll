@@ -249,7 +249,7 @@ int main(int argc, char ** argv) {
 				list_dir(cwd);
 
 				// set cursor to old dir
-				long lc = search_file(0, cur_dir);
+				long lc = lit_search(0, cur_dir);
 				if (lc >= 0) {
 					cursor = lc + 1;
 					resize_fbufcur(lc);

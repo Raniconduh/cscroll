@@ -2,6 +2,7 @@
 #define _COMMANDS_H
 
 void ext_open(char *);
+long lit_search(long, char *);
 long search_file(long, char *);
 void create_cuts(char *, char **);
 void free_cuts(void);
