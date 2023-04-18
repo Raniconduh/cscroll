@@ -11,6 +11,7 @@
 #include "var.h"
 #include "opts.h"
 #include "main.h"
+#include "info.h"
 #include "commands.h"
 
 
@@ -179,18 +180,14 @@ void run_cmd(char * cmd) {
 
 void set(char * v) {
 	if (!var_set(v, VAR_TRUE)) {
-		printw("Unknown variable (%s)", v);
-		refresh();
-		napms(500);
+		display_info(INFO_WARN, "Unknown variable (%s)", v);
 	}
 }
 
 
 void unset(char * v) {
 	if (!var_set(v, VAR_FALSE)) {
-		printw("Unknown variable (%s)", v);
-		refresh();
-		napms(500);
+		display_info(INFO_WARN, "Unknown variable (%s)", v);
 	}
 }
 

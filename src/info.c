@@ -56,12 +56,15 @@ void display_info(enum info_t type, char * fmt, ...) {
 
 	va_list vlist;
 	va_start(vlist, fmt);
-
 	size_t nl = vsnprintf(NULL, 0, fmt, vlist);
-	info_buffer.i[n]->msg = malloc(nl + 1);
-	vsprintf(info_buffer.i[n]->msg, fmt, vlist);
-
 	va_end(vlist);
+
+	info_buffer.i[n]->msg = malloc(nl + 1);
+
+	va_start(vlist, fmt);
+	vsprintf(info_buffer.i[n]->msg, fmt, vlist);
+	va_end(vlist);
+
 
 	info_buffer.i[n]->disp = true;
 	info_buffer.i[n]->start = time(NULL);
