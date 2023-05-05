@@ -312,7 +312,7 @@ static int nftw_file_remove(const char * fp, const struct stat * sb, int tf, str
 static size_t count_files(struct dir_entry_t * de) {
 	file_count = 0;
 
-	nftw(de->name, nftw_file_count, 0, FTW_MOUNT | FTW_PHYS);
+	nftw(de->name, nftw_file_count, 1, FTW_MOUNT | FTW_PHYS);
 
 	return file_count;
 }
@@ -321,7 +321,7 @@ static size_t count_files(struct dir_entry_t * de) {
 static int remove_tree(struct dir_entry_t * de) {
 	remove_all_failed = 0;
 
-	nftw(de->name, nftw_file_remove, 0, FTW_MOUNT | FTW_PHYS | FTW_DEPTH);
+	nftw(de->name, nftw_file_remove, 1, FTW_MOUNT | FTW_PHYS | FTW_DEPTH);
 
 	return remove_all_failed;
 }
@@ -350,7 +350,7 @@ int remove_file(struct dir_entry_t * de) {
 
 	int ret;
 	if ((ret = remove(de->name)) < 0) {
-		display_info(INFO_ERR, "%s: Remove failed (%s)", de->name, errno);
+		display_info(INFO_ERR, "%s: Remove failed (%s)", de->name, strerror(errno));
 	}
 
 	return ret < 0 ? 1 : 0;
