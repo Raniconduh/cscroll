@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#include <ftw.h>
 
 #include "info.h"
 #include "type.h"
@@ -283,12 +284,82 @@ void enter_dir(char * name) {
 }
 
 
+static size_t file_count;
+static int nftw_file_count(const char * fp, const struct stat * sb, int tf, struct FTW * fb) {
+	(void)fp;
+	(void)sb;
+	(void)tf;
+	(void)fb;
+
+	file_count++;
+	return 0;
+}
+
+static int remove_all_failed;
+static int nftw_file_remove(const char * fp, const struct stat * sb, int tf, struct FTW * fb) {
+	(void)sb;
+	(void)tf;
+	(void)fb;
+
+	if (remove(fp) < 0) {
+		display_info(INFO_ERR, "%s: Remove failed (%s)", fp, strerror(errno));
+		remove_all_failed = 1;
+	}
+
+	return 0;
+}
+
+static size_t count_files(struct dir_entry_t * de) {
+	file_count = 0;
+
+	nftw(de->name, nftw_file_count, 0, FTW_MOUNT | FTW_PHYS);
+
+	return file_count;
+}
+
+
+static int remove_tree(struct dir_entry_t * de) {
+	remove_all_failed = 0;
+
+	nftw(de->name, nftw_file_remove, 0, FTW_MOUNT | FTW_PHYS | FTW_DEPTH);
+
+	return remove_all_failed;
+}
+
+
+int remove_file(struct dir_entry_t * de) {
+	// returns 1 on error, 0 on success, -1 on no action
+	if (de->file_type == FILE_DIR) {
+		size_t f_count = count_files(de);
+
+		char * REMOVE_FILE_PROMPT = "This action will remove %zu files. Continue?";
+		int plen = snprintf(NULL, 0, REMOVE_FILE_PROMPT, f_count);
+		char * p = malloc(plen + 1);
+		snprintf(p, plen + 1, REMOVE_FILE_PROMPT, f_count);
+
+		char * r = prompt(p, (char*[]){"No", "Yes", NULL});
+		free(p);
+
+		if (r && !strcmp(r, "Yes")) return remove_tree(de);
+		return -1;
+	} else {
+		return remove(de->name) < 0 ? 1 : 0;
+	}
+}
+
+
 void remove_marked(void) {
+	char * REMOVE_MARKED_PROMPT = "Remove all marked files? (%zu)";
+	int plen = snprintf(NULL, 0, REMOVE_MARKED_PROMPT, n_marked_files);
+	char * p = malloc(plen + 1);
+	snprintf(p, plen + 1, REMOVE_MARKED_PROMPT, n_marked_files);
+
+	char * r = prompt(p, (char*[]){"No", "Yes", NULL});
+	if (!r || strcmp(r, "Yes")) return;
+
 	for (size_t i = 0; i < n_dir_entries; i++) {
 		if (dir_entries[i]->marked) {
-			char p[strlen(cwd) + strlen(dir_entries[i]->name) + 1];
-			sprintf(p, "%s/%s", cwd, dir_entries[i]->name);
-			if (remove(p) == 0) n_marked_files--;
+			if (remove_file(dir_entries[i]) == 0) n_marked_files--;
 		}
 	}
 }

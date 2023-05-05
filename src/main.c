@@ -308,40 +308,24 @@ int main(int argc, char ** argv) {
 				last_f = LAST_F;
 				break;
 			case 'd':
-				if (dir_entries[cursor - 1]->file_type == FILE_DIR)
-					break;
-				char * args[] = {"No", "Yes", NULL};
-				if (n_marked_files) {
-					char * p = malloc(40);
-					sprintf(p, "Remove all marked files? (%lu)", n_marked_files);
-					char * resp = prompt(p, args);
-					free(p);
-					if (!resp || strcmp(resp, "Yes")) break;
-					remove_marked();
-					free_dir_entries();
-					list_dir(cwd);
-					cursor = 1;
-					first_f = 0;
-					last_f = LAST_F;
-					break;
-				}
-				char * name = dir_entries[cursor - 1]->name;
-				char * p = malloc(20 + strlen(name));
-				sprintf(p, "Delete the file '%s'?", name);
-				char * resp = prompt(p, args);
-				free(p);
-				if (!resp) break;
-				if (!strcmp(resp, "Yes")) {
-					p = malloc(strlen(cwd) + strlen(name) + 3);
-					sprintf(p, "%s/%s", cwd, name);
-					remove(p);
-					free(p);
-					free_dir_entries();
-					list_dir(cwd);
+				if (n_marked_files) remove_marked();
+				else {
+					char * rp = "Remove the file '%s'?";
+					int plen = snprintf(NULL, 0, rp, dir_entries[cursor - 1]->name);
+					char * p = malloc(plen + 1);
+					snprintf(p, plen + 1, rp, dir_entries[cursor - 1]->name);
 
-					if (cursor > n_dir_entries) cursor--;
-					last_f = LAST_F;
+					char * r = prompt(p, (char*[]){"No", "Yes", NULL});
+					free(p);
+
+					if (r && !strcmp(r, "Yes")) remove_file(dir_entries[cursor - 1]);
 				}
+
+				free_dir_entries();
+				list_dir(cwd);
+
+				if (cursor > n_dir_entries) cursor = n_dir_entries;
+				resize_fbufcur(cursor);
 				break;
 			case 'm':
 				// cannot mark files outside of start dir

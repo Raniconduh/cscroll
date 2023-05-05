@@ -64,6 +64,7 @@ int list_dir(char *);
 void free_dir_entries(void);
 void cd_back(void);
 void enter_dir(char *);
+int remove_file(struct dir_entry_t *);
 void remove_marked(void);
 char * mode_to_s(struct dir_entry_t *);
 bool check_dpath(char *);
