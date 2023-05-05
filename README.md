@@ -64,7 +64,7 @@ Options beginning with a single `-` may be stacked: e.g. `cscroll -la`. The `-n`
 * `g`, `home key`: Place cursor on first file
 * `G`, `end key`: Place cursor on last file
 * `.`: Toggle whether or not to show dot files
-* `d`: Delete the file the cursor is on (a [prompt](#options-prompt) will be shown first)
+* `d`: Delete the file the cursor is on (a [prompt](#options-prompt) will be shown first; see [Deleting](#deleting)).
 * `m`: Mark the file the cursor is on
 * `r`: Rename the file the cursor is on ([see file renaming](#renaming))
 * `c`: Cut the file the cursor is currently on or all the marked files. Pressing twice in the same directory will cancel the cut
@@ -93,6 +93,10 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 * `var`: Set a variable equal to something `var variable = false` ([see Variables](#variables) and ['config file'](#config-file))
 
 * `i`: Open the [info buffer](#info-buffer) viewer
+
+#### Deleting
+
+The `d` command will always ask for confirmation to delete a file. If numerous files are marked, the prompt will show the number of marked files (as those will all be deleted). Whenever cscroll attempts to delete a non-empty directory, it will prompt for confirmation to do a recursive removal and will show the number of files that will be deleted inside of that directory. This secondary prompt will be shown whenever a non-empty directory is being deleted. No secondary prompt will be shown if the directory is empty.
 
 #### Renaming
 
