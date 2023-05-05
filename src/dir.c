@@ -332,19 +332,28 @@ int remove_file(struct dir_entry_t * de) {
 	if (de->file_type == FILE_DIR) {
 		size_t f_count = count_files(de);
 
-		char * REMOVE_FILE_PROMPT = "This action will remove %zu files. Continue?";
-		int plen = snprintf(NULL, 0, REMOVE_FILE_PROMPT, f_count);
-		char * p = malloc(plen + 1);
-		snprintf(p, plen + 1, REMOVE_FILE_PROMPT, f_count);
+		// empty directories can be removed directly
+		// (f_count of 1 means only the directory and nothing in it)
+		if (f_count > 1) {
+			char * REMOVE_FILE_PROMPT = "This action will remove the directory '%s' and all %zu files inside it. Continue?";
+			int plen = snprintf(NULL, 0, REMOVE_FILE_PROMPT, de->name, f_count - 1);
+			char * p = malloc(plen + 1);
+			snprintf(p, plen + 1, REMOVE_FILE_PROMPT, de->name, f_count - 1);
 
-		char * r = prompt(p, (char*[]){"No", "Yes", NULL});
-		free(p);
+			char * r = prompt(p, (char*[]){"No", "Yes", NULL});
+			free(p);
 
-		if (r && !strcmp(r, "Yes")) return remove_tree(de);
-		return -1;
-	} else {
-		return remove(de->name) < 0 ? 1 : 0;
+			if (r && !strcmp(r, "Yes")) return remove_tree(de);
+			return -1;
+		}
 	}
+
+	int ret;
+	if ((ret = remove(de->name)) < 0) {
+		display_info(INFO_ERR, "%s: Remove failed (%s)", de->name, errno);
+	}
+
+	return ret < 0 ? 1 : 0;
 }
 
 
