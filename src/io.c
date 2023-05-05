@@ -152,6 +152,7 @@ void set_color(void) {
 
 
 void curses_write_file(struct dir_entry_t * dir_entry, bool highlight) {
+	if (dir_entry->marked) addstr("- ");
 	if (p_long) print_long_info(dir_entry);
 	print_file_name(dir_entry, highlight);
 	addch('\n');
