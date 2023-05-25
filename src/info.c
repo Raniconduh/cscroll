@@ -87,7 +87,13 @@ void refresh_info(void) {
 	werase(info_buffer.w);
 	waddstr(info_buffer.w, "(:i) ");
 	wattron(info_buffer.w, cp);
-	waddstr(info_buffer.w, info_buffer.i[n]->msg);
+	// 5 for (:i) text, 3 for ..., 1 for exra space
+	waddnstr(info_buffer.w, info_buffer.i[n]->msg, COLS - 9);
+	if (strlen(info_buffer.i[n]->msg) + 8 >= (unsigned)COLS) {
+		wattron(info_buffer.w, A_DIM);
+		waddstr(info_buffer.w, "...");
+		wattroff(info_buffer.w, A_DIM);
+	}
 	wattroff(info_buffer.w, cp);
 	wrefresh(info_buffer.w);
 }
@@ -110,7 +116,12 @@ void page_info(void) {
 		for (size_t i = first_info; i <= last_info; i++) {
 			int cp = get_info_color(info_buffer.i[i]);
 			attron(cp);
-			addstr(info_buffer.i[i]->msg);
+			addnstr(info_buffer.i[i]->msg, COLS - 4);
+			if (strlen(info_buffer.i[i]->msg) >= (unsigned)COLS) {
+				attron(A_DIM);
+				addstr("...");
+				attroff(A_DIM);
+			}
 			attroff(cp);
 			addch('\n');
 		}

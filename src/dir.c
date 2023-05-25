@@ -269,7 +269,7 @@ void enter_dir(char * name) {
 		sprintf(tmp, "%s%s", cwd, name);
 
 	if (chdir(tmp) == -1) {
-		display_info(INFO_ERR, strerror(errno));
+		display_info(INFO_ERR, "%s", strerror(errno));
 		free(tmp);
 	} else {
 		free(cwd);
