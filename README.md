@@ -1,6 +1,10 @@
 # cscroll
 
-A small and efficient file manager written in C.
+A small and efficient file manager.
+
+![Regular cscroll](https://github.com/Raniconduh/cscroll/assets/63197781/1d768a4a-734f-420e-a549-6157e8b0da5d)
+
+![cscroll in long mode](https://github.com/Raniconduh/cscroll/assets/63197781/7a854651-0a02-495d-bb89-c7449385fca0)
 
 ## Usage
 
