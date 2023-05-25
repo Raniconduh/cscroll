@@ -15,6 +15,14 @@
 #define M_READ  (1 << 2)
 #define M_SUID  (1 << 3)
 
+
+#ifdef __BIONIC__
+#define NFTW_NFDS 1
+#else
+#define NFTW_NFDS 0
+#endif
+
+
 enum file_type_t {
 	FILE_REG,
 	FILE_DIR,

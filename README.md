@@ -98,6 +98,8 @@ The command prompt will show up upon pressing `:` and the prompt itself is prefi
 
 The `d` command will always ask for confirmation to delete a file. If numerous files are marked, the prompt will show the number of marked files (as those will all be deleted). Whenever cscroll attempts to delete a non-empty directory, it will prompt for confirmation to do a recursive removal and will show the number of files that will be deleted inside of that directory. This secondary prompt will be shown whenever a non-empty directory is being deleted. No secondary prompt will be shown if the directory is empty.
 
+Recursive removal may not work properly on some operating systems, primarily on Android since Bionic libc seems to have a hardcode nested directory limit that it will operate on. Most directories will work fine with this but ones with thousands of nested directories may not work at all.
+
 #### Renaming
 
 The `r` command will show a prompt (similar to a command prompt but without a prefix) where the new file name is to be expected. A file may only be renamed within the same directory.
