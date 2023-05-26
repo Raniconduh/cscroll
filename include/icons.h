@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#define ICON_DIR "\uf74a"
+#define ICON_DIR "\uf413"
 #define ICON_GEAR "\uf013"
 
 #define ICON_APK "\ue70e"
@@ -11,10 +11,10 @@
 #define ICON_SHELL "\uf489"
 #define ICON_C "\ue61e"
 #define ICON_CPP "\ue61d"
-#define ICON_CS "\uf81a"
+#define ICON_CS "\ue648"
 #define ICON_CSS "\ue749"
 #define ICON_FSHARP "\ue7a7"
-#define ICON_XML "\uf81a"
+#define ICON_XML "\ue60e"
 #define ICON_RB "\ue739"
 #define ICON_LUA "\ue620"
 #define ICON_GIT "\ue702"
@@ -28,10 +28,10 @@
 #define ICON_MD "\ue609"
 #define ICON_VIM "\ue62b"
 
-#define ICON_AUDIO "\uf722"
-#define ICON_VIDEO "\uf72a"
+#define ICON_AUDIO "\uf1c7"
+#define ICON_VIDEO "\uf1c8"
 #define ICON_IMAGE "\uf1c5"
-#define ICON_GENERIC "\uf15b"
+#define ICON_GENERIC "\uf016"
 #define ICON_ARCHIVE "\uf1c6"
 
 struct icon_pair icons[] = {
