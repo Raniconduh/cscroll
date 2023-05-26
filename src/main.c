@@ -25,6 +25,13 @@ int main(int argc, char ** argv) {
 	// config file needs home directory
 	get_home();
 
+	if (!cwd) {
+		char p[2048];
+		getcwd(p, sizeof(p));
+		cwd = malloc(strlen(p) + 2);
+		strcpy(cwd, p);
+	}
+
 	if (!check_config()) create_config();
 	else read_config();
 	terminate_opts();
@@ -93,13 +100,6 @@ int main(int argc, char ** argv) {
 	if (show_dot_dirs && !oneshot) {
 		fputs("-a is only available in oneshot mode\n", stderr);
 		exit(1);
-	}
-
-	if (!cwd) {
-		char p[2048];
-		getcwd(p, sizeof(p));
-		cwd = malloc(strlen(p) + 2);
-		strcpy(cwd, p);
 	}
 
 	bool cwd_is_dir = check_dpath(cwd);
