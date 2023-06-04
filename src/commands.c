@@ -33,11 +33,14 @@ void ext_open(char * file) {
 		if (!opener.fpath){
 #if defined(__APPLE__) || defined(__MACH__)
 			execvp("open", (char*[3]){"open", f, NULL});
+			refresh();
 #else
 			execvp("xdg-open", (char*[3]){"xdg-open", f, NULL});
+			refresh();
 #endif
 		} else {
 			execvp(opener.fpath, (char*[3]){opener.fpath, f, NULL});
+			refresh();
 		}
 		exit(0);
 	}
