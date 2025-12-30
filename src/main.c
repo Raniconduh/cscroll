@@ -8,7 +8,11 @@ int main(int argc, char ** argv) {
 	dir_list(argv[1], &dir);
 
 	for (size_t i = 0; i < dir.len; i++) {
-		printf("%lu %s\n", dir.entries[i].size, dir.entries[i].name);
+		dirent_t * de = &dir.entries[i];
+		printf("%s %s %lu %ld %s", de->uname, de->gname, de->size, de->mtime, de->name);
+		if (de->linkname) {
+			printf(" -> %s\n", de->linkname);
+		} else putchar('\n');
 	}
 
 	dir_free(&dir);

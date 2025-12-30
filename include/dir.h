@@ -1,7 +1,9 @@
 #ifndef DIR_H
 #define DIR_H
 
+#include <time.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "cvector.h"
 
 enum de_type {
@@ -16,9 +18,17 @@ enum de_type {
 };
 
 typedef struct {
-	enum de_type type;
-	size_t size;
 	char * name;
+	enum de_type type;
+
+	size_t size;
+	uint16_t mode;
+	time_t mtime;
+	char * uname;
+	char * gname;
+
+	char * linkname;
+	enum de_type linktype;
 } dirent_t;
 
 typedef struct {
