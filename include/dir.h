@@ -4,7 +4,22 @@
 #include <time.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <sys/stat.h>
 #include "cvector.h"
+
+#define M_SUID S_ISUID
+#define M_SGID S_ISGID
+#define M_STICKY S_ISVTX
+#define M_USRR S_IRUSR
+#define M_USRW S_IWUSR
+#define M_USRX S_IXUSR
+#define M_GRPR S_IRGRP
+#define M_GRPW S_IWGRP
+#define M_GRPX S_IXGRP
+#define M_OTHR S_IROTH
+#define M_OTHW S_IWOTH
+#define M_OTHX S_IXOTH
 
 enum de_type {
 	DE_FILE,
@@ -38,5 +53,10 @@ typedef struct {
 
 int dir_list(const char * path, dir_t * dir);
 void dir_free(dir_t * dir);
+char dirent_crepr(const dirent_t * de); // character representing dir entry
+char dirent_creprl(const dirent_t * de); // like above, but for the link
+char dirent_longcrepr(const dirent_t * de); // like above, but for long mode
+bool dirent_isexec(const dirent_t * de);
+const char * dirent_prettymode(const dirent_t * de);
 
 #endif /* DIR_H */

@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <stdbool.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +14,7 @@
 #define LINKNAMESZ PATH_MAX
 
 static void dir_entry(int dirfd, const char * name, dirent_t * dirent);
+static char de_crepr(enum de_type de_type);
 static void free_dirent(void * p) {
 	dirent_t * de = (dirent_t*)p;
 	free(de->name);
@@ -58,7 +60,8 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 	struct stat statbuf;
 	if (fstatat(dirfd, name, &statbuf, AT_SYMLINK_NOFOLLOW) < 0) {
 		// in the case where stat fails, the file is marked unknown
-		// every field other than type and name are left uninitialized
+		// every non string field other than type is left uninitialized
+		// strings are initialized to NULL
 		return;
 	}
 
@@ -116,4 +119,76 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 
 void dir_free(dir_t * dir) {
 	cvector_free(dir->entries);
+}
+
+char de_crepr(enum de_type de_type) {
+	switch (de_type) {
+		case DE_SOCKET: return '=';
+		case DE_LINK:   return '@';
+		case DE_FILE:   return 0;
+		case DE_BLOCK:  return '#';
+		case DE_DIR:    return '/';
+		case DE_CHAR:   return '#';
+		case DE_FIFO:   return '|';
+		default:        return '?';
+	}
+}
+
+char dirent_crepr(const dirent_t * de) {
+	char c = de_crepr(de->type);
+	if (!c && dirent_isexec(de)) return '*';
+	return c;
+}
+
+char dirent_creprl(const dirent_t * de) {
+	return de_crepr(de->linktype);
+}
+
+char dirent_longcrepr(const dirent_t * de) {
+	switch (de->type) {
+		case DE_SOCKET: return '=';
+		case DE_LINK:   return 'l';
+		case DE_BLOCK:  return 'b';
+		case DE_DIR:    return 'd';
+		case DE_CHAR:   return 'c';
+		case DE_FIFO:   return '|';
+		default:        return '.';
+	}
+}
+
+bool dirent_isexec(const dirent_t * de) {
+	// this is because the condition can be truthy but is not actually a bool
+	return (de->mode & (M_USRX | M_GRPX | M_OTHX)) ? true : false;
+}
+
+const char * dirent_prettymode(const dirent_t * de) {
+	// 1 repr char, 9 mode bits, 1 null byte
+	static char s[11];
+	char * p = s;
+
+	if (de->type == DE_UNKNOWN) {
+		strcpy(s, "??????????");
+		return s;
+	}
+
+	*p++ = dirent_longcrepr(de);
+	*p++ = (de->mode & M_USRR) ? 'r' : '-';
+	*p++ = (de->mode & M_USRW) ? 'w' : '-';
+	*p++ = (de->mode & M_USRX) ?
+	         (de->mode & M_SUID) ? 's' : 'x'
+		   : (de->mode & M_SUID) ? 'S' : '-';
+	*p++ = (de->mode & M_GRPR) ? 'r' : '-';
+	*p++ = (de->mode & M_GRPW) ? 'w' : '-';
+	*p++ = (de->mode & M_GRPX) ?
+	         (de->mode & M_SGID) ? 's' : 'x'
+	       : (de->mode & M_SGID) ? 'S' : '-';
+	*p++ = (de->mode & M_OTHR) ? 'r' : '-';
+	*p++ = (de->mode & M_OTHW) ? 'w' : '-';
+	*p++ = (de->mode & M_OTHX) ?
+	         (de->mode & M_STICKY) ? 't' : 'x'
+	       : (de->mode & M_STICKY) ? 'T' : '-';
+
+	*p = 0;
+
+	return s;
 }
