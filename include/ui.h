@@ -28,7 +28,8 @@ enum ui_color {
 void ui_init(void);
 void ui_deinit(void);
 void ui_set_title(const char * title);
-void ui_set_status(const char * status);
+void ui_status_info(const char * status);
+void ui_status_error(const char * status);
 void ui_erase(void);
 void ui_refresh(void);
 void ui_print_dir(const dir_t * dir, size_t cursor, bool longmode);

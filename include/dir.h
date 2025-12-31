@@ -58,12 +58,14 @@ typedef struct {
 int dir_list(const char * path, dir_t * dir);
 void dir_free(dir_t * dir);
 const char * dir_get_cwd(void);
+int dir_cd_back(const char * cwd);
+int dir_cd(const char * cwd, const char * next);
+int dir_search_name(const dir_t * dir, const char * name, size_t * idx);
+const char * dir_basename(const char * path);
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link
 char dirent_longcrepr(const dirent_t * de); // like above, but for long mode
 bool dirent_isexec(const dirent_t * de);
 const char * dirent_prettymode(const dirent_t * de);
-int dir_cd_back(const char * cwd);
-int dir_cd(const char * cwd, const char * next);
 
 #endif /* DIR_H */

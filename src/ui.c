@@ -67,8 +67,14 @@ void ui_set_title(const char * title) {
 	win_set(titlewin, title, 0);
 }
 
-void ui_set_status(const char * status) {
+void ui_status_info(const char * status) {
 	win_set(statuswin, status, 0);
+}
+
+void ui_status_error(const char * status) {
+	wattron(statuswin, COLOR_PAIR(RED));
+	win_set(statuswin, status, 0);
+	wattroff(statuswin, COLOR_PAIR(RED));
 }
 
 void ui_erase(void) {
@@ -178,7 +184,11 @@ void ui_print_cursor(size_t cursor, size_t total) {
 	if (total < lines - 2) wmove(filewin, total + 1, 0);
 	else wmove(filewin, lines - 1, 0);
 
-	wprintw(filewin, "%zu/%zu", cursor + 1, total);
+	if (total > 0) {
+		wprintw(filewin, "%zu/%zu", cursor + 1, total);
+	} else {
+		waddstr(filewin, "0/0");
+	}
 }
 
 static void ui_get_first_last(size_t dir_len, size_t cursor, size_t * first, size_t * last) {

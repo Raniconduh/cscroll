@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
@@ -13,6 +14,9 @@
 
 #define CWDSZ (PATH_MAX + 1)
 #define LINKNAMESZ PATH_MAX
+
+static char cwd_buf[CWDSZ];
+static char * cwd = NULL;
 
 static void dir_entry(int dirfd, const char * name, dirent_t * dirent);
 static char de_crepr(enum de_type de_type);
@@ -44,7 +48,7 @@ int dir_list(const char * path, dir_t * dir) {
 	struct dirent * de;
 	DIR * dp = opendir(path);
 	if (!dp) {
-		return -1;
+		return -errno;
 	}
 
 	while ((de = readdir(dp))) {
@@ -216,17 +220,20 @@ const char * dirent_prettymode(const dirent_t * de) {
 }
 
 const char * dir_get_cwd(void) {
-	static char cwd[CWDSZ];
-
-	getcwd(cwd, CWDSZ);
+	if (!cwd) {
+		getcwd(cwd_buf, CWDSZ);
+		cwd = cwd_buf;
+		char * p = strrchr(cwd, '/');
+		if (*(p + 1) == 0) *p = 0;
+	}
 	return cwd;
 }
 
-int dir_cd_back(const char * cwd) {
-	if (!*cwd) return -1;
-	if (!strcmp(cwd, "/")) return 0;
+int dir_cd_back(const char * wd) {
+	if (!*wd) return -EPERM;
+	if (!strcmp(wd, "/")) return 0;
 
-	char * newwd = strdup(cwd);
+	char * newwd = strdup(wd);
 	char * p = strrchr(newwd, '/');
 	*p = 0;
 	if (*newwd == 0) {
@@ -234,25 +241,51 @@ int dir_cd_back(const char * cwd) {
 		*(newwd + 1) = 0;
 	}
 	int ret = chdir(newwd);
+	int terrno = errno;
+	if (ret >= 0) strcpy(cwd, newwd);
 	free(newwd);
 
-	if (ret < 0) return -1;
+	if (ret < 0) return -terrno;
 	return 0;
 }
 
-int dir_cd(const char * cwd, const char * next) {
-	size_t cwdlen = strlen(cwd);
+int dir_cd(const char * wd, const char * next) {
+	size_t wdlen = strlen(wd);
 	size_t nextlen = strlen(next);
 
 	// extra byte for '/' character
-	char * newwd = malloc(cwdlen + nextlen + 1 + 1);
-	strcpy(newwd, cwd);
-	newwd[cwdlen] = '/';
-	strcpy(newwd + cwdlen + 1, next);
+	char * newwd = malloc(wdlen + nextlen + 1 + 1);
+	if (strcmp(wd, "/") != 0) {
+		strcpy(newwd, wd);
+		newwd[wdlen] = '/';
+		strcpy(newwd + wdlen + 1, next);
+	} else {
+		newwd[0] = '/';
+		strcpy(newwd + 1, next);
+	}
 
 	int ret = chdir(newwd);
+	int terrno = errno;
+	if (ret >= 0) strcpy(cwd, newwd);
 	free(newwd);
 
-	if (ret < 0) return -1;
+	if (ret < 0) return -terrno;
 	return 0;
+}
+
+const char * dir_basename(const char * path) {
+	const char * p = strrchr(path, '/');
+	if (!p || *(p + 1) == 0) return NULL;
+	return p + 1;
+}
+
+int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
+	for (size_t i = 0; i < dir->len; i++) {
+		if (!strcmp(dir->entries[i].name, name)) {
+			*idx = i;
+			return 0;
+		}
+	}
+
+	return -1;
 }
