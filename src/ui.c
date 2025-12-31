@@ -3,17 +3,38 @@
 #include <stddef.h>
 #include <string.h>
 #include <locale.h>
+#include <ctype.h>
 #include <time.h>
 
 #include "ui.h"
 #include "dir.h"
 
-static WINDOW * titlewin = NULL;
+#define TITLEWINSTARTY   0
+#define TITLEWINLINES    1
+#define TITLEWINCOLS     COLS
+
+#define STATUSWINSTARTY  1
+#define STATUSWINLINES   1
+#define STATUSWINCOLS    COLS
+
+#define FILEWINSTARTY    2
+#define FILEWINLINES     (LINES - 3)
+#define FILEWINCOLS      COLS
+
+#define INPUTWINSTARTY   (LINES - 1)
+#define INPUTWINLINES    1
+#define INPUTWINCOLS     COLS
+
+#define INPUTBUFSZ 2048
+
+static WINDOW * titlewin  = NULL;
 static WINDOW * statuswin = NULL;
-static WINDOW * filewin = NULL;
+static WINDOW * filewin   = NULL;
+static WINDOW * inputwin  = NULL;
 
 static void win_set(WINDOW * win, const char * str, int attrs);
 static int ui_dirent_color(const dirent_t * de);
+static int ui_link_color(const dirent_t * de);
 static void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmode, const dir_t * dir);
 static void ui_wlpadstr(WINDOW * win, const char * s, size_t len);
 static void ui_get_first_last(size_t n_dirents, size_t cursor, size_t * first, size_t * last);
@@ -26,9 +47,10 @@ void ui_init(void) {
 	curs_set(0);
 	noecho();
 
-	titlewin  = newwin(1, COLS, 0, 0);
-	statuswin = newwin(1, COLS, 1, 0);
-	filewin   = newwin(LINES - 2, COLS, 2, 0);
+	titlewin  = newwin(TITLEWINLINES,  TITLEWINCOLS,  TITLEWINSTARTY,  0);
+	statuswin = newwin(STATUSWINLINES, STATUSWINCOLS, STATUSWINSTARTY, 0);
+	filewin   = newwin(FILEWINLINES,   FILEWINCOLS,   FILEWINSTARTY,   0);
+	inputwin  = newwin(INPUTWINLINES,  INPUTWINCOLS,  INPUTWINSTARTY,  0);
 
 	clear();
 	refresh();
@@ -72,19 +94,19 @@ void ui_status_info(const char * status) {
 }
 
 void ui_status_error(const char * status) {
-	wattron(statuswin, COLOR_PAIR(RED));
-	win_set(statuswin, status, 0);
-	wattroff(statuswin, COLOR_PAIR(RED));
+	win_set(statuswin, status, COLOR_PAIR(RED));
 }
 
 void ui_erase(void) {
 	werase(filewin);
+	werase(inputwin);
 }
 
 void ui_refresh(void) {
 	wnoutrefresh(titlewin);
 	wnoutrefresh(statuswin);
 	wnoutrefresh(filewin);
+	wnoutrefresh(inputwin);
 	doupdate();
 }
 
@@ -144,6 +166,17 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmo
 	wattroff(filewin, color);
 	char c = dirent_crepr(de);
 	if (c) waddch(filewin, c);
+
+	if (de->type == DE_LINK) {
+		waddstr(filewin, " -> ");
+		color = COLOR_PAIR(ui_link_color(de));
+		if (selected) color |= A_REVERSE;
+		wattron(filewin, color);
+		waddstr(filewin, de->linkname);
+		wattroff(filewin, color);
+		char c = dirent_creprl(de);
+		if (c) waddch(filewin, c);
+	}
 }
 
 static int ui_dirent_color(const dirent_t * de) {
@@ -165,6 +198,20 @@ static int ui_dirent_color(const dirent_t * de) {
 	}
 
 	return color;
+}
+
+static int ui_link_color(const dirent_t * de) {
+	switch (de->linktype) {
+		case DE_FILE:    return COLOR_FILE;
+		case DE_DIR:     return COLOR_DIR;
+		case DE_FIFO:    return COLOR_FIFO;
+		case DE_LINK:    return COLOR_LINK;
+		case DE_BLOCK:   return COLOR_BLOCK;
+		case DE_CHAR:    return COLOR_CHAR;
+		case DE_SOCKET:  return COLOR_SOCKET;
+		case DE_UNKNOWN: return COLOR_UNKNOWN;
+		default:         return WHITE;
+	}
 }
 
 void ui_print_dir(const dir_t * dir, size_t cursor, bool longmode) {
@@ -200,15 +247,75 @@ static void ui_get_first_last(size_t dir_len, size_t cursor, size_t * first, siz
 		*first = 0;
 		*last = dir_len;
 	} else {
-		size_t off = lines / 2;
-		if (cursor < off) {
+		size_t off_lo = lines / 2;
+		size_t off_hi = lines - off_lo;
+		if (cursor < off_lo) {
 			*first = 0;
 			if (dir_len > lines) *last = lines;
 			else *last = dir_len;
 		} else {
-			*first = cursor - off;
-			if (dir_len > cursor + off) *last = cursor + off;
+			*first = cursor - off_lo;
+			if (dir_len > cursor + off_hi) *last = cursor + off_hi;
 			else *last = dir_len;
 		}
 	}
+}
+
+void ui_resize(void) {
+	// unless a WINCH handler is specified, ncurses resizes the terminal
+	// automatically, so this function just resizes the windows
+	wresize(titlewin,  TITLEWINLINES,  TITLEWINCOLS);
+	wresize(statuswin, STATUSWINLINES, STATUSWINCOLS);
+	wresize(filewin,   FILEWINLINES,   FILEWINCOLS);
+	wresize(inputwin,  INPUTWINLINES,  INPUTWINCOLS);
+
+	mvwin(titlewin,  TITLEWINSTARTY,  0);
+	mvwin(statuswin, STATUSWINSTARTY, 0);
+	mvwin(filewin,   FILEWINSTARTY,   0);
+	mvwin(inputwin,  INPUTWINSTARTY,  0);
+
+	ui_refresh();
+}
+
+const char * ui_readline(const char * prompt) {
+	static char inputbuf[INPUTBUFSZ];
+
+	char * p = inputbuf;
+	*p = 0;
+
+	werase(inputwin);
+	waddstr(inputwin, prompt);
+	wattron(inputwin, A_REVERSE);
+	waddch(inputwin, ' ');
+	wattroff(inputwin, A_REVERSE);
+	wrefresh(inputwin);
+
+	int c;
+	while ((c = wgetch(inputwin)) != '\n') {
+		if (c == KEY_ESC) {
+			curs_set(0);
+			return NULL;
+		}
+
+		if (c == KEY_DEL || c == KEY_BACKSPACE) {
+			if (p != inputbuf) *--p = 0;
+			else return NULL;
+		} else if (isprint(c)) {
+			if (p - inputbuf < INPUTBUFSZ - 1) {
+				*p++ = (char)c;
+				*p = 0;
+			}
+		}
+
+		werase(inputwin);
+		waddstr(inputwin, prompt);
+		waddstr(inputwin, inputbuf);
+		wattron(inputwin, A_REVERSE);
+		waddch(inputwin, ' ');
+		wattroff(inputwin, A_REVERSE);
+		wrefresh(inputwin);
+	}
+
+	if (p == inputbuf) return NULL;
+	return inputbuf;
 }

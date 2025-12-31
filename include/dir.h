@@ -21,6 +21,9 @@
 #define M_OTHW S_IWOTH
 #define M_OTHX S_IXOTH
 
+#define REGSEARCH_BAD_REGEX 1
+#define REGSEARCH_NOT_FOUND 2
+
 enum de_type {
 	DE_FILE,
 	DE_DIR,
@@ -61,7 +64,9 @@ const char * dir_get_cwd(void);
 int dir_cd_back(const char * cwd);
 int dir_cd(const char * cwd, const char * next);
 int dir_search_name(const dir_t * dir, const char * name, size_t * idx);
+int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx);
 const char * dir_basename(const char * path);
+
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link
 char dirent_longcrepr(const dirent_t * de); // like above, but for long mode

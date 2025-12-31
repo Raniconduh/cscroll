@@ -62,7 +62,8 @@ int main(int argc, char ** argv) {
 				}
 				free(basename);
 				break;
-			} case KEY_RIGHT:
+			}
+			case KEY_RIGHT:
 				if (cur_de && (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
 				  && cur_de->linktype == DE_DIR))) {
 					int ret = dir_cd(cwd, cur_de->name);
@@ -89,8 +90,32 @@ int main(int argc, char ** argv) {
 				cursor = dir.len - 1;
 				ui_status_info("");
 				break;
+			case '/': {
+				const char * input = ui_readline("/");
+				if (!input) break;
+				size_t idx;
+				int i = dir_search_regex(&dir, input, &idx);
+				if (i >= 0) {
+					cursor = idx;
+					ui_status_info("");
+				} else switch (-i) {
+					case REGSEARCH_BAD_REGEX:
+						ui_status_error("Bad RegEx");
+						break;
+					case REGSEARCH_NOT_FOUND:
+						ui_status_info("No Matches Found");
+						break;
+					default:
+						ui_status_error("Unhandled Case");
+						break;
+				}
+				break;
+			}
 			case 'q':
 				goto finished;
+			case KEY_RESIZE:
+				ui_resize();
+				break;
 			default: break;
 		}
 	}

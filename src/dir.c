@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <regex.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
@@ -288,4 +289,23 @@ int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
 	}
 
 	return -1;
+}
+
+int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx) {
+	regex_t regex;
+	int ret = regcomp(&regex, regexstr, REG_EXTENDED);
+	if (!!ret) return -REGSEARCH_BAD_REGEX;
+
+	for (size_t i = 0; i < dir->len; i++) {
+		dirent_t * de = &dir->entries[i];
+		ret = regexec(&regex, de->name, 0, NULL, 0);
+		if (!ret) {
+			*idx = i;
+			regfree(&regex);
+			return 0;
+		}
+	}
+
+	regfree(&regex);
+	return -REGSEARCH_NOT_FOUND;
 }

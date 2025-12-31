@@ -7,6 +7,9 @@
 
 #include "dir.h"
 
+#define KEY_DEL 127
+#define KEY_ESC 27
+
 enum ui_color {
 	COLOR_FILE = 1,
 	COLOR_DIR,
@@ -34,5 +37,7 @@ void ui_erase(void);
 void ui_refresh(void);
 void ui_print_dir(const dir_t * dir, size_t cursor, bool longmode);
 void ui_print_cursor(size_t cursor, size_t total);
+void ui_resize(void);
+const char * ui_readline(const char * prompt);
 
 #endif /* UI_H */
