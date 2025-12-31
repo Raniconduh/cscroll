@@ -11,6 +11,7 @@
 #include "dir.h"
 #include "cvector.h"
 
+#define CWDSZ (PATH_MAX + 1)
 #define LINKNAMESZ PATH_MAX
 
 static void dir_entry(int dirfd, const char * name, dirent_t * dirent);
@@ -22,11 +23,23 @@ static void free_dirent(void * p) {
 	free(de->gname);
 	free(de->linkname);
 }
+static size_t ilen(size_t i, int base) {
+	if (i == 0) return 1;
+	size_t r = 0;
+	while (i != 0) {
+		r++;
+		i /= base;
+	}
+	return r;
+}
 
 int dir_list(const char * path, dir_t * dir) {
 	dir->len = 0;
 	dir->entries = NULL;
 	cvector_init(dir->entries, 1, free_dirent);
+	dir->longest_uname = 0;
+	dir->longest_gname = 0;
+	dir->longest_size = 0;
 
 	struct dirent * de;
 	DIR * dp = opendir(path);
@@ -43,6 +56,15 @@ int dir_list(const char * path, dir_t * dir) {
 		dir_entry(dirfd(dp), de->d_name, &dirent);
 		cvector_push_back(dir->entries, dirent);
 		dir->len++;
+
+		size_t uname_len = 0;
+		size_t gname_len = 0;
+		size_t size_len = ilen(dirent.size, 10);
+		if (dirent.uname) uname_len = strlen(dirent.uname);
+		if (dirent.gname) gname_len = strlen(dirent.gname);
+		if (uname_len > dir->longest_uname) dir->longest_uname = uname_len;
+		if (gname_len > dir->longest_gname) dir->longest_gname = gname_len;
+		if (size_len > dir->longest_size) dir->longest_size = size_len;
 	}
 
 	closedir(dp);
@@ -191,4 +213,46 @@ const char * dirent_prettymode(const dirent_t * de) {
 	*p = 0;
 
 	return s;
+}
+
+const char * dir_get_cwd(void) {
+	static char cwd[CWDSZ];
+
+	getcwd(cwd, CWDSZ);
+	return cwd;
+}
+
+int dir_cd_back(const char * cwd) {
+	if (!*cwd) return -1;
+	if (!strcmp(cwd, "/")) return 0;
+
+	char * newwd = strdup(cwd);
+	char * p = strrchr(newwd, '/');
+	*p = 0;
+	if (*newwd == 0) {
+		*newwd = '/';
+		*(newwd + 1) = 0;
+	}
+	int ret = chdir(newwd);
+	free(newwd);
+
+	if (ret < 0) return -1;
+	return 0;
+}
+
+int dir_cd(const char * cwd, const char * next) {
+	size_t cwdlen = strlen(cwd);
+	size_t nextlen = strlen(next);
+
+	// extra byte for '/' character
+	char * newwd = malloc(cwdlen + nextlen + 1 + 1);
+	strcpy(newwd, cwd);
+	newwd[cwdlen] = '/';
+	strcpy(newwd + cwdlen + 1, next);
+
+	int ret = chdir(newwd);
+	free(newwd);
+
+	if (ret < 0) return -1;
+	return 0;
 }
