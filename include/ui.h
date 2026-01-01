@@ -35,7 +35,7 @@ void ui_status_info(const char * status);
 void ui_status_error(const char * status);
 void ui_erase(void);
 void ui_refresh(void);
-void ui_print_dir(const dir_t * dir, size_t cursor, bool longmode);
+void ui_print_dir(const dir_t * dir, size_t cursor);
 void ui_print_cursor(size_t cursor, size_t total);
 void ui_resize(void);
 const char * ui_readline(const char * prompt);

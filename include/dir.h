@@ -52,6 +52,8 @@ typedef struct {
 typedef struct {
 	size_t len;
 	cvector(dirent_t) entries;
+	size_t nodots_len;
+	cvector(dirent_t) nodots;
 
 	size_t longest_uname;
 	size_t longest_gname;
@@ -66,6 +68,9 @@ int dir_cd(const char * cwd, const char * next);
 int dir_search_name(const dir_t * dir, const char * name, size_t * idx);
 int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx);
 const char * dir_basename(const char * path);
+size_t dir_len(const dir_t * dir);
+cvector(dirent_t) dir_entries(const dir_t * dir);
+void dir_sort(const dir_t * dir);
 
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link

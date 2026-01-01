@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <strings.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 #include <grp.h>
 
 #include "dir.h"
+#include "config.h"
 #include "cvector.h"
 
 #define CWDSZ (PATH_MAX + 1)
@@ -42,6 +44,8 @@ int dir_list(const char * path, dir_t * dir) {
 	dir->len = 0;
 	dir->entries = NULL;
 	cvector_init(dir->entries, 1, free_dirent);
+	dir->nodots_len = 0;
+	dir->nodots = NULL;
 	dir->longest_uname = 0;
 	dir->longest_gname = 0;
 	dir->longest_size = 0;
@@ -61,6 +65,11 @@ int dir_list(const char * path, dir_t * dir) {
 		dir_entry(dirfd(dp), de->d_name, &dirent);
 		cvector_push_back(dir->entries, dirent);
 		dir->len++;
+
+		if (*de->d_name != '.') {
+			cvector_push_back(dir->nodots, dirent);
+			dir->nodots_len++;
+		}
 
 		size_t uname_len = 0;
 		size_t gname_len = 0;
@@ -146,6 +155,7 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 
 void dir_free(dir_t * dir) {
 	cvector_free(dir->entries);
+	cvector_free(dir->nodots);
 }
 
 char de_crepr(enum de_type de_type) {
@@ -281,8 +291,11 @@ const char * dir_basename(const char * path) {
 }
 
 int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
-	for (size_t i = 0; i < dir->len; i++) {
-		if (!strcmp(dir->entries[i].name, name)) {
+	size_t dirlen = dir_len(dir);
+	cvector(dirent_t) entries = dir_entries(dir);
+
+	for (size_t i = 0; i < dirlen; i++) {
+		if (!strcmp(entries[i].name, name)) {
 			*idx = i;
 			return 0;
 		}
@@ -292,12 +305,15 @@ int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
 }
 
 int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx) {
+	size_t dirlen = dir_len(dir);
+	cvector(dirent_t) entries = dir_entries(dir);
+
 	regex_t regex;
 	int ret = regcomp(&regex, regexstr, REG_EXTENDED);
 	if (!!ret) return -REGSEARCH_BAD_REGEX;
 
-	for (size_t i = 0; i < dir->len; i++) {
-		dirent_t * de = &dir->entries[i];
+	for (size_t i = 0; i < dirlen; i++) {
+		dirent_t * de = &entries[i];
 		ret = regexec(&regex, de->name, 0, NULL, 0);
 		if (!ret) {
 			*idx = i;
@@ -308,4 +324,49 @@ int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx) {
 
 	regfree(&regex);
 	return -REGSEARCH_NOT_FOUND;
+}
+
+size_t dir_len(const dir_t * dir) {
+	if (config.dots) return dir->len;
+	else return dir->nodots_len;
+}
+
+cvector(dirent_t) dir_entries(const dir_t * dir) {
+	if (config.dots) return dir->entries;
+	else return dir->nodots;
+}
+
+static int dir_sort_cmp(const void * inpa, const void * inpb) {
+	const dirent_t * a = (const dirent_t*)inpa;
+	const dirent_t * b = (const dirent_t*)inpb;
+
+	if (config.dir_sort_dirs != DIR_SORT_DIRS_UNSORTED
+			&& ((a->type == DE_DIR) != (b->type == DE_DIR))) {
+		if (config.dir_sort_dirs == DIR_SORT_DIRS_FIRST)
+			return (a->type == DE_DIR) ? -1 : 1;
+		if (config.dir_sort_dirs == DIR_SORT_DIRS_LAST)
+			return (b->type == DE_DIR) ? -1 : 1;
+	}
+
+	if (config.dir_sort == DIR_SORT_DECREASING) {
+		const dirent_t * tmp = a;
+		a = b;
+		b = tmp;
+	}
+
+	switch (config.dir_sortby) {
+		case DIR_SORTBY_NAME:
+			return strcasecmp(a->name, b->name);
+		case DIR_SORTBY_TIME:
+			return (a->mtime < b->mtime) ? -1 : 1;
+		case DIR_SORTBY_SIZE:
+			return (a->size < b->size) ? -1 : 1;
+		default: return 0;
+	}
+}
+
+void dir_sort(const dir_t * dir) {
+	if (config.dir_sort == DIR_SORT_UNSORTED) return;
+	qsort(dir->entries, dir->len, sizeof(dir->entries[0]), dir_sort_cmp);
+	qsort(dir->nodots, dir->nodots_len, sizeof(dir->entries[0]), dir_sort_cmp);
 }

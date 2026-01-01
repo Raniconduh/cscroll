@@ -8,6 +8,8 @@
 
 #include "ui.h"
 #include "dir.h"
+#include "config.h"
+#include "cvector.h"
 
 #define TITLEWINSTARTY   0
 #define TITLEWINLINES    1
@@ -35,7 +37,7 @@ static WINDOW * inputwin  = NULL;
 static void win_set(WINDOW * win, const char * str, int attrs);
 static int ui_dirent_color(const dirent_t * de);
 static int ui_link_color(const dirent_t * de);
-static void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmode, const dir_t * dir);
+static void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t * dir);
 static void ui_wlpadstr(WINDOW * win, const char * s, size_t len);
 static void ui_get_first_last(size_t n_dirents, size_t cursor, size_t * first, size_t * last);
 
@@ -120,7 +122,7 @@ static void ui_wlpadstr(WINDOW * win, const char * s, size_t len) {
 	waddstr(win, s);
 }
 
-void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmode, const dir_t * dir) {
+void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t * dir) {
 	static const enum ui_color mode_colors[] = {
 		['r'] = RED,    ['w'] = MAGENTA, ['x'] = COLOR_EXEC,
 		['s'] = YELLOW, ['S'] = YELLOW,  ['t'] = RED,
@@ -134,9 +136,19 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmo
 	static char stime[128];
 	static char isbuf[40]; // should be big enough to hold any integer
 
-	wmove(filewin, pos, 0);
+	size_t lines, cols;
+	getmaxyx(filewin, lines, cols);
 
-	if (longmode) {
+	size_t dirlen = dir_len(dir);
+
+	if (config.longmode && (config.longinline || (!config.longinline && selected))) {
+		if (config.longinline) wmove(filewin, pos, 0);
+		else {
+			// place the longmode info right on top of the "cursor" info
+			if (dirlen < lines - 3) wmove(filewin, dirlen + 1, 0);
+			else wmove(filewin, lines - 2, 0);
+		}
+
 		const char * pmode = dirent_prettymode(de);
 		for (const char * p = pmode; *p; p++) {
 			int color = COLOR_PAIR(mode_colors[(unsigned)*p]);
@@ -158,6 +170,9 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, bool longmo
 		strftime(stime, sizeof(stime), "%b %d %H:%M %Y", localtime(&de->mtime));
 		wprintw(filewin, " %s ", stime);
 	}
+
+	if (!config.longmode || (config.longmode && !config.longinline))
+		wmove(filewin, pos, 0);
 
 	int color = COLOR_PAIR(ui_dirent_color(de));
 	if (selected) color |= A_REVERSE;
@@ -214,22 +229,29 @@ static int ui_link_color(const dirent_t * de) {
 	}
 }
 
-void ui_print_dir(const dir_t * dir, size_t cursor, bool longmode) {
+void ui_print_dir(const dir_t * dir, size_t cursor) {
 	size_t first;
 	size_t last;
-	ui_get_first_last(dir->len, cursor, &first, &last);
+	size_t len = dir_len(dir);
+	cvector(dirent_t) entries = dir_entries(dir);
+	ui_get_first_last(len, cursor, &first, &last);
 
 	for (size_t i = first; i < last; i++) {
 		size_t pos = i - first;
-		ui_print_dirent(&dir->entries[i], pos, cursor == i, longmode, dir);
+		ui_print_dirent(&entries[i], pos, cursor == i, dir);
 	}
 }
 
 void ui_print_cursor(size_t cursor, size_t total) {
 	size_t lines, cols;
 	getmaxyx(filewin, lines, cols);
-	if (total < lines - 2) wmove(filewin, total + 1, 0);
-	else wmove(filewin, lines - 1, 0);
+	if (config.longmode && !config.longinline) {
+		if (total < lines - 3) wmove(filewin, total + 2, 0);
+		else wmove(filewin, lines - 1, 0);
+	} else {
+		if (total < lines - 2) wmove(filewin, total + 1, 0);
+		else wmove(filewin, lines - 1, 0);
+	}
 
 	if (total > 0) {
 		wprintw(filewin, "%zu/%zu", cursor + 1, total);
@@ -242,6 +264,7 @@ static void ui_get_first_last(size_t dir_len, size_t cursor, size_t * first, siz
 	size_t lines, cols;
 	getmaxyx(filewin, lines, cols);
 	lines -= 2;
+	if (config.longmode && !config.longinline) lines--;
 	// try to keep cursor in the middle of the window
 	if (dir_len < lines) {
 		*first = 0;

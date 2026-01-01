@@ -5,12 +5,15 @@
 
 #include "ui.h"
 #include "dir.h"
+#include "config.h"
+#include "cvector.h"
 
 int main(int argc, char ** argv) {
 	const char * cwd = dir_get_cwd();
 
 	dir_t dir;
 	dir_list(cwd, &dir);
+	dir_sort(&dir);
 
 	ui_init();
 	size_t cursor = 0;
@@ -18,22 +21,26 @@ int main(int argc, char ** argv) {
 	for (;;) {
 		ui_erase();
 
+		size_t dirlen = dir_len(&dir);
+		cvector(dirent_t) entries = dir_entries(&dir);
+
 		ui_set_title(cwd);
-		ui_print_dir(&dir, cursor, true);
-		ui_print_cursor(cursor, dir.len);
+		ui_print_dir(&dir, cursor);
+		ui_print_cursor(cursor, dirlen);
 
 		ui_refresh();
 
 		dirent_t * cur_de;
-	   	if (dir.len == 0) cur_de = NULL;
-		else cur_de = &dir.entries[cursor];
+		if (dirlen == 0) cur_de = NULL;
+		else cur_de = &entries[cursor];
+
 		switch (getch()) {
 			case KEY_UP:
 				if (cursor > 0) cursor--;
 				ui_status_info("");
 				break;
 			case KEY_DOWN:
-				if (cursor < dir.len - 1) cursor++;
+				if (cursor < dirlen - 1) cursor++;
 				ui_status_info("");
 				break;
 			case KEY_LEFT: {
@@ -49,12 +56,13 @@ int main(int argc, char ** argv) {
 					ret = dir_list(cwd, &dir);
 					if (ret < 0) {
 						ui_status_error(strerror(-ret));
-					} else if (basename) {
-						size_t idx;
-						int i = dir_search_name(&dir, basename, &idx);
-						if (i >= 0) cursor = idx;
-						ui_status_info("");
 					} else {
+						dir_sort(&dir);
+						if (basename) {
+							size_t idx;
+							int i = dir_search_name(&dir, basename, &idx);
+							if (i >= 0) cursor = idx;
+						}
 						ui_status_info("");
 					}
 				} else {
@@ -72,7 +80,8 @@ int main(int argc, char ** argv) {
 						cwd = dir_get_cwd();
 						dir_free(&dir);
 						dir_list(cwd, &dir);
-						if (dir.len == 0) ui_status_info("Empty Directory");
+						dir_sort(&dir);
+						if (dirlen == 0) ui_status_info("Empty Directory");
 					} else {
 						ui_status_error(strerror(-ret));
 					}
@@ -87,8 +96,26 @@ int main(int argc, char ** argv) {
 				break;
 			case KEY_END:
 			case 'G':
-				cursor = dir.len - 1;
+				cursor = dirlen - 1;
 				ui_status_info("");
+				break;
+			case '.': {
+				config.dots = !config.dots;
+				size_t idx;
+				int ret = dir_search_name(&dir, cur_de->name, &idx);
+				if (ret < 0) cursor = 0;
+				else cursor = idx;
+				break;
+			}
+			case 'l':
+				// cycle through long mode options
+				if (config.longmode) {
+					if (config.longinline) config.longinline = false;
+					else config.longmode = false;
+				} else {
+					config.longmode = true;
+					config.longinline = true;
+				}
 				break;
 			case '/': {
 				const char * input = ui_readline("/");
