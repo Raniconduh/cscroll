@@ -49,6 +49,7 @@ int main(int argc, char ** argv) {
 				const char * truebasename = dir_basename(cwd);
 				char * basename = NULL;
 				if (truebasename) basename = strdup(truebasename);
+
 				int ret = dir_cd_back(cwd);
 				if (ret >= 0) {
 					cwd = dir_get_cwd();
@@ -71,7 +72,7 @@ int main(int argc, char ** argv) {
 				free(basename);
 				break;
 			}
-			case KEY_RIGHT:
+			case KEY_RIGHT: {
 				if (cur_de && (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
 				  && cur_de->linktype == DE_DIR))) {
 					int ret = dir_cd(cwd, cur_de->name);
@@ -89,6 +90,7 @@ int main(int argc, char ** argv) {
 					ui_status_info("");
 				}
 				break;
+			}
 			case KEY_HOME:
 			case 'g':
 				cursor = 0;
@@ -105,6 +107,7 @@ int main(int argc, char ** argv) {
 				int ret = dir_search_name(&dir, cur_de->name, &idx);
 				if (ret < 0) cursor = 0;
 				else cursor = idx;
+				ui_status_info("");
 				break;
 			}
 			case 'l':
@@ -116,6 +119,7 @@ int main(int argc, char ** argv) {
 					config.longmode = true;
 					config.longinline = true;
 				}
+				ui_status_info("");
 				break;
 			case '/': {
 				const char * input = ui_readline("/");
