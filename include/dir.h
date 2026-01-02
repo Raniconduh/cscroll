@@ -91,5 +91,6 @@ char dirent_longcrepr(const dirent_t * de); // like above, but for long mode
 bool dirent_isexec(const dirent_t * de);
 const char * dirent_prettymode(const dirent_t * de);
 const char * dirent_size_unit(const dirent_t * de);
+size_t dirent_subfiles(const dirent_t * de); // number of sub entries in a dir
 
 #endif /* DIR_H */

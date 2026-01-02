@@ -28,6 +28,9 @@ enum ui_color {
 
 };
 
+// basically an array of strings (last entry is NULL)
+typedef const char * const prompt_opts_t[];
+
 void ui_init(void);
 void ui_deinit(void);
 void ui_set_title(const char * title);
@@ -39,5 +42,7 @@ void ui_print_dir(const dir_t * dir, size_t cursor);
 void ui_print_cursor(size_t cursor, size_t total);
 void ui_resize(void);
 const char * ui_readline(const char * prompt);
+const char * ui_prompt(const char * prompt, prompt_opts_t opts);
+bool ui_prompt_deletion(const dirent_t * de);
 
 #endif /* UI_H */

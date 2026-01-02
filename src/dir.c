@@ -1,3 +1,4 @@
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <strings.h>
@@ -5,15 +6,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <regex.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
+#include <ftw.h>
+
 
 #include "dir.h"
 #include "config.h"
 #include "cvector.h"
+
+// S_ISVTX requires _XOPEN_SOURCE >= 500
+// I guess sticky bit isn't POSIX
+#ifndef S_ISVTX
+#define S_ISVTX 0
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
+#ifdef UNUSED
+#error UNUSED is already defined
+#undef UNUSED
+#endif
+#ifndef UNUSED
+#	if __GNUC__ || defined(__clang__)
+#		define UNUSED __attribute__((unused))
+#	elif __STDC_VERSION__ >= 202311L
+#		define UNUSED [[maybe_unused]]
+#	else
+#		define UNUSED
+#	endif
+#endif /* UNUSED */
 
 #define CWDSZ (PATH_MAX + 1)
 #define LINKNAMESZ PATH_MAX
@@ -400,4 +428,87 @@ const char * dirent_size_unit(const dirent_t * de) {
 	const char * ret = units[de->size_unit];
 	if (!ret) return nounit;
 	return ret;
+}
+
+static int dir_internal_ftw_(
+	int dfd,
+	int (*cb)(
+		int dirfd,
+		const char * path,
+		const struct stat * sb,
+		void * arg
+	),
+	void * arg
+) {
+	int retval = 0;
+
+	DIR * dp = fdopendir(dfd);
+	if (!dp) return 0;
+
+	struct dirent * de;
+	while ((de = readdir(dp)) != NULL) {
+		int ret;
+
+		char * name = de->d_name;
+		if (!strcmp(name, ".") || !strcmp(name, "..")) continue;
+
+		struct stat statbuf;
+		ret = fstatat(dirfd(dp), name, &statbuf, AT_SYMLINK_NOFOLLOW);
+		struct stat * statbufp;
+		if (ret < 0) statbufp = NULL;
+		else statbufp = &statbuf;
+
+		ret = cb(dirfd(dp), name, statbufp, arg);
+		// if cb returns a negative value, stop the walk immediately
+		if (ret < 0) {
+			retval = -1;
+			goto done;
+		}
+
+		if (S_ISDIR(statbuf.st_mode)) {
+			int nextfd = openat(dfd, name, O_RDONLY | O_DIRECTORY);
+			ret = dir_internal_ftw_(nextfd, cb, arg);
+			if (ret < 0) {
+				retval = -1;
+				goto done;
+			}
+		}
+	}
+
+done:
+	closedir(dp);
+	return retval;
+}
+
+static int dir_internal_ftw(
+	const char * path,
+	int (*cb)(
+		int dirfd,
+		const char * path,
+		const struct stat * sb,
+		void * arg
+	),
+	void * arg
+) {
+	DIR * d = opendir(path);
+	if (!d) return -1;
+	int ret = dir_internal_ftw_(dirfd(d), cb, arg);
+	closedir(d);
+	return ret;
+}
+
+static int dirent_subfiles_ftw_cb(
+	UNUSED int dirfd, UNUSED const char * path,
+	UNUSED const struct stat * sb, void * arg
+) {
+	(*(size_t*)arg)++;
+	return 0;
+}
+
+size_t dirent_subfiles(const dirent_t * de) {
+	if (de->type != DE_DIR) return 0;
+
+	size_t count = 0;
+	dir_internal_ftw(de->name, dirent_subfiles_ftw_cb, &count);
+	return count;
 }

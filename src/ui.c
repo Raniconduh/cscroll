@@ -11,6 +11,9 @@
 #include "config.h"
 #include "cvector.h"
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) > (y)) ? (y) : (x))
+
 #define TITLEWINSTARTY   0
 #define TITLEWINLINES    1
 #define TITLEWINCOLS     COLS
@@ -26,6 +29,11 @@
 #define INPUTWINSTARTY   (LINES - 1)
 #define INPUTWINLINES    1
 #define INPUTWINCOLS     COLS
+
+#define PROMPTWINSTARTY   (LINES / 2)
+#define PROMPTWINSTARTX   (COLS / 2)
+#define PROMPTWINMAXLINES (LINES * 3 / 4)
+#define PROMPTWINMAXCOLS  (COLS * 3 / 4)
 
 #define INPUTBUFSZ 2048
 
@@ -361,4 +369,133 @@ const char * ui_readline(const char * prompt) {
 
 	if (p == inputbuf) return NULL;
 	return inputbuf;
+}
+
+const char * ui_prompt(const char * prompt, prompt_opts_t opts) {
+	size_t n_opts = 0;
+	for (const char * const * p = opts; *p; p++) {
+		n_opts++;
+	}
+
+	size_t prompt_len = strlen(prompt);
+	// find width of options, assuming they all fit on one line
+	// there are n_opts - 1 spaces in total between the options
+	size_t opts_len = n_opts - 1;
+	for (size_t i = 0; i < n_opts; i++) {
+		opts_len += strlen(opts[i]);
+	}
+
+	/*            top   mid   btm   prompt   opts */
+	size_t oglines = 1  +  1  +  1  +    1   +   1;
+	/*         border left right */
+	size_t ogcols = 2  +  1 +  1   + MAX(prompt_len, opts_len);
+	size_t lines, cols;
+
+	lines = MIN(oglines, (unsigned)PROMPTWINMAXLINES);
+	cols = MIN(ogcols, (unsigned)PROMPTWINMAXCOLS);
+
+	WINDOW * promptwin = newwin(
+		lines,
+		cols,
+		PROMPTWINSTARTY - lines / 2,
+		PROMPTWINSTARTX - cols / 2
+	);
+
+	keypad(promptwin, TRUE);
+	wrefresh(promptwin);
+
+	size_t cursor = 0;
+
+	bool done = false;
+	const char * ret = NULL;
+	while (!done) {
+		werase(promptwin);
+		box(promptwin, 0, 0);
+
+		wmove(promptwin, 1, cols / 2 - prompt_len / 2);
+		waddstr(promptwin, prompt);
+
+		wmove(promptwin, 3, cols / 2 - opts_len / 2);
+		for (size_t i = 0; i < n_opts; i++) {
+			int attr = 0;
+			if (cursor == i) attr = A_REVERSE;
+			wattron(promptwin, attr);
+			waddstr(promptwin, opts[i]);
+			wattroff(promptwin, attr);
+			if (i < n_opts - 1) waddch(promptwin, ' ');
+		}
+		wrefresh(promptwin);
+
+		int c = wgetch(promptwin);
+		if (n_opts == 0) {
+			ret = NULL;
+			done = true;
+		} else switch (c) {
+			case KEY_LEFT:
+				if (cursor > 0) cursor--;
+				break;
+			case KEY_RIGHT:
+				if (cursor < n_opts - 1) cursor++;
+				break;
+			case '\n':
+			case KEY_ENTER:
+				ret = opts[cursor];
+				done = true;
+				break;
+			case KEY_RESIZE:
+				ui_resize();
+				ui_refresh();
+
+				lines = MIN(oglines, (unsigned)PROMPTWINMAXLINES);
+				cols = MIN(ogcols, (unsigned)PROMPTWINMAXCOLS);
+
+				wresize(promptwin, lines, cols);
+				mvwin(promptwin,
+					PROMPTWINSTARTY - lines / 2,
+					PROMPTWINSTARTX - cols / 2
+				);
+				wrefresh(promptwin);
+				break;
+			case 'q':
+			case KEY_ESC:
+				ret = NULL;
+				done = true;
+				break;
+		}
+	}
+
+	delwin(promptwin);
+	return ret;
+}
+
+bool ui_prompt_deletion(const dirent_t * de) {
+	const char * no = "No";
+	const char * yes = "Yes";
+
+	size_t nfiles = 0;
+	if (de->type == DE_DIR) {
+		ui_status_info("listing...");
+		ui_refresh();
+		nfiles = dirent_subfiles(de);
+		ui_status_info("");
+		ui_refresh();
+	}
+
+	char * prompt;
+	if (nfiles != 0) {
+		char * fstr = "Delete '%s' and all %zu files inside it?";
+		size_t len = snprintf(NULL, 0, fstr, de->name, nfiles);
+		prompt = malloc(len + 1);
+		sprintf(prompt, fstr, de->name, nfiles);
+	} else {
+		char * fstr = "Delete '%s'?";
+		size_t len = snprintf(NULL, 0, fstr, de->name);
+		prompt = malloc(len + 1);
+		sprintf(prompt, fstr, de->name);
+	}
+
+	const char * ret = ui_prompt(prompt, (prompt_opts_t){no, yes, NULL});
+	free(prompt);
+	if (ret == yes) return true;
+	return false;
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <ncurses.h>
+#include <stdbool.h>
 
 #include "ui.h"
 #include "dir.h"
@@ -140,6 +141,14 @@ int main(int argc, char ** argv) {
 						ui_status_error("Unhandled Case");
 						break;
 				}
+				break;
+			}
+			case 'd': {
+				ui_status_info("");
+				ui_refresh();
+				bool del = ui_prompt_deletion(cur_de);
+				if (del) ui_status_info("Deleting!");
+				else ui_status_info("Not Deleting.");
 				break;
 			}
 			case 'q':
