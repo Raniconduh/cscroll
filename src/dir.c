@@ -492,7 +492,7 @@ static int dir_internal_ftw(
 ) {
 	DIR * d = opendir(path);
 	if (!d) return -1;
-	int ret = dir_internal_ftw_(dirfd(d), cb, arg);
+	int ret = dir_internal_ftw_(dup(dirfd(d)), cb, arg);
 	closedir(d);
 	return ret;
 }
