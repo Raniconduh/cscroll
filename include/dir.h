@@ -24,6 +24,15 @@
 #define REGSEARCH_BAD_REGEX 1
 #define REGSEARCH_NOT_FOUND 2
 
+enum size_unit {
+	SIZE_B,
+	SIZE_KB,
+	SIZE_MB,
+	SIZE_GB,
+	SIZE_TB,
+	SIZE_EB,
+};
+
 enum de_type {
 	DE_FILE,
 	DE_DIR,
@@ -38,6 +47,8 @@ enum de_type {
 typedef struct {
 	char * name;
 	enum de_type type;
+	unsigned size_small;
+	enum size_unit size_unit;
 
 	size_t size;
 	uint16_t mode;
@@ -58,6 +69,8 @@ typedef struct {
 	size_t longest_uname;
 	size_t longest_gname;
 	size_t longest_size;
+	size_t longest_size_small;
+	size_t longest_size_unit;
 } dir_t;
 
 int dir_list(const char * path, dir_t * dir);
@@ -77,5 +90,6 @@ char dirent_creprl(const dirent_t * de); // like above, but for the link
 char dirent_longcrepr(const dirent_t * de); // like above, but for long mode
 bool dirent_isexec(const dirent_t * de);
 const char * dirent_prettymode(const dirent_t * de);
+const char * dirent_size_unit(const dirent_t * de);
 
 #endif /* DIR_H */

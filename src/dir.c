@@ -49,6 +49,8 @@ int dir_list(const char * path, dir_t * dir) {
 	dir->longest_uname = 0;
 	dir->longest_gname = 0;
 	dir->longest_size = 0;
+	dir->longest_size_small = 0;
+	dir->longest_size_unit = 0;
 
 	struct dirent * de;
 	DIR * dp = opendir(path);
@@ -74,11 +76,17 @@ int dir_list(const char * path, dir_t * dir) {
 		size_t uname_len = 0;
 		size_t gname_len = 0;
 		size_t size_len = ilen(dirent.size, 10);
+		size_t size_small_len = ilen(dirent.size_small, 10);
+		size_t size_unit_len = (dirent.size_unit == SIZE_B) ? 1 : 2;
 		if (dirent.uname) uname_len = strlen(dirent.uname);
 		if (dirent.gname) gname_len = strlen(dirent.gname);
 		if (uname_len > dir->longest_uname) dir->longest_uname = uname_len;
 		if (gname_len > dir->longest_gname) dir->longest_gname = gname_len;
 		if (size_len > dir->longest_size) dir->longest_size = size_len;
+		if (size_small_len > dir->longest_size_small)
+			dir->longest_size_small = size_small_len;
+		if (size_unit_len > dir->longest_size_unit)
+			dir->longest_size_unit = size_unit_len;
 	}
 
 	closedir(dp);
@@ -142,7 +150,18 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 		}
 	}
 
+	size_t size = statbuf.st_size;
+	enum size_unit size_unit = SIZE_B;
+	for (;size >= 1024;) {
+		size /= 1024;
+		size_unit++;
+		if (size_unit == SIZE_EB) break;
+	}
+
 	dirent->size = statbuf.st_size;
+	dirent->size_small = size;
+	dirent->size_unit = size_unit;
+
 	dirent->mode = statbuf.st_mode & 07777;
 	dirent->mtime = statbuf.st_mtime;
 
@@ -369,4 +388,16 @@ void dir_sort(const dir_t * dir) {
 	if (config.dir_sort == DIR_SORT_UNSORTED) return;
 	qsort(dir->entries, dir->len, sizeof(dir->entries[0]), dir_sort_cmp);
 	qsort(dir->nodots, dir->nodots_len, sizeof(dir->entries[0]), dir_sort_cmp);
+}
+
+const char * dirent_size_unit(const dirent_t * de) {
+	static const char * units[] = {
+		[SIZE_B]  = "B",  [SIZE_KB] = "kB", [SIZE_MB] = "MB",
+		[SIZE_GB] = "GB", [SIZE_TB] = "TB", [SIZE_EB] = "EB",
+	};
+	static const char * nounit = "";
+
+	const char * ret = units[de->size_unit];
+	if (!ret) return nounit;
+	return ret;
 }

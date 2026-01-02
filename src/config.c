@@ -6,6 +6,7 @@ config_t config = {
 	.longmode   = true,
 	.longinline = true,
 	.dots       = true,
+	.humansize  = true,
 
 	.dir_sortby    = DIR_SORTBY_NAME,
 	.dir_sort      = DIR_SORT_INCREASING,

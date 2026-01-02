@@ -25,6 +25,7 @@ typedef struct {
 	bool longmode;
 	bool longinline;
 	bool dots;
+	bool humansize;
 	enum dir_sort_dirs dir_sort_dirs;
 	enum dir_sortby dir_sortby;
 	enum dir_sort dir_sort;

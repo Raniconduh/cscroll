@@ -39,12 +39,14 @@ static int ui_dirent_color(const dirent_t * de);
 static int ui_link_color(const dirent_t * de);
 static void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t * dir);
 static void ui_wlpadstr(WINDOW * win, const char * s, size_t len);
+static void ui_wrpadstr(WINDOW * win, const char * s, size_t len);
 static void ui_get_first_last(size_t n_dirents, size_t cursor, size_t * first, size_t * last);
 
 void ui_init(void) {
 	setlocale(LC_CTYPE, "");
 
 	initscr();
+	cbreak();
 	keypad(stdscr, TRUE);
 	curs_set(0);
 	noecho();
@@ -122,6 +124,16 @@ static void ui_wlpadstr(WINDOW * win, const char * s, size_t len) {
 	waddstr(win, s);
 }
 
+static void ui_wrpadstr(WINDOW * win, const char * s, size_t len) {
+	size_t slen = strlen(s);
+
+	waddstr(win, s);
+
+	for (size_t i = slen; i < len; i++) {
+		waddch(win, ' ');
+	}
+}
+
 void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t * dir) {
 	static const enum ui_color mode_colors[] = {
 		['r'] = RED,    ['w'] = MAGENTA, ['x'] = COLOR_EXEC,
@@ -164,8 +176,15 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 		if (de->gname) ui_wlpadstr(filewin, de->gname, dir->longest_gname + 1);
 		else waddstr(filewin, " ?");
 
-		snprintf(isbuf, sizeof(isbuf), "%lu", de->size);
-		ui_wlpadstr(filewin, isbuf, dir->longest_size + 1);
+		if (config.humansize) {
+			const char * unit = dirent_size_unit(de);
+			snprintf(isbuf, sizeof(isbuf), "%u", de->size_small);
+			ui_wlpadstr(filewin, isbuf, dir->longest_size_small + 1);
+			ui_wrpadstr(filewin, unit, dir->longest_size_unit);
+		} else {
+			snprintf(isbuf, sizeof(isbuf), "%zu", de->size);
+			ui_wlpadstr(filewin, isbuf, dir->longest_size + 1);
+		}
 
 		strftime(stime, sizeof(stime), "%b %d %H:%M %Y", localtime(&de->mtime));
 		wprintw(filewin, " %s ", stime);
@@ -176,6 +195,7 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 
 	int color = COLOR_PAIR(ui_dirent_color(de));
 	if (selected) color |= A_REVERSE;
+	waddch(filewin, ' ');
 	wattron(filewin, color);
 	waddstr(filewin, de->name);
 	wattroff(filewin, color);
