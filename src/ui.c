@@ -444,7 +444,6 @@ const char * ui_prompt(const char * prompt, prompt_opts_t opts) {
 				break;
 			case KEY_RESIZE:
 				ui_resize();
-				ui_refresh();
 
 				lines = MIN(oglines, (unsigned)PROMPTWINMAXLINES);
 				cols = MIN(ogcols, (unsigned)PROMPTWINMAXCOLS);
@@ -469,8 +468,8 @@ const char * ui_prompt(const char * prompt, prompt_opts_t opts) {
 }
 
 bool ui_prompt_deletion(const dirent_t * de) {
-	const char * no = "No";
-	const char * yes = "Yes";
+	static const char * no = "No";
+	static const char * yes = "Yes";
 
 	size_t nfiles = 0;
 	if (de->type == DE_DIR) {
@@ -496,6 +495,12 @@ bool ui_prompt_deletion(const dirent_t * de) {
 
 	const char * ret = ui_prompt(prompt, (prompt_opts_t){no, yes, NULL});
 	free(prompt);
-	if (ret == yes) return true;
-	return false;
+	if (ret != yes) return false;
+
+	if (nfiles != 0) {
+		ret = ui_prompt("This action cannot be undone. Proceed?", (prompt_opts_t){no, yes, NULL});
+		if (ret != yes) return false;
+	}
+
+	return true;
 }

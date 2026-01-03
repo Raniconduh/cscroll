@@ -438,7 +438,10 @@ static int dir_internal_ftw_(
 		const struct stat * sb,
 		void * arg
 	),
-	void * arg
+	void * arg,
+	bool postorder,
+
+	dev_t rootdev
 ) {
 	int retval = 0;
 
@@ -458,18 +461,32 @@ static int dir_internal_ftw_(
 		if (ret < 0) statbufp = NULL;
 		else statbufp = &statbuf;
 
-		ret = cb(dirfd(dp), name, statbufp, arg);
-		// if cb returns a negative value, stop the walk immediately
-		if (ret < 0) {
-			retval = -1;
-			goto done;
+		if (statbuf.st_dev != rootdev) continue;
+
+		// do an inorder traversal
+		if (!postorder) {
+			ret = cb(dirfd(dp), name, statbufp, arg);
+			// if cb returns a negative value, stop the walk immediately
+			if (ret < 0) {
+				retval = ret;
+				goto done;
+			}
 		}
 
 		if (S_ISDIR(statbuf.st_mode)) {
 			int nextfd = openat(dfd, name, O_RDONLY | O_DIRECTORY);
-			ret = dir_internal_ftw_(nextfd, cb, arg);
+			ret = dir_internal_ftw_(nextfd, cb, arg, postorder, rootdev);
 			if (ret < 0) {
-				retval = -1;
+				retval = ret;
+				goto done;
+			}
+		}
+
+		// do a postorder traversal
+		if (postorder) {
+			ret = cb(dirfd(dp), name, statbufp, arg);
+			if (ret < 0) {
+				retval = ret;
 				goto done;
 			}
 		}
@@ -488,11 +505,22 @@ static int dir_internal_ftw(
 		const struct stat * sb,
 		void * arg
 	),
-	void * arg
+	void * arg,
+	bool postorder
 ) {
 	DIR * d = opendir(path);
 	if (!d) return -1;
-	int ret = dir_internal_ftw_(dup(dirfd(d)), cb, arg);
+
+	struct stat statbuf;
+	// I don't think it can error here
+	if (lstat(path, &statbuf) < 0) {
+		closedir(d);
+		return -1;
+	}
+
+	dev_t rootdev = statbuf.st_dev;
+
+	int ret = dir_internal_ftw_(dup(dirfd(d)), cb, arg, postorder, rootdev);
 	closedir(d);
 	return ret;
 }
@@ -505,10 +533,35 @@ static int dirent_subfiles_ftw_cb(
 	return 0;
 }
 
+static int dirent_delete_ftw_cb(
+	int dirfd, const char * path, const struct stat * sb,
+	UNUSED void * arg
+) {
+	int flags = 0;
+	if (S_ISDIR(sb->st_mode)) flags = AT_REMOVEDIR;
+
+	unlinkat(dirfd, path, flags);
+	return 0;
+}
+
 size_t dirent_subfiles(const dirent_t * de) {
 	if (de->type != DE_DIR) return 0;
 
 	size_t count = 0;
-	dir_internal_ftw(de->name, dirent_subfiles_ftw_cb, &count);
+	dir_internal_ftw(de->name, dirent_subfiles_ftw_cb, &count, false);
 	return count;
+}
+
+int dirent_delete(const dirent_t * de) {
+	if (de->type == DE_DIR) {
+		int ret = dir_internal_ftw(de->name, dirent_delete_ftw_cb, NULL, true);
+		if (ret >= 0) {
+			if (rmdir(de->name) < 0) return -errno;
+			return 0;
+		}
+		return ret;
+	} else {
+		if (unlink(de->name) < 0) return -errno;
+		return 0;
+	}
 }

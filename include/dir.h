@@ -92,5 +92,6 @@ bool dirent_isexec(const dirent_t * de);
 const char * dirent_prettymode(const dirent_t * de);
 const char * dirent_size_unit(const dirent_t * de);
 size_t dirent_subfiles(const dirent_t * de); // number of sub entries in a dir
+int dirent_delete(const dirent_t * de);
 
 #endif /* DIR_H */

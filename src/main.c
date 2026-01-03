@@ -99,7 +99,8 @@ int main(int argc, char ** argv) {
 				break;
 			case KEY_END:
 			case 'G':
-				cursor = dirlen - 1;
+				if (dirlen == 0) cursor = 0;
+				else cursor = dirlen - 1;
 				ui_status_info("");
 				break;
 			case '.': {
@@ -147,8 +148,28 @@ int main(int argc, char ** argv) {
 				ui_status_info("");
 				ui_refresh();
 				bool del = ui_prompt_deletion(cur_de);
-				if (del) ui_status_info("Deleting!");
-				else ui_status_info("Not Deleting.");
+				if (!del) {
+					ui_status_info("Not Deleting");
+					ui_refresh();
+					break;
+				}
+
+				ui_status_info("Deleting");
+				ui_refresh();
+
+				int ret = dirent_delete(cur_de);
+				if (ret < 0) {
+					ui_status_error("Deletion Failed");
+				} else {
+					ui_status_info("Deleted");
+				}
+
+				dir_free(&dir);
+				dir_list(cwd, &dir);
+				dir_sort(&dir);
+				dirlen = dir_len(&dir);
+				if (dirlen == 0) cursor = 0;
+				else if (cursor > dirlen - 1) cursor = dirlen - 1;
 				break;
 			}
 			case 'q':
