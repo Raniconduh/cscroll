@@ -1,5 +1,6 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <stdbool.h>
 #include <strings.h>
 #include <dirent.h>
@@ -118,7 +119,7 @@ int dir_list(const char * path, dir_t * dir) {
 	}
 
 	closedir(dp);
-
+	dir_sort(dir);
 	return 0;
 }
 
@@ -564,4 +565,22 @@ int dirent_delete(const dirent_t * de) {
 		if (unlink(de->name) < 0) return -errno;
 		return 0;
 	}
+}
+
+int dirent_open(const dirent_t * de) {
+	pid_t pid = fork();
+	if (pid < 0) return -errno;
+
+	if (!pid) {
+		// detach everything from this terminal basically
+		int fd = open("/dev/null", O_RDWR);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd, STDIN_FILENO);
+		execvp(config.opener, (char*[]){config.opener, de->name, NULL});
+		close(fd);
+		exit(0);
+	}
+
+	waitpid(pid, NULL, 0);
+	return 0;
 }

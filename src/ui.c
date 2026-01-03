@@ -90,6 +90,11 @@ void ui_deinit(void) {
 	endwin();
 }
 
+void ui_reinit(void) {
+	refresh();
+	ui_refresh();
+}
+
 void win_set(WINDOW * win, const char * str, int attrs) {
 	werase(win);
 	wattron(win, attrs);

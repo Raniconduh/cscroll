@@ -29,6 +29,7 @@ typedef struct {
 	enum dir_sort_dirs dir_sort_dirs;
 	enum dir_sortby dir_sortby;
 	enum dir_sort dir_sort;
+	char * opener;
 } config_t;
 
 extern config_t config;

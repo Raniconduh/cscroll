@@ -14,7 +14,6 @@ int main(int argc, char ** argv) {
 
 	dir_t dir;
 	dir_list(cwd, &dir);
-	dir_sort(&dir);
 
 	ui_init();
 	size_t cursor = 0;
@@ -59,7 +58,6 @@ int main(int argc, char ** argv) {
 					if (ret < 0) {
 						ui_status_error(strerror(-ret));
 					} else {
-						dir_sort(&dir);
 						if (basename) {
 							size_t idx;
 							int i = dir_search_name(&dir, basename, &idx);
@@ -74,21 +72,25 @@ int main(int argc, char ** argv) {
 				break;
 			}
 			case KEY_RIGHT: {
-				if (cur_de && (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
-				  && cur_de->linktype == DE_DIR))) {
+				ui_status_info("");
+				if (!cur_de) break;
+				if (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
+				  && cur_de->linktype == DE_DIR)) {
 					int ret = dir_cd(cwd, cur_de->name);
 					if (ret >= 0) {
 						cursor = 0;
 						cwd = dir_get_cwd();
 						dir_free(&dir);
 						dir_list(cwd, &dir);
-						dir_sort(&dir);
 						if (dirlen == 0) ui_status_info("Empty Directory");
 					} else {
 						ui_status_error(strerror(-ret));
 					}
 				} else {
-					ui_status_info("");
+					ui_deinit();
+					int ret = dirent_open(cur_de);
+					if (ret < 0) ui_status_error(strerror(-ret));
+					ui_reinit();
 				}
 				break;
 			}
@@ -166,7 +168,6 @@ int main(int argc, char ** argv) {
 
 				dir_free(&dir);
 				dir_list(cwd, &dir);
-				dir_sort(&dir);
 				dirlen = dir_len(&dir);
 				if (dirlen == 0) cursor = 0;
 				else if (cursor > dirlen - 1) cursor = dirlen - 1;

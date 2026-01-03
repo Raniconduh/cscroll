@@ -33,6 +33,7 @@ typedef const char * const prompt_opts_t[];
 
 void ui_init(void);
 void ui_deinit(void);
+void ui_reinit(void);
 void ui_set_title(const char * title);
 void ui_status_info(const char * status);
 void ui_status_error(const char * status);

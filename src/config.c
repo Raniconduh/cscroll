@@ -11,4 +11,6 @@ config_t config = {
 	.dir_sortby    = DIR_SORTBY_NAME,
 	.dir_sort      = DIR_SORT_INCREASING,
 	.dir_sort_dirs = DIR_SORT_DIRS_FIRST,
+
+	.opener = "xdg-open",
 };
