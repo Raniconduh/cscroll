@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <stdbool.h>
+#include <strings.h>
 #include <stddef.h>
 #include <string.h>
 #include <locale.h>
@@ -232,7 +233,7 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 }
 
 static int ui_local_bsearch_str_compar(const void * a, const void * b) {
-	return strcmp(*(const char**)a, *(const char**)b);
+	return strcasecmp(*(const char**)a, *(const char**)b);
 }
 
 static int ui_extension_color(const char * name) {
