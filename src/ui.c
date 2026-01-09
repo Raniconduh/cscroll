@@ -3,13 +3,17 @@
 #include <stddef.h>
 #include <string.h>
 #include <locale.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <time.h>
 
 #include "ui.h"
 #include "dir.h"
 #include "config.h"
 #include "cvector.h"
+
+#define ARRLEN(x) ((sizeof(x)) / (sizeof*(x)))
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) > (y)) ? (y) : (x))
@@ -227,6 +231,79 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 	}
 }
 
+static int ui_local_bsearch_str_compar(const void * a, const void * b) {
+	return strcmp(*(const char**)a, *(const char**)b);
+}
+
+static int ui_extension_color(const char * name) {
+	static const char * const mediaexts[] = {
+		"3g2", "3gp", "ai", "amv", "asf", "avi",
+		"bmp", "drc", "eps", "f4p", "f4v", "flv",
+		"gif", "gifv", "h264", "heif", "ico", "jpeg",
+		"jpg", "m2ts", "m2v", "m4v", "mkv", "mng",
+		"mov", "mp4", "mpeg", "mpg", "mts", "mxf",
+		"nsv", "ogv", "pbm", "pgm", "png", "pnm",
+		"ppm", "ps", "psd", "qt", "rm", "rmvb",
+		"roq", "svg", "svi", "tif", "tiff", "ts",
+		"viv", "vob", "webm", "webp", "wmv", "yuv",
+	};
+	static const char * const archiveexts[] = {
+		"1", "7z", "7zip", "a", "alz", "bz2",
+		"cbr", "cpgz", "cso", "dar", "dbz", "deb",
+		"dz", "ear", "gip", "gz", "htmlz", "igz",
+		"ipa", "lz", "lz4", "maff", "mpq", "npk",
+		"nxz", "pkg", "pup", "pz", "pzip", "rar",
+		"rpa", "rpm", "sar", "shar", "sis", "sisx",
+		"tar", "tgz", "txz", "uha", "vsix", "xap",
+		"xz", "xzm", "xzn", "z", "zab", "zi",
+		"zip", "zlib", "zst", "zstd", "zxp", "zz",
+	};
+	// uncomment this check when changing the extensions arrays
+//	static bool check_sorted = false;
+//	// the file extensions must be sorted
+//	if (!check_sorted) {
+//		for (unsigned i = 1; i < ARRLEN(mediaexts); i++) {
+//			if (strcmp(mediaexts[i - 1], mediaexts[i]) > 0) {
+//				ui_deinit();
+//				puts("Error: ui_dirent_extension_color: Media extensions not sorted");
+//				exit(1);
+//			}
+//		}
+//		for (unsigned i = 1; i < ARRLEN(archiveexts); i++) {
+//			if (strcmp(archiveexts[i - 1], archiveexts[i]) > 0) {
+//				ui_deinit();
+//				puts("Error: ui_dirent_extension_color: Archive extensions not sorted");
+//				exit(1);
+//			}
+//		}
+//		check_sorted = true;
+//	}
+
+	const char * ext = strrchr(name, '.');
+	if (!ext) return COLOR_FILE;
+	if (!*(++ext)) return COLOR_FILE;
+
+	const char * match = bsearch(
+		&ext,
+		mediaexts,
+		ARRLEN(mediaexts),
+		sizeof(mediaexts[0]),
+		ui_local_bsearch_str_compar
+	);
+	if (match) return MAGENTA;
+
+	match = bsearch(
+		&ext,
+		archiveexts,
+		ARRLEN(archiveexts),
+		sizeof(archiveexts[0]),
+		ui_local_bsearch_str_compar
+	);
+	if (match) return RED;
+
+	return COLOR_FILE;
+}
+
 static int ui_dirent_color(const dirent_t * de) {
 	int color;
 	switch (de->type) {
@@ -245,12 +322,14 @@ static int ui_dirent_color(const dirent_t * de) {
 		color = COLOR_EXEC;
 	}
 
+	if (color == COLOR_FILE) color = ui_extension_color(de->name);
+
 	return color;
 }
 
 static int ui_link_color(const dirent_t * de) {
 	switch (de->linktype) {
-		case DE_FILE:    return COLOR_FILE;
+		case DE_FILE:    return ui_extension_color(de->linkname);
 		case DE_DIR:     return COLOR_DIR;
 		case DE_FIFO:    return COLOR_FIFO;
 		case DE_LINK:    return COLOR_LINK;
