@@ -7,8 +7,30 @@
 
 #include "dir.h"
 
+#define CTRL(k) ((k) & 0x1F)
+
 #define KEY_DEL 127
 #define KEY_ESC 27
+
+#define UP_KEYS \
+	case KEY_UP:    \
+	case CTRL('P'): \
+	case 'k'
+
+#define DOWN_KEYS \
+	case KEY_DOWN:  \
+	case CTRL('N'): \
+	case 'j'
+
+#define LEFT_KEYS \
+	case KEY_LEFT:  \
+	case CTRL('B'): \
+	case 'h'
+
+#define RIGHT_KEYS \
+	case KEY_RIGHT: \
+	case CTRL('F'): \
+	case 'l'
 
 enum ui_color {
 	COLOR_FILE = 1,

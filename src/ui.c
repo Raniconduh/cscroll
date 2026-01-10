@@ -59,7 +59,7 @@ void ui_init(void) {
 	setlocale(LC_CTYPE, "");
 
 	initscr();
-	cbreak();
+	raw();
 	keypad(stdscr, TRUE);
 	curs_set(0);
 	noecho();
@@ -516,10 +516,10 @@ const char * ui_prompt(const char * prompt, prompt_opts_t opts) {
 			ret = NULL;
 			done = true;
 		} else switch (c) {
-			case KEY_LEFT:
+			LEFT_KEYS:
 				if (cursor > 0) cursor--;
 				break;
-			case KEY_RIGHT:
+			RIGHT_KEYS:
 				if (cursor < n_opts - 1) cursor++;
 				break;
 			case '\n':

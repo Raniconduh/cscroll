@@ -35,15 +35,15 @@ int main(int argc, char ** argv) {
 		else cur_de = &entries[cursor];
 
 		switch (getch()) {
-			case KEY_UP:
+			UP_KEYS:
 				if (cursor > 0) cursor--;
 				ui_status_info("");
 				break;
-			case KEY_DOWN:
+			DOWN_KEYS:
 				if (cursor < dirlen - 1) cursor++;
 				ui_status_info("");
 				break;
-			case KEY_LEFT: {
+			LEFT_KEYS: {
 				// the string from dir_basename(cwd) may be a static field
 				// so it might not be safe to use it after changing cwd
 				const char * truebasename = dir_basename(cwd);
@@ -71,7 +71,7 @@ int main(int argc, char ** argv) {
 				free(basename);
 				break;
 			}
-			case KEY_RIGHT: {
+			RIGHT_KEYS: {
 				ui_status_info("");
 				if (!cur_de) break;
 				if (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
@@ -114,7 +114,7 @@ int main(int argc, char ** argv) {
 				ui_status_info("");
 				break;
 			}
-			case 'l':
+			case 'o':
 				// cycle through long mode options
 				if (config.longmode) {
 					if (config.longinline) config.longinline = false;
