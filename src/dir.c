@@ -584,3 +584,40 @@ int dirent_open(const dirent_t * de) {
 	waitpid(pid, NULL, 0);
 	return 0;
 }
+
+static void dir_normalize_path(char * path) {
+	if (!path || !*path) return;
+
+	char * base = path + 1;
+	// remove duplicate separators
+	for (char * p = base; *p; p++) {
+		// a + a'b = a + b
+		if (*p != '/' || *(base - 1) != '/')
+			*base++ = *p;
+	}
+	*base = 0;
+
+	// remove trailing separators
+	while (base > path + 1 && *(base - 1) == '/') {
+		*(base - 1) = 0;
+		base--;
+	}
+}
+
+const char * dir_get_home(void) {
+	static char home_buf[PATH_MAX+1];
+
+	uid_t uid = getuid();
+	struct passwd * pw = getpwuid(uid);
+	if (!pw) {
+		const char * envhome = getenv("HOME");
+		if (!envhome) return NULL;
+		strncpy(home_buf, envhome, PATH_MAX);
+		home_buf[PATH_MAX] = 0;
+
+		if (!home_buf[0]) return NULL; // idk but HOME should be absolute
+		dir_normalize_path(home_buf);
+		return home_buf;
+	}
+	return pw->pw_dir;
+}

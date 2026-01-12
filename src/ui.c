@@ -107,8 +107,15 @@ void win_set(WINDOW * win, const char * str, int attrs) {
 	wattroff(win, attrs);
 }
 
-void ui_set_title(const char * title) {
-	win_set(titlewin, title, 0);
+void ui_set_title(const char * title, const char * home) {
+	size_t homelen = strlen(home);
+	if (strncmp(title, home, homelen) == 0) {
+		title += homelen;
+		win_set(titlewin, "~", 0);
+		waddstr(titlewin, title);
+	} else {
+		win_set(titlewin, title, 0);
+	}
 }
 
 void ui_status_info(const char * status) {

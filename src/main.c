@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <stddef.h>
 #include <ncurses.h>
 #include <stdbool.h>
@@ -11,6 +12,9 @@
 
 int main(int argc, char ** argv) {
 	const char * cwd = dir_get_cwd();
+	// dir_get_home may return a static field so it must be copied here
+	char * home = (char*)dir_get_home();
+	if (home) home = strdup(home);
 
 	dir_t dir;
 	dir_list(cwd, &dir);
@@ -24,7 +28,7 @@ int main(int argc, char ** argv) {
 		size_t dirlen = dir_len(&dir);
 		cvector(dirent_t) entries = dir_entries(&dir);
 
-		ui_set_title(cwd);
+		ui_set_title(cwd, home);
 		ui_print_dir(&dir, cursor);
 		ui_print_cursor(cursor, dirlen);
 
@@ -183,6 +187,7 @@ int main(int argc, char ** argv) {
 	}
 
 finished:
+	free(home);
 	dir_free(&dir);
 	ui_deinit();
 }

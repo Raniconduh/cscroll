@@ -84,6 +84,7 @@ const char * dir_basename(const char * path);
 size_t dir_len(const dir_t * dir);
 cvector(dirent_t) dir_entries(const dir_t * dir);
 void dir_sort(const dir_t * dir);
+const char * dir_get_home(void);
 
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link
