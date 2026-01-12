@@ -82,7 +82,7 @@ int main(int argc, char ** argv) {
 						cwd = dir_get_cwd();
 						dir_free(&dir);
 						dir_list(cwd, &dir);
-						if (dirlen == 0) ui_status_info("Empty Directory");
+						if (dir_len(&dir) == 0) ui_status_info("Empty Directory");
 					} else {
 						ui_status_error(strerror(-ret));
 					}
