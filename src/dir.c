@@ -124,17 +124,13 @@ int dir_list(const char * path, dir_t * dir) {
 }
 
 void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
-	dirent->type = DE_UNKNOWN;
+	memset(dirent, 0, sizeof(dirent_t));
 	dirent->name = strdup(name);
-	dirent->uname = NULL;
-	dirent->gname = NULL;
-	dirent->linkname = NULL;
+	dirent->type = DE_UNKNOWN;
 
 	struct stat statbuf;
 	if (fstatat(dirfd, name, &statbuf, AT_SYMLINK_NOFOLLOW) < 0) {
 		// in the case where stat fails, the file is marked unknown
-		// every non string field other than type is left uninitialized
-		// strings are initialized to NULL
 		return;
 	}
 
@@ -415,8 +411,10 @@ static int dir_sort_cmp(const void * inpa, const void * inpb) {
 
 void dir_sort(const dir_t * dir) {
 	if (config.dir_sort == DIR_SORT_UNSORTED) return;
-	qsort(dir->entries, dir->len, sizeof(dir->entries[0]), dir_sort_cmp);
-	qsort(dir->nodots, dir->nodots_len, sizeof(dir->entries[0]), dir_sort_cmp);
+	if (dir->entries && dir->len > 0)
+		qsort(dir->entries, dir->len, sizeof(dir->entries[0]), dir_sort_cmp);
+	if (dir->nodots && dir->nodots_len > 0)
+		qsort(dir->nodots, dir->nodots_len, sizeof(dir->entries[0]), dir_sort_cmp);
 }
 
 const char * dirent_size_unit(const dirent_t * de) {
@@ -448,6 +446,7 @@ static int dir_internal_ftw_(
 
 	DIR * dp = fdopendir(dfd);
 	if (!dp) return 0;
+	dfd = dirfd(dp);
 
 	struct dirent * de;
 	while ((de = readdir(dp)) != NULL) {
@@ -457,7 +456,7 @@ static int dir_internal_ftw_(
 		if (!strcmp(name, ".") || !strcmp(name, "..")) continue;
 
 		struct stat statbuf;
-		ret = fstatat(dirfd(dp), name, &statbuf, AT_SYMLINK_NOFOLLOW);
+		ret = fstatat(dfd, name, &statbuf, AT_SYMLINK_NOFOLLOW);
 		struct stat * statbufp;
 		if (ret < 0) statbufp = NULL;
 		else statbufp = &statbuf;
@@ -466,7 +465,7 @@ static int dir_internal_ftw_(
 
 		// do an inorder traversal
 		if (!postorder) {
-			ret = cb(dirfd(dp), name, statbufp, arg);
+			ret = cb(dfd, name, statbufp, arg);
 			// if cb returns a negative value, stop the walk immediately
 			if (ret < 0) {
 				retval = ret;
@@ -485,7 +484,7 @@ static int dir_internal_ftw_(
 
 		// do a postorder traversal
 		if (postorder) {
-			ret = cb(dirfd(dp), name, statbufp, arg);
+			ret = cb(dfd, name, statbufp, arg);
 			if (ret < 0) {
 				retval = ret;
 				goto done;
@@ -538,6 +537,8 @@ static int dirent_delete_ftw_cb(
 	int dirfd, const char * path, const struct stat * sb,
 	UNUSED void * arg
 ) {
+	if (!sb) return 0;
+
 	int flags = 0;
 	if (S_ISDIR(sb->st_mode)) flags = AT_REMOVEDIR;
 
@@ -574,10 +575,15 @@ int dirent_open(const dirent_t * de) {
 	if (!pid) {
 		// detach everything from this terminal basically
 		int fd = open("/dev/null", O_RDWR);
-		dup2(fd, STDOUT_FILENO);
-		dup2(fd, STDIN_FILENO);
+		if (fd < 0) {
+			close(STDOUT_FILENO);
+			close(STDIN_FILENO);
+		} else {
+			dup2(fd, STDOUT_FILENO);
+			dup2(fd, STDIN_FILENO);
+		}
 		execvp(config.opener, (char*[]){config.opener, de->name, NULL});
-		close(fd);
+		if (fd >= 0) close(fd);
 		exit(0);
 	}
 

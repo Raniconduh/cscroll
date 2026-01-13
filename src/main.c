@@ -110,12 +110,15 @@ int main(int argc, char ** argv) {
 				ui_status_info("");
 				break;
 			case '.': {
-				config.dots = !config.dots;
-				size_t idx;
-				int ret = dir_search_name(&dir, cur_de->name, &idx);
-				if (ret < 0) cursor = 0;
-				else cursor = idx;
 				ui_status_info("");
+				config.dots = !config.dots;
+				if (!cur_de) cursor = 0;
+				else {
+					size_t idx;
+					int ret = dir_search_name(&dir, cur_de->name, &idx);
+					if (ret < 0) cursor = 0;
+					else cursor = idx;
+				}
 				break;
 			}
 			case 'o':
