@@ -74,9 +74,6 @@ static size_t ilen(size_t i, int base) {
 	}
 	return r;
 }
-static void marks_set_destroyer(void * p) {
-	;
-}
 static void marks_destroyer(void * p) {
 	hashmap_destroy((hashmap*)p);
 }
@@ -716,7 +713,7 @@ int dirent_togglemark(dirent_t * de) {
 		de->marked = true;
 		hashmap * dirmarks = hashmap_get(marks, cwd);
 		if (!dirmarks) {
-			dirmarks = hashmap_new(marks_set_destroyer);
+			dirmarks = hashmap_new(NULL);
 			hashmap_insert(marks, cwd, dirmarks);
 		}
 		hashmap_insert(dirmarks, de->name, (void*)true);
@@ -760,4 +757,44 @@ int dirent_togglemark(dirent_t * de) {
 	}
 
 	return 0;
+}
+
+int dir_paste_marks(const char * cwd, size_t * total_pastes) {
+	*total_pastes = 0;
+
+	DIR * pastedir = opendir(cwd);
+	if (!pastedir) return -errno;
+	int pastefd = dirfd(pastedir);
+
+	int retval = 0;
+
+	hashmap_walk_state marksws = {0};
+	while (hashmap_walk(marks, &marksws)) {
+		const char * dirpath = marksws.key;
+		hashmap * dirmarks = marksws.val;
+
+		DIR * sourcedir = opendir(dirpath);
+		if (!sourcedir) continue;
+		int sourcefd = dirfd(sourcedir);
+
+		hashmap_walk_state dirmarksws = {0};
+		while (hashmap_walk(dirmarks, &dirmarksws)) {
+			const char * fname = dirmarksws.key;
+			// make sure the new file name doesn't already exist
+			struct stat statbuf;
+			int ret = fstatat(pastefd, fname, &statbuf, AT_SYMLINK_NOFOLLOW);
+			if (ret >= 0) continue;
+			ret = renameat(sourcefd, fname, pastefd, fname);
+			if (ret < 0) continue;
+			(*total_pastes)++;
+		}
+
+		closedir(sourcedir);
+	}
+
+	closedir(pastedir);
+	hashmap_destroy(marks);
+	marks = hashmap_new(marks_destroyer);
+	n_marks = 0;
+	return retval;
 }

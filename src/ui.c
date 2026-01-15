@@ -11,6 +11,7 @@
 
 #include "ui.h"
 #include "dir.h"
+#include "main.h"
 #include "config.h"
 #include "cvector.h"
 
@@ -363,7 +364,7 @@ void ui_print_dir(const dir_t * dir, size_t cursor) {
 	}
 }
 
-void ui_print_cursor(size_t cursor, size_t total, size_t total_marked) {
+void ui_print_cursor(size_t cursor, size_t total, enum prog_mode mode, size_t total_marked) {
 	size_t lines, cols;
 	getmaxyx(filewin, lines, cols);
 	if (config.longmode && !config.longinline) {
@@ -380,8 +381,14 @@ void ui_print_cursor(size_t cursor, size_t total, size_t total_marked) {
 		waddstr(filewin, "0/0");
 	}
 
-	if (total_marked > 0) {
-		wprintw(filewin, " | %zu Marked", total_marked);
+	if (total_marked > 0) switch (mode) {
+		case MODE_NORMAL:
+			wprintw(filewin, " | %zu Marked", total_marked);
+			break;
+		case MODE_CUT:
+			wprintw(filewin, " | Cutting %zu", total_marked);
+			break;
+		default: break;
 	}
 }
 
@@ -599,5 +606,20 @@ bool ui_prompt_deletion(const dirent_t * de) {
 		if (ret != yes) return false;
 	}
 
+	return true;
+}
+
+bool ui_prompt_paste(size_t total_marked) {
+	static const char * no = "No";
+	static const char * yes = "Yes";
+	static const char * fstr = "Paste %zu files into this directory?";
+
+	size_t len = snprintf(NULL, 0, fstr, total_marked);
+	char * prompt = malloc(len + 1);
+	sprintf(prompt, fstr, total_marked);
+
+	const char * ret = ui_prompt(prompt, (prompt_opts_t){no, yes, NULL});
+	free(prompt);
+	if (ret != yes) return false;
 	return true;
 }

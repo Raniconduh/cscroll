@@ -21,6 +21,7 @@ int main(int argc, char ** argv) {
 	dir_list(cwd, &dir);
 
 	ui_init();
+	enum prog_mode mode = MODE_NORMAL;
 	size_t cursor = 0;
 	ui_status_info("");
 	for (;;) {
@@ -30,7 +31,7 @@ int main(int argc, char ** argv) {
 
 		ui_set_title(cwd, home);
 		ui_print_dir(&dir, cursor);
-		ui_print_cursor(cursor, dirlen, dir_get_total_marked());
+		ui_print_cursor(cursor, dirlen, mode, dir_get_total_marked());
 
 		ui_refresh();
 
@@ -143,6 +144,10 @@ int main(int argc, char ** argv) {
 				break;
 			}
 			case 'd': {
+				if (mode == MODE_CUT) {
+					ui_status_info("Cannot Delete While Cutting");
+					break;
+				}
 				ui_refresh();
 				bool del = ui_prompt_deletion(cur_de);
 				if (!del) {
@@ -170,10 +175,14 @@ int main(int argc, char ** argv) {
 			}
 			case 'm': {
 				if (!cur_de) break;
+				if (mode == MODE_CUT) {
+					ui_status_info("Cannot Mark While Cutting");
+					break;
+				}
 				int ret = dirent_togglemark(cur_de);
 				if (ret < 0) switch (-ret) {
 					case TOGGLEMARK_PARENT_MARKED:
-						ui_status_error("Ancestor Already Marked");
+						ui_status_info("Ancestor Already Marked");
 						break;
 					case TOGGLEMARK_DIRENT_UNKNOWN:
 						ui_status_error("Cannot Mark Unknown Dirent");
@@ -182,6 +191,37 @@ int main(int argc, char ** argv) {
 						ui_status_error("Mark Failed");
 						break;
 				}
+				break;
+			}
+			case 'c':
+				if (mode == MODE_NORMAL && dir_get_total_marked() > 0) mode = MODE_CUT;
+				else if (mode == MODE_CUT) mode = MODE_NORMAL;
+				break;
+			case 'p': {
+				if (mode != MODE_CUT) {
+					ui_status_info("Cannot Paste if Not Cutting");
+					break;
+				}
+				bool paste = ui_prompt_paste(dir_get_total_marked());
+				if (!paste) {
+					ui_status_info("Not Pasting");
+					break;
+				}
+				mode = MODE_NORMAL;
+				ui_status_info("Pasting");
+				ui_refresh();
+
+				size_t total_marks, total_pastes;
+				total_marks = dir_get_total_marked();
+				int ret = dir_paste_marks(cwd, &total_pastes);
+				if (ret < 0) ui_status_error(strerror(-ret));
+				else if (total_pastes == 0)
+					ui_status_error("Nothing Pasted");
+				else if (total_marks != total_pastes)
+					ui_status_error("Not All Marks Pasted");
+				else ui_status_info("Pasted");
+				dir_free(&dir);
+				dir_list(cwd, &dir);
 				break;
 			}
 			case 'q':
