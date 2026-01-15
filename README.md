@@ -17,7 +17,7 @@ cscroll has the following key binds:
 * `.`: Toggle showing/hiding dot files
 * `o`: Cycle through long mode viewing options
 * `/`: Search for a file using a POSIX extended regex
-* `d`: [Delete this file](#file-deletion)
+* `d`: [Delete this file](#file-deletion) or all marked files
 * `m`: Mark a file
 * `c`: Cut marked files
 * `p`: [Paste](#file-pasting) all cut files into the current directory
@@ -34,6 +34,11 @@ the file if the prompt is answered "Yes". Otherwise, it will not delete the
 file. For non empty directories, the first prompt will show the number of files
 inside the directory and, if confirmed, a second prompt will be shown. cscroll
 will only delete the directory if the second prompt is also answered "Yes".
+
+When files are marked, deletion will act on the marked files, ignoring the file
+that the cursor is currently on. The marked deletion prompt will list the number
+of marked files and also the number of files in any marked directories. Marked
+file deletion will always have two prompts.
 
 ### File Pasting
 
