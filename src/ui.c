@@ -429,7 +429,8 @@ void ui_resize(void) {
 	mvwin(filewin,   FILEWINSTARTY,   0);
 	mvwin(inputwin,  INPUTWINSTARTY,  0);
 
-	ui_refresh();
+	ui_deinit();
+	ui_reinit();
 }
 
 const char * ui_readline(const char * prompt) {
