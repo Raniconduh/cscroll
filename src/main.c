@@ -149,7 +149,7 @@ int main(int argc, char ** argv) {
 					break;
 				}
 				ui_refresh();
-				bool del = ui_prompt_deletion(cur_de);
+				bool del = ui_prompt_deletion(cur_de, dir_get_total_marked());
 				if (!del) {
 					ui_status_info("Not Deleting");
 					ui_refresh();
@@ -159,7 +159,9 @@ int main(int argc, char ** argv) {
 				ui_status_info("Deleting");
 				ui_refresh();
 
-				int ret = dirent_delete(cur_de);
+				int ret;
+				if (dir_get_total_marked() == 0) ret = dirent_delete(cur_de);
+				else ret = dir_marked_delete();
 				if (ret < 0) {
 					ui_status_error("Deletion Failed");
 				} else {

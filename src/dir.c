@@ -798,3 +798,72 @@ int dir_paste_marks(const char * cwd, size_t * total_pastes) {
 	n_marks = 0;
 	return retval;
 }
+
+size_t dir_marked_subfiles(void) {
+	size_t total = 0;
+
+	hashmap_walk_state marksws = {0};
+	while (hashmap_walk(marks, &marksws)) {
+		const char * dirpath = marksws.key;
+		hashmap * dirmarks = marksws.val;
+
+		DIR * basedir = opendir(dirpath);
+		if (!basedir) continue;
+		int basedirfd = dirfd(basedir);
+
+		hashmap_walk_state dirmarksws = {0};
+		while (hashmap_walk(dirmarks, &dirmarksws)) {
+			const char * fname = dirmarksws.key;
+
+			struct stat statbuf;
+			int ret = fstatat(basedirfd, fname, &statbuf, AT_SYMLINK_NOFOLLOW);
+			if (ret < 0) continue;
+			if (!S_ISDIR(statbuf.st_mode)) continue;
+
+			char * subpath = malloc(strlen(dirpath) + 1 + strlen(fname) + 1);
+			sprintf(subpath, "%s/%s", dirpath, fname);
+
+			size_t subfiles = 0;
+			dir_internal_ftw(subpath, dirent_subfiles_ftw_cb, &subfiles, false);
+			free(subpath);
+			total += subfiles;
+		}
+
+		closedir(basedir);
+	}
+
+	return total;
+}
+
+int dir_marked_delete(void) {
+	int retval = 0;
+
+	hashmap_walk_state marksws = {0};
+	while (hashmap_walk(marks, &marksws)) {
+		const char * dirpath = marksws.key;
+		hashmap * dirmarks = marksws.val;
+
+		hashmap_walk_state dirmarksws = {0};
+		while (hashmap_walk(dirmarks, &dirmarksws)) {
+			const char * fname = dirmarksws.key;
+
+			char * subpath = malloc(strlen(dirpath) + 1 + strlen(fname) + 1);
+			sprintf(subpath, "%s/%s", dirpath, fname);
+
+			// subpath is absolute so dirfd isn't used
+			dirent_t de;
+			dir_entry(-1, subpath, &de, NULL);
+			free(subpath);
+
+			int ret = dirent_delete(&de);
+			if (ret < 0) retval = ret;
+			free_dirent(&de);
+		}
+	}
+
+	hashmap_destroy(marks);
+	marks = hashmap_new(marks_destroyer);
+	n_marks = 0;
+
+	return retval;
+}

@@ -67,7 +67,7 @@ void ui_print_cursor(size_t cursor, size_t total, enum prog_mode mode, size_t to
 void ui_resize(void);
 const char * ui_readline(const char * prompt);
 const char * ui_prompt(const char * prompt, prompt_opts_t opts);
-bool ui_prompt_deletion(const dirent_t * de);
+bool ui_prompt_deletion(const dirent_t * de, size_t total_marked);
 bool ui_prompt_paste(size_t total_marked);
 
 #endif /* UI_H */

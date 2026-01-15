@@ -572,7 +572,7 @@ const char * ui_prompt(const char * prompt, prompt_opts_t opts) {
 	return ret;
 }
 
-bool ui_prompt_deletion(const dirent_t * de) {
+static bool ui_internal_prompt_dirent_deletion(const dirent_t * de) {
 	static const char * no = "No";
 	static const char * yes = "Yes";
 
@@ -608,6 +608,45 @@ bool ui_prompt_deletion(const dirent_t * de) {
 	}
 
 	return true;
+}
+
+static bool ui_internal_prompt_marked_deletion(size_t total_marked) {
+	static const char * no = "No";
+	static const char * yes = "Yes";
+
+	ui_status_info("listing...");
+	ui_refresh();
+	size_t subfiles = dir_marked_subfiles();
+	ui_status_info("");
+	ui_refresh();
+
+	char * prompt;
+	if (subfiles == 0) {
+		const char * fstr = "Delete %zu marked files?";
+		size_t len = snprintf(NULL, 0, fstr, total_marked);
+		prompt = malloc(len + 1);
+		sprintf(prompt, fstr, total_marked);
+	} else {
+		const char * fstr = "Delete %zu marked files and %zu subfiles?";
+		size_t len = snprintf(NULL, 0, fstr, total_marked, subfiles);
+		prompt = malloc(len + 1);
+		sprintf(prompt, fstr, total_marked, subfiles);
+	}
+
+	const char * ret = ui_prompt(prompt, (prompt_opts_t){no, yes, NULL});
+	free(prompt);
+	if (ret != yes) return false;
+
+	ret = ui_prompt("This action cannot be undone. Proceed?", (prompt_opts_t){no, yes, NULL});
+	if (ret != yes) return false;
+	return true;
+}
+
+bool ui_prompt_deletion(const dirent_t * de, size_t total_marked) {
+	if (total_marked > 0)
+		return ui_internal_prompt_marked_deletion(total_marked);
+	else
+		return ui_internal_prompt_dirent_deletion(de);
 }
 
 bool ui_prompt_paste(size_t total_marked) {

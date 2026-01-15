@@ -95,7 +95,9 @@ cvector(dirent_t) dir_entries(const dir_t * dir);
 void dir_sort(dir_t * dir);
 const char * dir_get_home(void);
 size_t dir_get_total_marked(void);
+size_t dir_marked_subfiles(void);
 int dir_paste_marks(const char * cwd, size_t * total_pastes);
+int dir_marked_delete(void);
 
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link
