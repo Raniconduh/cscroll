@@ -24,6 +24,9 @@
 #define REGSEARCH_BAD_REGEX 1
 #define REGSEARCH_NOT_FOUND 2
 
+#define TOGGLEMARK_PARENT_MARKED  1
+#define TOGGLEMARK_DIRENT_UNKNOWN 2
+
 enum size_unit {
 	SIZE_B,
 	SIZE_KB,
@@ -58,13 +61,15 @@ typedef struct {
 
 	char * linkname;
 	enum de_type linktype;
+
+	bool marked;
 } dirent_t;
 
 typedef struct {
 	size_t len;
 	cvector(dirent_t) entries;
 	size_t nodots_len;
-	cvector(dirent_t) nodots;
+	cvector(dirent_t*) nodots;
 
 	size_t longest_uname;
 	size_t longest_gname;
@@ -72,6 +77,9 @@ typedef struct {
 	size_t longest_size_small;
 	size_t longest_size_unit;
 } dir_t;
+
+void dir_init(void);
+void dir_deinit(void);
 
 int dir_list(const char * path, dir_t * dir);
 void dir_free(dir_t * dir);
@@ -82,9 +90,11 @@ int dir_search_name(const dir_t * dir, const char * name, size_t * idx);
 int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx);
 const char * dir_basename(const char * path);
 size_t dir_len(const dir_t * dir);
+dirent_t * dir_get_entry(const dir_t * dir, size_t cursor);
 cvector(dirent_t) dir_entries(const dir_t * dir);
-void dir_sort(const dir_t * dir);
+void dir_sort(dir_t * dir);
 const char * dir_get_home(void);
+size_t dir_get_total_marked(void);
 
 char dirent_crepr(const dirent_t * de); // character representing dir entry
 char dirent_creprl(const dirent_t * de); // like above, but for the link
@@ -95,5 +105,6 @@ const char * dirent_size_unit(const dirent_t * de);
 size_t dirent_subfiles(const dirent_t * de); // number of sub entries in a dir
 int dirent_delete(const dirent_t * de);
 int dirent_open(const dirent_t * de);
+int dirent_togglemark(dirent_t * de);
 
 #endif /* DIR_H */

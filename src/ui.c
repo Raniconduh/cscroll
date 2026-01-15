@@ -220,7 +220,8 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 
 	int color = COLOR_PAIR(ui_dirent_color(de));
 	if (selected) color |= A_REVERSE;
-	waddch(filewin, ' ');
+	if (de->marked) waddch(filewin, '+');
+	else waddch(filewin, ' ');
 	wattron(filewin, color);
 	waddstr(filewin, de->name);
 	wattroff(filewin, color);
@@ -353,16 +354,16 @@ void ui_print_dir(const dir_t * dir, size_t cursor) {
 	size_t first;
 	size_t last;
 	size_t len = dir_len(dir);
-	cvector(dirent_t) entries = dir_entries(dir);
 	ui_get_first_last(len, cursor, &first, &last);
 
 	for (size_t i = first; i < last; i++) {
 		size_t pos = i - first;
-		ui_print_dirent(&entries[i], pos, cursor == i, dir);
+		dirent_t * de = dir_get_entry(dir, i);
+		ui_print_dirent(de, pos, cursor == i, dir);
 	}
 }
 
-void ui_print_cursor(size_t cursor, size_t total) {
+void ui_print_cursor(size_t cursor, size_t total, size_t total_marked) {
 	size_t lines, cols;
 	getmaxyx(filewin, lines, cols);
 	if (config.longmode && !config.longinline) {
@@ -377,6 +378,10 @@ void ui_print_cursor(size_t cursor, size_t total) {
 		wprintw(filewin, "%zu/%zu", cursor + 1, total);
 	} else {
 		waddstr(filewin, "0/0");
+	}
+
+	if (total_marked > 0) {
+		wprintw(filewin, " | %zu Marked", total_marked);
 	}
 }
 

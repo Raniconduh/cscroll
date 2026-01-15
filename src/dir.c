@@ -19,6 +19,7 @@
 #include "dir.h"
 #include "config.h"
 #include "cvector.h"
+#include "hashmap.h"
 
 // S_ISVTX requires _XOPEN_SOURCE >= 500
 // I guess sticky bit isn't POSIX
@@ -49,8 +50,13 @@
 
 static char cwd_buf[CWDSZ];
 static char * cwd = NULL;
+// marks is a map of sets
+// keys are directories and values are sets of marked files in that directory
+static hashmap * marks = NULL;
+static size_t n_marks = 0;
 
-static void dir_entry(int dirfd, const char * name, dirent_t * dirent);
+static void dir_entry(int dirfd, const char * name, dirent_t * dirent, const hashmap * dirmarks);
+static void dir_fill_nodots(dir_t * dir);
 static char de_crepr(enum de_type de_type);
 static void free_dirent(void * p) {
 	dirent_t * de = (dirent_t*)p;
@@ -67,6 +73,26 @@ static size_t ilen(size_t i, int base) {
 		i /= base;
 	}
 	return r;
+}
+static void marks_set_destroyer(void * p) {
+	;
+}
+static void marks_destroyer(void * p) {
+	hashmap_destroy((hashmap*)p);
+}
+
+void dir_init(void) {
+	// read cwd
+	getcwd(cwd_buf, CWDSZ);
+	cwd = cwd_buf;
+	char * p = strrchr(cwd, '/');
+	if (*(p + 1) == 0) *p = 0;
+
+	marks = hashmap_new(marks_destroyer);
+}
+
+void dir_deinit(void) {
+	hashmap_destroy(marks);
 }
 
 int dir_list(const char * path, dir_t * dir) {
@@ -87,20 +113,17 @@ int dir_list(const char * path, dir_t * dir) {
 		return -errno;
 	}
 
+	hashmap * dirmarks = hashmap_get(marks, path);
+
 	while ((de = readdir(dp))) {
 		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, "..")) {
 			continue;
 		}
 
 		dirent_t dirent;
-		dir_entry(dirfd(dp), de->d_name, &dirent);
+		dir_entry(dirfd(dp), de->d_name, &dirent, dirmarks);
 		cvector_push_back(dir->entries, dirent);
 		dir->len++;
-
-		if (*de->d_name != '.') {
-			cvector_push_back(dir->nodots, dirent);
-			dir->nodots_len++;
-		}
 
 		size_t uname_len = 0;
 		size_t gname_len = 0;
@@ -119,11 +142,25 @@ int dir_list(const char * path, dir_t * dir) {
 	}
 
 	closedir(dp);
+	dir_fill_nodots(dir);
 	dir_sort(dir);
 	return 0;
 }
 
-void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
+static void dir_fill_nodots(dir_t * dir) {
+	cvector_clear(dir->nodots);
+	dir->nodots_len = 0;
+
+	for (size_t i = 0; i < dir->len; i++) {
+		dirent_t * dirent = &dir->entries[i];
+		if (*dirent->name != '.') {
+			cvector_push_back(dir->nodots, dirent);
+			dir->nodots_len++;
+		}
+	}
+}
+
+void dir_entry(int dirfd, const char * name, dirent_t * dirent, const hashmap * dirmarks) {
 	memset(dirent, 0, sizeof(dirent_t));
 	dirent->name = strdup(name);
 	dirent->type = DE_UNKNOWN;
@@ -133,6 +170,8 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 		// in the case where stat fails, the file is marked unknown
 		return;
 	}
+
+	if (dirmarks && hashmap_get(dirmarks, name)) dirent->marked = true;
 
 	// convert the ugly st_mode to a nice de_type
 	switch (statbuf.st_mode & S_IFMT) {
@@ -199,7 +238,9 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent) {
 
 void dir_free(dir_t * dir) {
 	cvector_free(dir->entries);
+	dir->len = 0;
 	cvector_free(dir->nodots);
+	dir->nodots_len = 0;
 }
 
 char de_crepr(enum de_type de_type) {
@@ -275,12 +316,6 @@ const char * dirent_prettymode(const dirent_t * de) {
 }
 
 const char * dir_get_cwd(void) {
-	if (!cwd) {
-		getcwd(cwd_buf, CWDSZ);
-		cwd = cwd_buf;
-		char * p = strrchr(cwd, '/');
-		if (*(p + 1) == 0) *p = 0;
-	}
 	return cwd;
 }
 
@@ -336,10 +371,10 @@ const char * dir_basename(const char * path) {
 
 int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
 	size_t dirlen = dir_len(dir);
-	cvector(dirent_t) entries = dir_entries(dir);
 
 	for (size_t i = 0; i < dirlen; i++) {
-		if (!strcmp(entries[i].name, name)) {
+		dirent_t * de = dir_get_entry(dir, i);
+		if (!strcmp(de->name, name)) {
 			*idx = i;
 			return 0;
 		}
@@ -350,14 +385,13 @@ int dir_search_name(const dir_t * dir, const char * name, size_t * idx) {
 
 int dir_search_regex(const dir_t * dir, const char * regexstr, size_t * idx) {
 	size_t dirlen = dir_len(dir);
-	cvector(dirent_t) entries = dir_entries(dir);
 
 	regex_t regex;
 	int ret = regcomp(&regex, regexstr, REG_EXTENDED);
 	if (!!ret) return -REGSEARCH_BAD_REGEX;
 
 	for (size_t i = 0; i < dirlen; i++) {
-		dirent_t * de = &entries[i];
+		dirent_t * de = dir_get_entry(dir, i);
 		ret = regexec(&regex, de->name, 0, NULL, 0);
 		if (!ret) {
 			*idx = i;
@@ -375,9 +409,11 @@ size_t dir_len(const dir_t * dir) {
 	else return dir->nodots_len;
 }
 
-cvector(dirent_t) dir_entries(const dir_t * dir) {
-	if (config.dots) return dir->entries;
-	else return dir->nodots;
+dirent_t * dir_get_entry(const dir_t * dir, size_t cursor) {
+	if (dir_len(dir) == 0) return NULL;
+
+	if (config.dots) return &dir->entries[cursor];
+	else return dir->nodots[cursor];
 }
 
 static int dir_sort_cmp(const void * inpa, const void * inpb) {
@@ -409,12 +445,12 @@ static int dir_sort_cmp(const void * inpa, const void * inpb) {
 	}
 }
 
-void dir_sort(const dir_t * dir) {
+
+void dir_sort(dir_t * dir) {
 	if (config.dir_sort == DIR_SORT_UNSORTED) return;
 	if (dir->entries && dir->len > 0)
 		qsort(dir->entries, dir->len, sizeof(dir->entries[0]), dir_sort_cmp);
-	if (dir->nodots && dir->nodots_len > 0)
-		qsort(dir->nodots, dir->nodots_len, sizeof(dir->entries[0]), dir_sort_cmp);
+	dir_fill_nodots(dir);
 }
 
 const char * dirent_size_unit(const dirent_t * de) {
@@ -626,4 +662,102 @@ const char * dir_get_home(void) {
 		return home_buf;
 	}
 	return pw->pw_dir;
+}
+
+size_t dir_get_total_marked(void) {
+	return n_marks;
+}
+
+static size_t dir_get_total_marked_(void) {
+	size_t n_marks = 0;
+
+	hashmap_walk_state marksws = {0};
+	while (hashmap_walk(marks, &marksws)) {
+		hashmap * dirmarks = marksws.val;
+		hashmap_walk_state dirmarksws = {0};
+		while (hashmap_walk(dirmarks, &dirmarksws))
+			n_marks++;
+	}
+
+	return n_marks;
+}
+
+int dirent_togglemark(dirent_t * de) {
+	if (de->type == DE_UNKNOWN) return -TOGGLEMARK_DIRENT_UNKNOWN;
+
+	if (de->marked) {
+		hashmap * dirmarks = hashmap_get(marks, cwd);
+		de->marked = false;
+		hashmap_remove(dirmarks, de->name);
+		if (dirmarks->len == 0) hashmap_remove(marks, cwd);
+		n_marks--;
+	} else {
+		// do not allow marking if an ancestor is already marked
+		bool bad = false;
+		char * ancestor = strdup(cwd);
+		do {
+			char * sep = strrchr(ancestor, '/');
+			*sep = 0;
+			char * base = sep + 1;
+
+			hashmap * ancestor_marks;
+			if (sep == ancestor) ancestor_marks = hashmap_get(marks, "/");
+			else ancestor_marks = hashmap_get(marks, ancestor);
+
+			if (!ancestor_marks) continue;
+			if (hashmap_get(ancestor_marks, base)) {
+				bad = true;
+				break;
+			}
+		} while (*ancestor);
+		free(ancestor);
+		if (bad) return -TOGGLEMARK_PARENT_MARKED;
+
+		de->marked = true;
+		hashmap * dirmarks = hashmap_get(marks, cwd);
+		if (!dirmarks) {
+			dirmarks = hashmap_new(marks_set_destroyer);
+			hashmap_insert(marks, cwd, dirmarks);
+		}
+		hashmap_insert(dirmarks, de->name, (void*)true);
+
+		// unmark all children if marking a directory
+		if (de->type == DE_DIR) {
+			const char * fmt;
+			if (!strcmp(cwd, "/")) fmt = "%s%s";
+			else fmt = "%s/%s";
+
+			size_t dirpathlen = snprintf(NULL, 0, fmt, cwd, de->name);
+			// extra byte for trailing slash
+			char * dirpath = malloc(dirpathlen + 1 + 1);
+			sprintf(dirpath, fmt, cwd, de->name);
+
+			// check any direct children
+			if (hashmap_get(marks, dirpath)) hashmap_remove(marks, dirpath);
+
+			// check any subchildren
+			strcat(dirpath, "/");
+			dirpathlen++;
+			bool deleted;
+			do {
+				deleted = false;
+
+				// this is a horrible solution
+				hashmap_walk_state ws = {0};
+				while (hashmap_walk(marks, &ws)) {
+					if (!strncmp(ws.key, dirpath, dirpathlen)) {
+						hashmap_remove(marks, ws.key);
+						deleted = true;
+						break;
+					}
+				}
+			} while (deleted);
+
+			free(dirpath);
+		}
+
+		n_marks = dir_get_total_marked_();
+	}
+
+	return 0;
 }

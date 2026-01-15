@@ -11,6 +11,7 @@
 #include "cvector.h"
 
 int main(int argc, char ** argv) {
+	dir_init();
 	const char * cwd = dir_get_cwd();
 	// dir_get_home may return a static field so it must be copied here
 	char * home = (char*)dir_get_home();
@@ -26,26 +27,23 @@ int main(int argc, char ** argv) {
 		ui_erase();
 
 		size_t dirlen = dir_len(&dir);
-		cvector(dirent_t) entries = dir_entries(&dir);
 
 		ui_set_title(cwd, home);
 		ui_print_dir(&dir, cursor);
-		ui_print_cursor(cursor, dirlen);
+		ui_print_cursor(cursor, dirlen, dir_get_total_marked());
 
 		ui_refresh();
 
-		dirent_t * cur_de;
-		if (dirlen == 0) cur_de = NULL;
-		else cur_de = &entries[cursor];
+		dirent_t * cur_de = dir_get_entry(&dir, cursor);
 
-		switch (getch()) {
+		int inputc = getch();
+		if (inputc != KEY_RESIZE) ui_status_info("");
+		switch (inputc) {
 			UP_KEYS:
 				if (cursor > 0) cursor--;
-				ui_status_info("");
 				break;
 			DOWN_KEYS:
 				if (cursor < dirlen - 1) cursor++;
-				ui_status_info("");
 				break;
 			LEFT_KEYS: {
 				// the string from dir_basename(cwd) may be a static field
@@ -61,13 +59,10 @@ int main(int argc, char ** argv) {
 					ret = dir_list(cwd, &dir);
 					if (ret < 0) {
 						ui_status_error(strerror(-ret));
-					} else {
-						if (basename) {
-							size_t idx;
-							int i = dir_search_name(&dir, basename, &idx);
-							if (i >= 0) cursor = idx;
-						}
-						ui_status_info("");
+					} else if (basename) {
+						size_t idx;
+						int i = dir_search_name(&dir, basename, &idx);
+						if (i >= 0) cursor = idx;
 					}
 				} else {
 					ui_status_error(strerror(-ret));
@@ -76,7 +71,6 @@ int main(int argc, char ** argv) {
 				break;
 			}
 			RIGHT_KEYS: {
-				ui_status_info("");
 				if (!cur_de) break;
 				if (cur_de->type == DE_DIR || (cur_de->type == DE_LINK
 				  && cur_de->linktype == DE_DIR)) {
@@ -101,16 +95,13 @@ int main(int argc, char ** argv) {
 			case KEY_HOME:
 			case 'g':
 				cursor = 0;
-				ui_status_info("");
 				break;
 			case KEY_END:
 			case 'G':
 				if (dirlen == 0) cursor = 0;
 				else cursor = dirlen - 1;
-				ui_status_info("");
 				break;
 			case '.': {
-				ui_status_info("");
 				config.dots = !config.dots;
 				if (!cur_de) cursor = 0;
 				else {
@@ -130,7 +121,6 @@ int main(int argc, char ** argv) {
 					config.longmode = true;
 					config.longinline = true;
 				}
-				ui_status_info("");
 				break;
 			case '/': {
 				const char * input = ui_readline("/");
@@ -139,7 +129,6 @@ int main(int argc, char ** argv) {
 				int i = dir_search_regex(&dir, input, &idx);
 				if (i >= 0) {
 					cursor = idx;
-					ui_status_info("");
 				} else switch (-i) {
 					case REGSEARCH_BAD_REGEX:
 						ui_status_error("Bad RegEx");
@@ -154,7 +143,6 @@ int main(int argc, char ** argv) {
 				break;
 			}
 			case 'd': {
-				ui_status_info("");
 				ui_refresh();
 				bool del = ui_prompt_deletion(cur_de);
 				if (!del) {
@@ -180,6 +168,22 @@ int main(int argc, char ** argv) {
 				else if (cursor > dirlen - 1) cursor = dirlen - 1;
 				break;
 			}
+			case 'm': {
+				if (!cur_de) break;
+				int ret = dirent_togglemark(cur_de);
+				if (ret < 0) switch (-ret) {
+					case TOGGLEMARK_PARENT_MARKED:
+						ui_status_error("Ancestor Already Marked");
+						break;
+					case TOGGLEMARK_DIRENT_UNKNOWN:
+						ui_status_error("Cannot Mark Unknown Dirent");
+						break;
+					default:
+						ui_status_error("Mark Failed");
+						break;
+				}
+				break;
+			}
 			case 'q':
 				goto finished;
 			case KEY_RESIZE:
@@ -193,4 +197,5 @@ finished:
 	free(home);
 	dir_free(&dir);
 	ui_deinit();
+	dir_deinit();
 }

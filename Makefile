@@ -1,5 +1,5 @@
 BIN = cscroll
-SRC = src/config.c src/dir.c src/ui.c src/main.c
+SRC = src/hashmap.c src/config.c src/dir.c src/ui.c src/main.c
 OBJ = ${SRC:.c=.o}
 
 CC ?= cc
