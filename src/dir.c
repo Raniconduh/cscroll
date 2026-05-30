@@ -197,7 +197,10 @@ void dir_entry(int dirfd, const char * name, dirent_t * dirent, const hashmap * 
 		}
 
 		struct stat lstatbuf;
-		if (fstatat(dirfd, name, &lstatbuf, 0) < 0) {
+		if (!dirent->linkname ||
+				(fstatat(dirfd, dirent->linkname,
+				         &lstatbuf, AT_SYMLINK_NOFOLLOW) < 0)
+		) {
 			dirent->linktype = DE_UNKNOWN;
 		} else switch (lstatbuf.st_mode & S_IFMT) {
 			case S_IFSOCK: dirent->linktype = DE_SOCKET;  break;
