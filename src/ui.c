@@ -197,10 +197,10 @@ void ui_print_dirent(const dirent_t * de, size_t pos, bool selected, const dir_t
 		}
 
 		if (de->uname) ui_wlpadstr(filewin, de->uname, dir->longest_uname + 1);
-		else waddstr(filewin, " ?");
+		else ui_wlpadstr(filewin, "?", dir->longest_uname + 1);
 
 		if (de->gname) ui_wlpadstr(filewin, de->gname, dir->longest_gname + 1);
-		else waddstr(filewin, " ?");
+		else ui_wlpadstr(filewin, "?", dir->longest_gname + 1);
 
 		if (config.humansize) {
 			const char * unit = dirent_size_unit(de);

@@ -98,8 +98,8 @@ int dir_list(const char * path, dir_t * dir) {
 	cvector_init(dir->entries, 1, free_dirent);
 	dir->nodots_len = 0;
 	dir->nodots = NULL;
-	dir->longest_uname = 0;
-	dir->longest_gname = 0;
+	dir->longest_uname = 1;
+	dir->longest_gname = 1;
 	dir->longest_size = 0;
 	dir->longest_size_small = 0;
 	dir->longest_size_unit = 0;
