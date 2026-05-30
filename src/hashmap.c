@@ -1,234 +1,227 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 
 #include "hashmap.h"
 
-#define HASHMAP_RESIZE_LEN 128
-#define HASHMAP_RESIZE_FACT 75 // percent full
+/* strdup() is a POSIX feature; if not available, provide alternative */
+#if (defined(_XOPEN_SOURCE)   && (_XOPEN_SOURCE >= 500)) || \
+    (defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L))
+/* do nothing */
+#else
+static char * my_strdup(const char * s) {
+	return strcpy(malloc(strlen(s) + 1), s);
+}
+#undef strdup
+#define strdup my_strdup
+#endif
 
-// FNV-1a
-static unsigned long hashs(const char * s) {
-	unsigned long hash = 2166136261UL;
-	int c;
-	while ((c = *s++)) {
-		hash *= 2166136261UL;
-		hash ^= c;
+struct hashmap {
+	size_t capacity;
+	size_t size;
+	struct hashmap_list ** buckets;
+
+	void (*val_destroyer)(void*);
+};
+
+struct hashmap_list {
+	struct hashmap_list * next;
+
+	uint32_t hash;
+
+	char * key;
+	void * val;
+};
+
+typedef struct hashmap_list node_t;
+
+static uint32_t hashs(const char * s);
+static node_t ** hashmap_new_buckets(size_t capacity);
+static void hashmap_resize(hashmap * h, size_t newcapacity);
+
+hashmap * hashmap_new(void (*val_destroyer)(void*)) {
+	hashmap * h = malloc(sizeof(hashmap));
+	h->capacity = HASHMAP_DEFAULT_CAPACITY;
+	h->size = 0;
+	h->buckets = hashmap_new_buckets(HASHMAP_DEFAULT_CAPACITY);
+	h->val_destroyer = val_destroyer;
+	return h;
+}
+
+void hashmap_set(hashmap * h, const char * key, void * val) {
+	if ((h->size + 1) * 100 / h->capacity >= HASHMAP_GROW_FACTOR) {
+		hashmap_resize(h, 2 * h->capacity);
 	}
-	return hash;
-}
 
+	uint32_t hash = hashs(key);
+	size_t idx = hash % h->capacity;
 
-static struct hashmap_bucket * new_bucket(void) {
-	struct hashmap_bucket * b = malloc(sizeof(struct hashmap_bucket));
-	b->entries = NULL;
-	b->last = NULL;
-	return b;
-}
-
-
-static struct hashmap_col_list * new_col_list(void) {
-	struct hashmap_col_list * cl = malloc(sizeof(struct hashmap_col_list));
-	cl->next = NULL;
-	cl->prev = NULL;
-	cl->hash = 0;
-	cl->key = NULL;
-	cl->val = NULL;
-	return cl;
-}
-
-
-static void destroy_col(struct hashmap_col_list * cl) {
-	free(cl->key);
-	free(cl);
-}
-
-
-static struct hashmap_col_list * append_col(struct hashmap_bucket * b) {
-	if (!b->entries) {
-		b->entries = new_col_list();
-		b->last = b->entries;
-		return b->entries;
+	node_t * node = NULL;
+	for (node_t * n = h->buckets[idx]; n; n = n->next) {
+		if (n->hash == hash && !strcmp(n->key, key)) {
+			node = n;
+			break;
+		}
 	}
 
-	b->last->next = new_col_list();
-	b->last->next->prev = b->last;
-	b->last = b->last->next;
-	return b->last;
-}
+	if (!node) {
+		node = malloc(sizeof(node_t));
+		node->next = NULL;
+		node->hash = hash;
+		node->key = strdup(key);
+		node->val = val;
 
-
-static struct hashmap_bucket * hashmap_get_bucket(const hashmap * hm, const char * key) {
-	unsigned long hash = hashs(key);
-	size_t index = hash % hm->max;
-	return hm->buckets[index];
-}
-
-
-static struct hashmap_col_list * search_col_list(struct hashmap_bucket * b, const char * key) {
-	for (struct hashmap_col_list * cl = b->entries; cl; cl = cl->next) {
-		if (!strcmp(key, cl->key)) return cl;
+		if (h->buckets[idx]) node->next = h->buckets[idx];
+		h->buckets[idx] = node;
+		h->size++;
+	} else {
+		if (h->val_destroyer) h->val_destroyer(node->val);
+		node->val = val;
 	}
+}
+
+void * hashmap_get(const hashmap * h, const char * key) {
+	uint32_t hash = hashs(key);
+	size_t idx = hash % h->capacity;
+
+	for (node_t * n = h->buckets[idx]; n; n = n->next) {
+		if (n->hash == hash && !strcmp(n->key, key)) return n->val;
+	}
+
 	return NULL;
 }
 
+void hashmap_del(hashmap * h, const char * key) {
+	uint32_t hash = hashs(key);
+	size_t idx = hash % h->capacity;
 
-hashmap * hashmap_new(void (*destroyer)(void*)) {
-	hashmap * hm = malloc(sizeof(hashmap));
-	hm->destroyer = destroyer;
-	hm->buckets = malloc(sizeof(struct hashmap_bucket*) * HASHMAP_RESIZE_LEN);
-	hm->len = 0;
-	hm->max = HASHMAP_RESIZE_LEN;
-
-	for (size_t i = 0; i < hm->max; i++) {
-		hm->buckets[i] = NULL;
-	}
-
-	return hm;
-}
-
-
-static void hashmap_resize(hashmap * hm) {
-	size_t nmax = hm->max * 2;
-	struct hashmap_bucket ** nb = malloc(sizeof(struct hashmap_bucket*) * nmax);
-
-	for (size_t i = 0; i < nmax; i++) {
-		nb[i] = NULL;
-	}
-
-	for (size_t i = 0; i < hm->max; i++) {
-		struct hashmap_bucket * ob = hm->buckets[i];
-		if (!ob || !ob->entries) continue;
-
-		for (struct hashmap_col_list * cl = ob->entries; cl;) {
-			struct hashmap_col_list * next = cl->next;
-
-			size_t nindex = cl->hash % nmax;
-			if (!nb[nindex]) {
-				nb[nindex] = new_bucket();
-				nb[nindex]->entries = cl;
-				nb[nindex]->last = cl;
-				cl->prev = NULL;
-				cl->next = NULL;
-			} else {
-				struct hashmap_col_list * last = nb[nindex]->last;
-				last->next = cl;
-				cl->next = NULL;
-				cl->prev = last;
-				nb[nindex]->last = cl;
-			}
-
-			cl = next;
+	node_t * node = NULL;
+	node_t * prev = NULL;
+	for (node_t * n = h->buckets[idx]; n; n = n->next) {
+		if (n->hash == hash && !strcmp(n->key, key)) {
+			node = n;
+			break;
 		}
-
-		free(ob);
+		prev = n;
 	}
 
-	free(hm->buckets);
-	hm->buckets = nb;
-	hm->max = nmax;
+	if (!node) return;
+	if (prev) prev->next = node->next;
+	else h->buckets[idx] = node->next;
+
+	if (h->val_destroyer) h->val_destroyer(node->val);
+	free(node->key);
+	free(node);
+
+	h->size--;
+	if (h->size != 0
+			&& h->capacity > HASHMAP_DEFAULT_CAPACITY
+			&& h->size * 100 / h->capacity <= HASHMAP_SHRINK_FACTOR) {
+		hashmap_resize(h, h->capacity / 2);
+	}
 }
 
+void hashmap_clear(hashmap * h) {
+	for (size_t i = 0; i < h->capacity; i++) {
+		for (node_t * node = h->buckets[i]; node;) {
+			node_t * next = node->next;
 
-void hashmap_insert(hashmap * hm, char * key, void * val) {
-	if ((hm->len * 100) / hm->max >= HASHMAP_RESIZE_FACT) {
-		hashmap_resize(hm);
-	}
+			if (h->val_destroyer) h->val_destroyer(node->val);
+			free(node->key);
+			free(node);
 
-	struct hashmap_col_list * cl = NULL;
-
-	unsigned long hash = hashs(key);
-	size_t index = hash % hm->max;
-	if (!hm->buckets[index]) {
-		hm->buckets[index] = new_bucket();
-	} else {
-		for (struct hashmap_col_list * l = hm->buckets[index]->entries; l; l = l->next) {
-			// overrite the old collision entry
-			if (!strcmp(l->key, key)) {
-				cl = l;
-				if (hm->destroyer) hm->destroyer(cl->val);
-				cl->val = val;
-			}
+			node = next;
 		}
 	}
 
-	if (!cl) {
-		cl = append_col(hm->buckets[index]);
-		cl->hash = hash;
-		cl->key = strdup(key);
-		cl->val = val;
-
-		hm->len++;
-	}
+	free(h->buckets);
+	h->capacity = HASHMAP_DEFAULT_CAPACITY;
+	h->size     = 0;
+	h->buckets  = hashmap_new_buckets(HASHMAP_DEFAULT_CAPACITY);
 }
 
+void hashmap_free(hashmap * h) {
+	for (size_t i = 0; i < h->capacity; i++) {
+		for (node_t * node = h->buckets[i]; node;) {
+			node_t * next = node->next;
 
-void * hashmap_get(const hashmap * hm, const char * key) {
-	struct hashmap_bucket * b = hashmap_get_bucket(hm, key);
-	if (!b) return NULL;
-	struct hashmap_col_list * cl = search_col_list(b, key);
-	if (!cl) return NULL;
-	return cl->val;
-}
+			if (h->val_destroyer) h->val_destroyer(node->val);
+			free(node->key);
+			free(node);
 
-
-void hashmap_remove(hashmap * hm, char * key) {
-	struct hashmap_bucket * b = hashmap_get_bucket(hm, key);
-	if (!b) return;
-
-	struct hashmap_col_list * cl = search_col_list(b, key);
-	if (!cl) return;
-
-	struct hashmap_col_list * prev = cl->prev;
-	struct hashmap_col_list * next = cl->next;
-
-	if (!prev) b->entries = next;
-	else prev->next = next;
-	if (next) next->prev = prev;
-
-	if (hm->destroyer) hm->destroyer(cl->val);
-	destroy_col(cl);
-}
-
-
-int hashmap_walk(hashmap * hm, hashmap_walk_state * state) {
-	for (size_t i = state->curbuck; i < hm->max; i++) {
-		struct hashmap_bucket * b = hm->buckets[i];
-		if (!b || !b->entries) continue;
-
-		if (!state->col) state->col = b->entries;
-		for (struct hashmap_col_list * cl = state->col; cl; cl = cl->next) {
-			state->col = cl->next;
-			state->curbuck = i;
-			if (!state->col) state->curbuck++;
-
-			state->key = cl->key;
-			state->val = cl->val;
-			return 1;
+			node = next;
 		}
-		state->col = NULL;
+	}
+
+	free(h->buckets);
+	free(h);
+}
+
+int hashmap_walk(const hashmap * h, hashmap_walk_t * state) {
+	for (size_t i = state->idx; i < h->capacity; i++) {
+		if (!h->buckets[i]) continue;
+		if (state->node && !state->node->next) {
+			state->node = NULL;
+			continue;
+		}
+
+		node_t * node;
+		if (!state->node) node = h->buckets[i];
+		else node = state->node->next;
+		state->node = node;
+		state->key = node->key;
+		state->val = node->val;
+
+		state->idx = i;
+
+		return 1;
 	}
 
 	return 0;
 }
 
+size_t hashmap_size(const hashmap * h) {
+	return h->size;
+}
 
-void hashmap_destroy(hashmap * hm) {
-	for (size_t i = 0; i < hm->max; i++) {
-		struct hashmap_bucket * b = hm->buckets[i];
-		if (!b) continue;
+/* INTERNAL */
 
-		// free each collision in the bucket
-		for (struct hashmap_col_list * cl = b->entries; cl;) {
-			struct hashmap_col_list * next = cl->next;
-			if (hm->destroyer) hm->destroyer(cl->val);
-			destroy_col(cl);
-			cl = next;
+/* FNV-1a string hash */
+static uint32_t hashs(const char * s) {
+	uint32_t hash = 2166136261UL;
+	int c;
+	while ((c = *s++)) {
+		hash ^= c;
+		hash *= 16777619UL;
+	}
+	return hash;
+}
+
+static node_t ** hashmap_new_buckets(size_t capacity) {
+	node_t ** buckets;
+	buckets = malloc(sizeof(node_t*) * capacity);
+	for (size_t i = 0; i < capacity; i++) buckets[i] = NULL;
+	return buckets;
+}
+
+static void hashmap_resize(hashmap * h, size_t newcapacity) {
+	node_t ** newbuckets = hashmap_new_buckets(newcapacity);
+
+	for (size_t i = 0; i < h->capacity; i++) {
+		for (node_t * node = h->buckets[i]; node;) {
+			node_t * next = node->next;
+
+			size_t newidx = node->hash % newcapacity;
+			node->next = NULL;
+			if (newbuckets[newidx]) node->next = newbuckets[newidx];
+			newbuckets[newidx] = node;
+
+			node = next;
 		}
-
-		free(b);
 	}
 
-	free(hm->buckets);
-	free(hm);
+	free(h->buckets);
+	h->buckets = newbuckets;
+	h->capacity = newcapacity;
 }

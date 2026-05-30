@@ -1,49 +1,40 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
+#ifndef HASHMAP_DEFAULT_CAPACITY
+#define HASHMAP_DEFAULT_CAPACITY 4
+#endif
+// load factor percentage at which to grow
+#ifndef HASHMAP_GROW_FACTOR
+#define HASHMAP_GROW_FACTOR 75
+#endif
+// load factor percentage at which to shrink
+#ifndef HASHMAP_SHRINK_FACTOR
+#define HASHMAP_SHRINK_FACTOR 15
+#endif
 
-// collision list
-struct hashmap_col_list {
-	struct hashmap_col_list * next;
-	struct hashmap_col_list * prev;
-
-	unsigned long hash;
-	char * key;
-	void * val;
-};
-
-
-struct hashmap_bucket {
-	struct hashmap_col_list * entries;
-	struct hashmap_col_list * last;
-};
-
+typedef struct hashmap hashmap;
 
 typedef struct {
-	void (*destroyer)(void*);
-	struct hashmap_bucket ** buckets;
-	size_t len; // total entries
-	size_t max;
-} hashmap;
-
-
-typedef struct {
-	size_t curbuck;
-	struct hashmap_col_list * col;
-
 	char * key;
 	void * val;
-} hashmap_walk_state;
 
+	/* INTERNAL */
+	size_t idx;
+	struct hashmap_list * node;
+} hashmap_walk_t;
 
-hashmap * hashmap_new(void (*destroyer)(void*));
-void hashmap_insert(hashmap *, char *, void *);
-void * hashmap_get(const hashmap *, const char *);
-void hashmap_remove(hashmap *, char *);
-int hashmap_walk(hashmap *, hashmap_walk_state *);
-void hashmap_destroy(hashmap *);
+hashmap * hashmap_new(void (*val_destroyer)(void * elem));
+void hashmap_set(hashmap * h, const char * key, void * val);
+void * hashmap_get(const hashmap * h, const char * key);
+void hashmap_del(hashmap * h, const char * key);
+void hashmap_clear(hashmap * h);
+void hashmap_free(hashmap * h);
+int hashmap_walk(const hashmap * h, hashmap_walk_t * state);
+size_t hashmap_size(const hashmap * h);
+
 
 #endif /* HASHMAP_H */

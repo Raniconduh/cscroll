@@ -75,7 +75,7 @@ static size_t ilen(size_t i, int base) {
 	return r;
 }
 static void marks_destroyer(void * p) {
-	hashmap_destroy((hashmap*)p);
+	hashmap_free((hashmap*)p);
 }
 
 void dir_init(void) {
@@ -89,7 +89,7 @@ void dir_init(void) {
 }
 
 void dir_deinit(void) {
-	hashmap_destroy(marks);
+	hashmap_free(marks);
 }
 
 int dir_list(const char * path, dir_t * dir) {
@@ -668,10 +668,10 @@ size_t dir_get_total_marked(void) {
 static size_t dir_get_total_marked_(void) {
 	size_t n_marks = 0;
 
-	hashmap_walk_state marksws = {0};
+	hashmap_walk_t marksws = {0};
 	while (hashmap_walk(marks, &marksws)) {
 		hashmap * dirmarks = marksws.val;
-		hashmap_walk_state dirmarksws = {0};
+		hashmap_walk_t dirmarksws = {0};
 		while (hashmap_walk(dirmarks, &dirmarksws))
 			n_marks++;
 	}
@@ -685,8 +685,8 @@ int dirent_togglemark(dirent_t * de) {
 	if (de->marked) {
 		hashmap * dirmarks = hashmap_get(marks, cwd);
 		de->marked = false;
-		hashmap_remove(dirmarks, de->name);
-		if (dirmarks->len == 0) hashmap_remove(marks, cwd);
+		hashmap_del(dirmarks, de->name);
+		if (hashmap_size(dirmarks) == 0) hashmap_del(marks, cwd);
 		n_marks--;
 	} else {
 		// do not allow marking if an ancestor is already marked
@@ -714,9 +714,9 @@ int dirent_togglemark(dirent_t * de) {
 		hashmap * dirmarks = hashmap_get(marks, cwd);
 		if (!dirmarks) {
 			dirmarks = hashmap_new(NULL);
-			hashmap_insert(marks, cwd, dirmarks);
+			hashmap_set(marks, cwd, dirmarks);
 		}
-		hashmap_insert(dirmarks, de->name, (void*)true);
+		hashmap_set(dirmarks, de->name, (void*)true);
 
 		// unmark all children if marking a directory
 		if (de->type == DE_DIR) {
@@ -730,7 +730,7 @@ int dirent_togglemark(dirent_t * de) {
 			sprintf(dirpath, fmt, cwd, de->name);
 
 			// check any direct children
-			if (hashmap_get(marks, dirpath)) hashmap_remove(marks, dirpath);
+			if (hashmap_get(marks, dirpath)) hashmap_del(marks, dirpath);
 
 			// check any subchildren
 			strcat(dirpath, "/");
@@ -740,10 +740,10 @@ int dirent_togglemark(dirent_t * de) {
 				deleted = false;
 
 				// this is a horrible solution
-				hashmap_walk_state ws = {0};
+				hashmap_walk_t ws = {0};
 				while (hashmap_walk(marks, &ws)) {
 					if (!strncmp(ws.key, dirpath, dirpathlen)) {
-						hashmap_remove(marks, ws.key);
+						hashmap_del(marks, ws.key);
 						deleted = true;
 						break;
 					}
@@ -768,7 +768,7 @@ int dir_paste_marks(const char * cwd, size_t * total_pastes) {
 
 	int retval = 0;
 
-	hashmap_walk_state marksws = {0};
+	hashmap_walk_t marksws = {0};
 	while (hashmap_walk(marks, &marksws)) {
 		const char * dirpath = marksws.key;
 		hashmap * dirmarks = marksws.val;
@@ -777,7 +777,7 @@ int dir_paste_marks(const char * cwd, size_t * total_pastes) {
 		if (!sourcedir) continue;
 		int sourcefd = dirfd(sourcedir);
 
-		hashmap_walk_state dirmarksws = {0};
+		hashmap_walk_t dirmarksws = {0};
 		while (hashmap_walk(dirmarks, &dirmarksws)) {
 			const char * fname = dirmarksws.key;
 			// make sure the new file name doesn't already exist
@@ -793,8 +793,7 @@ int dir_paste_marks(const char * cwd, size_t * total_pastes) {
 	}
 
 	closedir(pastedir);
-	hashmap_destroy(marks);
-	marks = hashmap_new(marks_destroyer);
+	hashmap_clear(marks);
 	n_marks = 0;
 	return retval;
 }
@@ -802,7 +801,7 @@ int dir_paste_marks(const char * cwd, size_t * total_pastes) {
 size_t dir_marked_subfiles(void) {
 	size_t total = 0;
 
-	hashmap_walk_state marksws = {0};
+	hashmap_walk_t marksws = {0};
 	while (hashmap_walk(marks, &marksws)) {
 		const char * dirpath = marksws.key;
 		hashmap * dirmarks = marksws.val;
@@ -811,7 +810,7 @@ size_t dir_marked_subfiles(void) {
 		if (!basedir) continue;
 		int basedirfd = dirfd(basedir);
 
-		hashmap_walk_state dirmarksws = {0};
+		hashmap_walk_t dirmarksws = {0};
 		while (hashmap_walk(dirmarks, &dirmarksws)) {
 			const char * fname = dirmarksws.key;
 
@@ -838,12 +837,12 @@ size_t dir_marked_subfiles(void) {
 int dir_marked_delete(void) {
 	int retval = 0;
 
-	hashmap_walk_state marksws = {0};
+	hashmap_walk_t marksws = {0};
 	while (hashmap_walk(marks, &marksws)) {
 		const char * dirpath = marksws.key;
 		hashmap * dirmarks = marksws.val;
 
-		hashmap_walk_state dirmarksws = {0};
+		hashmap_walk_t dirmarksws = {0};
 		while (hashmap_walk(dirmarks, &dirmarksws)) {
 			const char * fname = dirmarksws.key;
 
@@ -861,8 +860,7 @@ int dir_marked_delete(void) {
 		}
 	}
 
-	hashmap_destroy(marks);
-	marks = hashmap_new(marks_destroyer);
+	hashmap_clear(marks);
 	n_marks = 0;
 
 	return retval;
