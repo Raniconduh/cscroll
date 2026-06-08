@@ -403,16 +403,13 @@ static void ui_get_first_last(size_t dir_len, size_t cursor, size_t * first, siz
 		*last = dir_len;
 	} else {
 		size_t off_lo = lines / 2;
-		size_t off_hi = lines - off_lo;
-		if (cursor < off_lo) {
-			*first = 0;
-			if (dir_len > lines) *last = lines;
-			else *last = dir_len;
-		} else {
-			*first = cursor - off_lo;
-			if (dir_len > cursor + off_hi) *last = cursor + off_hi;
-			else *last = dir_len;
-		}
+		size_t max_first = dir_len - lines;
+
+		if (cursor < off_lo) *first = 0;
+		else *first = cursor - off_lo;
+
+		if (*first > max_first) *first = max_first;
+		*last = *first + lines;
 	}
 }
 
