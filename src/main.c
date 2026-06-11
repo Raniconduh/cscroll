@@ -64,6 +64,9 @@ int main(int argc, char ** argv) {
 						size_t idx;
 						int i = dir_search_name(&dir, basename, &idx);
 						if (i >= 0) cursor = idx;
+						else cursor = 0;
+					} else {
+						cursor = 0;
 					}
 				} else {
 					ui_status_error(strerror(-ret));
